@@ -1,0 +1,74 @@
+import React from 'react';
+import { Box, Button, Typography } from '@mui/material';
+import theme from '../../styles/theme';
+
+const Landing = () => {
+    const isDarkMode = theme.palette.mode === 'dark';
+
+    return (
+        <Box 
+            sx={{ 
+                display: 'flex',
+                gap: '0.6rem', 
+                flexDirection: 'column', 
+                alignItems: 'center', 
+                justifyContent: 'center', 
+                width: '100%',
+                maxWidth: '100%',
+                height: { xs: '100%', sm: '100vh' }, 
+                backgroundColor: isDarkMode ? theme.palette.background.dark : theme.palette.background.light,
+                padding: '1rem', 
+                borderRadius: '1rem',
+                backdropFilter: 'blur(10px)',
+                textAlign: 'center'
+            }}
+        >
+            <Box sx={{ width: '50%', margin: '0.4rem' }}>
+                <img  draggable="false" src="/safarmitrac.svg" alt="safarmitra-logo" className="drop-shadow-xl" style={{ width: '100%', userSelect: 'none'  }} />
+            </Box>
+            <Typography variant="h4" component="h1" gutterBottom className={`${isDarkMode ? "text-white " : 'text-black'}`}>
+                Hello, welcome to SafarMitra
+            </Typography>
+            <Typography variant="h6" component="p" gutterBottom className={`${isDarkMode ? "text-white " : 'text-black'}`}>
+                Please let us know, are you a:
+            </Typography>
+            <Box 
+                sx={{ 
+                    display: 'flex', 
+                    flexDirection: 'column', 
+                    gap: '1rem', 
+                    [theme.breakpoints.up('sm')]: {
+                        flexDirection: 'row',
+                    },
+                }}
+            >
+                <Button 
+                    variant="contained" 
+                    color="primary"
+                    sx={{ 
+                        backgroundColor: theme.palette.primary.main, 
+                        fontWeight: 'bold',
+                        width: '200px',
+                        '&:hover': { backgroundColor: theme.palette.primary.dark } 
+                    }}
+                >
+                    User
+                </Button>
+                <Button 
+                    variant="contained" 
+                    color="secondary"
+                    sx={{ 
+                        backgroundColor: theme.palette.secondary.main, 
+                        fontWeight: 'bold',
+                        width: '200px',
+                        '&:hover': { backgroundColor: theme.palette.secondary.dark } 
+                    }}
+                >
+                    Driver
+                </Button>
+            </Box>
+        </Box>
+    );
+};
+
+export default Landing;

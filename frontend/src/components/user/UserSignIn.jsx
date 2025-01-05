@@ -1,22 +1,25 @@
 import React from "react";
-import { useRef , useState} from "react";
-import {Box,InputLabel,MenuItem,Select,Typography,Button,TextField,FormControl,
+import { useRef, useState } from "react";
+import {
+  Box,
+  Typography,
+  Button,
+  TextField,
+  FormControl,
 } from "@mui/material";
-import { Link, Navigate, useNavigate } from "react-router-dom";
-
+import { Link, useNavigate } from "react-router-dom";
+import theme from "../../styles/theme";
 
 const UserSignIn = () => {
-  const nameRef = useRef();
   const emailRef = useRef();
   const passwordRef = useRef();
-  const phoneRef = useRef();
-  const [gender, setGender] = useState("");
   const navigate = useNavigate();
 
   const handleSubmit = (e) => {
-    e.preventDefault()
+    e.preventDefault();
     // axios code for sending data
-  }
+  };
+
   return (
     <Box
       sx={{
@@ -32,10 +35,10 @@ const UserSignIn = () => {
         px: "1.2rem",
       }}
     >
-      {/* Back Button - useNavigate here for go back*/}
+      {/* Back Button - useNavigate here for go back */}
       <Button
         size="large"
-        sx={{ alignSelf: "start", fontSize: "1rem", paddingLeft: "0px" }}
+        sx={{ alignSelf: "start", fontSize: "1.3rem", paddingLeft: "0px" , fontFamily: theme.typography.h4.fontFamily, fontWeight: theme.typography.h4.fontWeight, color: theme.palette.primary.main }}
         onClick={() => navigate(-1)} // back button functionality.
       >
         &lt; Back
@@ -44,7 +47,8 @@ const UserSignIn = () => {
       {/* signup text heading */}
       <Typography
         variant="h4"
-        sx={{ fontWeight: "bold", color: "white", marginTop: "2rem" }}
+        sx={{ fontWeight: "bold", color: theme.palette.primary.main, marginTop: "2rem" ,fontFamily: theme.typography.fontFamily, fontWeight: theme.typography.h3.fontWeight }}
+        
       >
         Sign In
       </Typography>
@@ -52,9 +56,8 @@ const UserSignIn = () => {
       {/* Form Content */}
       <form
         className="flex flex-col gap-2 w-[100%] gap-y-[15px]"
-        onSubmit={handleSubmit}        
+        onSubmit={handleSubmit}
       >
-
         {/* Email TextField */}
         <FormControl sx={{ width: "100%" }}>
           <TextField
@@ -63,14 +66,14 @@ const UserSignIn = () => {
             variant="outlined"
             fullWidth
             sx={{
-              input: { color: "white" },
+              input: { color: theme.palette.background.light },
               "& .MuiOutlinedInput-root": {
-                "& fieldset": { borderColor: "white" },
-                "&:hover fieldset": { borderColor: "lightgray" },
-                "&.Mui-focused fieldset": { borderColor: "white" },
+                "& fieldset": { borderColor: theme.palette.background.light },
+                "&:hover fieldset": { borderColor: theme.palette.background.light },
+                "&.Mui-focused fieldset": { borderColor: theme.palette.background.light },
               },
-              "& .MuiInputLabel-root": { color: "white" },
-              "& .MuiInputLabel-root.Mui-focused": { color: "white" },
+              "& .MuiInputLabel-root": { color: theme.palette.background.light },
+              "& .MuiInputLabel-root.Mui-focused": { color: theme.palette.background.light },
             }}
             ref={emailRef}
             name="email"
@@ -86,22 +89,21 @@ const UserSignIn = () => {
             type="password"
             fullWidth
             sx={{
-              input: { color: "white" },
+              input: { color: theme.palette.background.light },
               "& .MuiOutlinedInput-root": {
-                "& fieldset": { borderColor: "white" },
-                "&:hover fieldset": { borderColor: "lightgray" },
-                "&.Mui-focused fieldset": { borderColor: "white" },
+                "& fieldset": { borderColor: theme.palette.background.light },
+                "&:hover fieldset": { borderColor: theme.palette.background.light },
+                "&.Mui-focused fieldset": { borderColor: theme.palette.background.light },
               },
-              "& .MuiInputLabel-root": { color: "white" },
-              "& .MuiInputLabel-root.Mui-focused": { color: "white" },
+              "& .MuiInputLabel-root": { color: theme.palette.background.light },
+              "& .MuiInputLabel-root.Mui-focused": { color: theme.palette.background.light },
             }}
             ref={passwordRef}
             name="password"
           />
         </FormControl>
 
-
-        {/* Sign Up Button */}
+        {/* Sign In Button */}
         <Button
           sx={{ height: "3.3rem" }}
           variant="contained"

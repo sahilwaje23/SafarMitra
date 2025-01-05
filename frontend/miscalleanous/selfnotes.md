@@ -183,5 +183,7 @@ By following these practices, you can build a seamless hybrid project without co
 - created the main landing folders / and  driver and user folders to have their components located there the forms will be almost identical .
 - in landing page the light-theme adjustments are remaining 
 
-## `<yogeshpalve-github-username>`
-### entry ? ? ? 2025 
+## Yogesh-Palve
+### entry 1 - 06 jan 2025
+- added route for user-signup , user-signin , captain-signup , captain-signin . 
+- partially made user-signup and singin ( axios pending ). 

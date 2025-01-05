@@ -1,5 +1,4 @@
-import React, { useState } from "react";
-import { useRef } from "react";
+import React, { useState, useRef } from "react";
 import {
   Box,
   InputLabel,
@@ -10,36 +9,37 @@ import {
   TextField,
   FormControl,
 } from "@mui/material";
-import { Link, Navigate, useNavigate } from "react-router-dom";
-
+import { Link, useNavigate } from "react-router-dom";
+import theme from "../../styles/theme";
 
 const UserSignUp = () => {
+  const nameRef = useRef();
+  const emailRef = useRef();
+  const passwordRef = useRef();
+  const phoneRef = useRef();
+  const [gender, setGender] = useState("");
+  const navigate = useNavigate();
+  const [aadhar, setAadhar] = useState();
+  const [id, setId] = useState();
 
-const nameRef = useRef();
-const emailRef = useRef();
-const passwordRef = useRef();
-const phoneRef = useRef();
-const [gender,setGender] = useState('');
-const navigate = useNavigate();
-const [aadhar,setAadhar] = useState();
-const [id,setId] = useState();
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    // axios code for sending data
+    // on successful sign up. open dialog
+  };
 
-const handleSubmit = (e) => {
-  e.preventDefault()
-  // axios code for sending data
-  // on successful sign up. open dialog 
+  const handleAadharFile = (e) => {
+    if (e.target.files[0]) {
+      setAadhar(e.target.value);
+    }
+  };
 
-}
-const handleAadharFile = (e) => {
-  if(file) {
-    setAadhar(e.target.value)
-  }
-}
-const handleIdFile = (e) => {
-  if(file) {
-    setId(e.target.value)
-  }
-}
+  const handleIdFile = (e) => {
+    if (e.target.files[0]) {
+      setId(e.target.value);
+    }
+  };
+
   return (
     <Box
       sx={{
@@ -48,19 +48,18 @@ const handleIdFile = (e) => {
         alignItems: "start",
         gap: "0.6rem",
         width: "100%",
-        height: { xs: "100%", sm: "100vh" },
+        height: { xs: "100%", sm: "100vh" ,lg: "auto"},
         backgroundColor: "rgba(0, 0, 0, 0.9)",
         padding: "1rem",
         backdropFilter: "blur(10px)",
-        px:'1.2rem'
+        px: "1.2rem",
       }}
     >
-      {/* Back Button - useNavigate here for go back*/}
+      {/* Back Button - useNavigate here for go back */}
       <Button
         size="large"
-        sx={{ alignSelf: "start", fontSize: "1rem", paddingLeft: "0px" }}
-
-        onClick={() => navigate(-1)}// back button functionality.
+        sx={{ alignSelf: "start", fontSize: "1.3rem", paddingLeft: "0px" , fontFamily: theme.typography.h4.fontFamily, fontWeight: theme.typography.h4.fontWeight, color: theme.palette.primary.main }}
+        onClick={() => navigate(-1)} // back button functionality.
       >
         &lt; Back
       </Button>
@@ -68,7 +67,8 @@ const handleIdFile = (e) => {
       {/* signup text heading */}
       <Typography
         variant="h4"
-        sx={{ fontWeight: "bold", color: "white", marginTop: "2rem" }}
+        sx={{ fontWeight: "bold", color: theme.palette.primary.main, marginTop: "2rem" ,fontFamily: theme.typography.fontFamily, fontWeight: theme.typography.h3.fontWeight }}
+        
       >
         Sign up
       </Typography>
@@ -76,7 +76,7 @@ const handleIdFile = (e) => {
       {/* Form Content */}
       <form
         onSubmit={handleSubmit}
-        className="flex flex-col gap-2 w-[100%] gap-y-[15px]"        
+        className="flex flex-col gap-2 w-[100%] gap-y-[15px]"
       >
         {/* Full Name TextField */}
         <FormControl sx={{ width: "100%" }}>
@@ -86,16 +86,15 @@ const handleIdFile = (e) => {
             variant="outlined"
             fullWidth
             sx={{
-              input: { color: "white" },
+              input: { color: theme.palette.background.light },
               "& .MuiOutlinedInput-root": {
-                "& fieldset": { borderColor: "white" },
-                "&:hover fieldset": { borderColor: "lightgray" },
-                "&.Mui-focused fieldset": { borderColor: "white" },
+                "& fieldset": { borderColor: theme.palette.background.light },
+                "&:hover fieldset": { borderColor: theme.palette.background.light },
+                "&.Mui-focused fieldset": { borderColor: theme.palette.background.light },
               },
-              "& .MuiInputLabel-root": { color: "white" },
-              "& .MuiInputLabel-root.Mui-focused": { color: "white" },
+              "& .MuiInputLabel-root": { color: theme.palette.background.light },
+              "& .MuiInputLabel-root.Mui-focused": { color: theme.palette.background.light },
             }}
-
             name="fullName"
             ref={nameRef}
           />
@@ -109,16 +108,15 @@ const handleIdFile = (e) => {
             variant="outlined"
             fullWidth
             sx={{
-              input: { color: "white" },
+              input: { color: theme.palette.background.light },
               "& .MuiOutlinedInput-root": {
-                "& fieldset": { borderColor: "white" },
-                "&:hover fieldset": { borderColor: "lightgray" },
-                "&.Mui-focused fieldset": { borderColor: "white" },
+                "& fieldset": { borderColor: theme.palette.background.light },
+                "&:hover fieldset": { borderColor: theme.palette.background.light },
+                "&.Mui-focused fieldset": { borderColor: theme.palette.background.light },
               },
-              "& .MuiInputLabel-root": { color: "white" },
-              "& .MuiInputLabel-root.Mui-focused": { color: "white" },
+              "& .MuiInputLabel-root": { color: theme.palette.background.light },
+              "& .MuiInputLabel-root.Mui-focused": { color: theme.palette.background.light },
             }}
-
             ref={emailRef}
             name="email"
           />
@@ -133,16 +131,15 @@ const handleIdFile = (e) => {
             type="password"
             fullWidth
             sx={{
-              input: { color: "white" },
+              input: { color: theme.palette.background.light },
               "& .MuiOutlinedInput-root": {
-                "& fieldset": { borderColor: "white" },
-                "&:hover fieldset": { borderColor: "lightgray" },
-                "&.Mui-focused fieldset": { borderColor: "white" },
+                "& fieldset": { borderColor: theme.palette.background.light },
+                "&:hover fieldset": { borderColor: theme.palette.background.light },
+                "&.Mui-focused fieldset": { borderColor: theme.palette.background.light },
               },
-              "& .MuiInputLabel-root": { color: "white" },
-              "& .MuiInputLabel-root.Mui-focused": { color: "white" },
+              "& .MuiInputLabel-root": { color: theme.palette.background.light },
+              "& .MuiInputLabel-root.Mui-focused": { color: theme.palette.background.light },
             }}
-
             ref={passwordRef}
             name="password"
           />
@@ -153,9 +150,9 @@ const handleIdFile = (e) => {
           <InputLabel
             id="demo-simple-select-label"
             sx={{
-              color: "white",
+              color: theme.palette.background.light,
               "&.Mui-focused": {
-                color: "white", // Ensure it stays white when focused
+                color: theme.palette.background.light, // Ensure it stays primary color when focused
               },
             }}
           >
@@ -166,24 +163,23 @@ const handleIdFile = (e) => {
             id="gender"
             label="Gender"
             sx={{
-              color: "white",
+              color: theme.palette.background.light,
               backgroundColor: "transparent",
               ".MuiOutlinedInput-notchedOutline": {
-                borderColor: "white", // White border
+                borderColor: theme.palette.background.light, // Primary border
               },
               "&:hover .MuiOutlinedInput-notchedOutline": {
-                borderColor: "white",
+                borderColor: theme.palette.background.light,
               },
               "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                borderColor: "white",
+                borderColor: theme.palette.background.light,
               },
               "& .MuiSvgIcon-root": {
-                color: "white", // White dropdown arrow
+                color: theme.palette.background.light, // Primary dropdown arrow
               },
             }}
-
             value={gender}
-            onChange={(e)=>setGender(e.target.value)}
+            onChange={(e) => setGender(e.target.value)}
             name="gender"
           >
             <MenuItem value={"male"}>male</MenuItem>
@@ -192,7 +188,7 @@ const handleIdFile = (e) => {
           </Select>
         </FormControl>
 
-        {/*Mobile number  */}
+        {/* Mobile number */}
         <TextField
           label="Mobile Number"
           variant="outlined"
@@ -203,67 +199,60 @@ const handleIdFile = (e) => {
             pattern: "[0-9]*", // Ensure numeric input
           }}
           sx={{
-            input: { color: "white" },
-              "& .MuiOutlinedInput-root": {
-                "& fieldset": { borderColor: "white" },
-                "&:hover fieldset": { borderColor: "lightgray" },
-                "&.Mui-focused fieldset": { borderColor: "white" },
-              },
-              "& .MuiInputLabel-root": { color: "white" },
-              "& .MuiInputLabel-root.Mui-focused": { color: "white" },
+            input: { color: theme.palette.background.light },
+            "& .MuiOutlinedInput-root": {
+              "& fieldset": { borderColor: theme.palette.background.light },
+              "&:hover fieldset": { borderColor: theme.palette.background.light },
+              "&.Mui-focused fieldset": { borderColor: theme.palette.background.light },
+            },
+            "& .MuiInputLabel-root": { color: theme.palette.background.light },
+            "& .MuiInputLabel-root.Mui-focused": { color: theme.palette.background.light },
           }}
-
           name="mobileNo"
         />
 
-        {/* aadhar */}
-        <div className="bg-black text-white border-white rounded-[1px]  flex justify-between">
-
-          <div className='w-[35%] text-[1rem] border-[1px] rounded-l-md border-r-0 h-[100%] px-2 py-3 flex justify-left items-center pl-3'>
-                  Upload Aadhar
+        {/* Aadhar */}
+        <div className="bg-transparent text-white border-white rounded-[1px] flex justify-between">
+          <div className="w-[35%] text-[1rem] border-[1px] rounded-l-md border-r-0 h-[100%] px-2 py-3 flex justify-left items-center pl-3">
+            Upload Aadhar
           </div>
-
           <input
-          className="w-[65%] px-2 py-3 border-[1px] rounded-r-md bg-black text-white cursor-pointer"
-          accept=".png"
-          type="file"
-          id="file-input"
-          // onChange={handleFileChange}
-        />
+            className="w-[65%] px-2 py-2 border-[1px] rounded-r-md text-white cursor-pointer"
+            accept=".png"
+            type="file"
+            id="file-input"
+            onChange={handleAadharFile}
+          />
         </div>
 
-        {/* clg id */}
-        <div className="bg-black text-white border-white rounded-[1px]  flex justify-between">
-
-          <div className='w-[35%] text-[1rem] border-[1px] rounded-l-md border-r-0 h-[100%] px-2 py-3 flex justify-left items-center pl-3'>
-                  Upload Id
+        {/* College ID */}
+        <div className="bg-transparent text-white border-white rounded-[1px] flex justify-between">
+          <div className="w-[35%] text-[1rem] border-[1px] rounded-l-md border-r-0 h-[100%] px-2 py-3 flex justify-left items-center pl-3">
+            Upload Id
           </div>
-
           <input
-          className="w-[65%] px-2 py-3 border-[1px] rounded-r-md bg-black text-white cursor-pointer"
-          accept=".png"
-          type="file"
-          id="id-input"
-          // onChange={handleFileChange}
-        />
-          
-          
+            className="w-[65%] px-2 py-2 border-[1px] rounded-r-md bg-transparent text-white cursor-pointer"
+            accept=".png"
+            type="file"
+            id="id-input"
+            onChange={handleIdFile}
+          />
         </div>
 
-      {/* Sign Up Button */}
-      <Button 
-      sx={{height:'3.3rem'}}
-      variant="contained"
-      type="submit"
-      >
-        <Typography sx={{fontSize:'large' , fontWeight:'700'}}>Sign up</Typography>
-      </Button>
+        {/* Sign Up Button */}
+        <Button sx={{ height: "3.3rem" }} variant="contained" type="submit">
+          <Typography sx={{ fontSize: "large", fontWeight: "700" }}>Sign up</Typography>
+        </Button>
 
-
-      <div className="text-right text-white w-[100%] pr-2">
-        <span>Already have an account? <Link to='/user-signin' className="font-bold text-[#FEC400]">Sign In</Link></span>
-        {/* use Link or navigate here for routing to sign in page */}
-      </div>
+        <div className="text-right text-white w-[100%] pr-2">
+          <span>
+            Already have an account?{" "}
+            <Link to="/user-signin" className="font-bold text-[#FEC400]">
+              Sign In
+            </Link>
+          </span>
+          {/* use Link or navigate here for routing to sign in page */}
+        </div>
       </form>
     </Box>
   );

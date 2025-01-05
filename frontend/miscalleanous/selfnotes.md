@@ -183,12 +183,5 @@ By following these practices, you can build a seamless hybrid project without co
 - created the main landing folders / and  driver and user folders to have their components located there the forms will be almost identical .
 - in landing page the light-theme adjustments are remaining 
 
-### entry 2 - 5th jan 2025
-- suggested to read the small comments and refer the designs to create user and driver homepages
-- suggested to not strictly follow my design if uber clone and other designs can be giving the same feature go for it 
-- always give me screenshots when making user driver homepages
-- created the folders for required components 
-- study theme.js in great details b4 using it is the core designing aspect 
-
 ## `<yogeshpalve-github-username>`
 ### entry ? ? ? 2025 

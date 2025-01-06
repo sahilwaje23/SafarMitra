@@ -187,3 +187,7 @@ By following these practices, you can build a seamless hybrid project without co
 ### entry 1 - 06 jan 2025
 - added route for user-signup , user-signin , captain-signup , captain-signin . 
 - partially made user-signup and singin ( axios pending ). 
+
+### entry 2 - 06 jan 2025 
+- completed user signin and signup with backend integration 
+

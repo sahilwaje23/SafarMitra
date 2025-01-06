@@ -9,6 +9,8 @@ import {
 } from "@mui/material";
 import { Link, useNavigate } from "react-router-dom";
 import theme from "../../styles/theme";
+import axios from 'axios';
+
 
 const UserSignIn = () => {
   const emailRef = useRef();
@@ -17,28 +19,45 @@ const UserSignIn = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // axios code for sending data
+    axios.post('http://localhost:8000/login', {
+      email: emailRef.current.value,
+      password: passwordRef.current.value,
+    },{withCredentials: true})
+    .then((res) => {
+      console.log(res)
+      if(res.status === 200){
+        alert("sign in successful");
+        navigate('/user-homepage');
+      }
+    })
+    .catch((e) => {
+      // console.log(e.data.err);
+      // alert(e.data.err) 
+      alert("email or password is incorrect");
+    });
   };
 
   return (
     <Box
       sx={{
         display: "flex",
-        flexDirection: "column",
-        alignItems: "start",
-        gap: "0.6rem",
-        width: "100%",
-        height: { xs: "100%", sm: "100vh" },
-        backgroundColor: "rgba(0, 0, 0, 0.9)",
-        padding: "1rem",
-        backdropFilter: "blur(10px)",
-        px: "1.2rem",
+          flexDirection: "column",
+          alignItems: "start",
+          gap: "0.6rem",
+          width: "100%",
+          maxWidth: { md: "40%" ,sm: '75%'},
+          minHeight: '100vh',
+          height: "auto",
+          backgroundColor: "rgba(0, 0, 0, 0.9)",
+          padding: "1rem",
+          backdropFilter: "blur(10px)",
+          px: "1.2rem",
       }}
     >
       {/* Back Button - useNavigate here for go back */}
       <Button
         size="large"
-        sx={{ alignSelf: "start", fontSize: "1.3rem", paddingLeft: "0px" , fontFamily: theme.typography.h4.fontFamily, fontWeight: theme.typography.h4.fontWeight, color: theme.palette.primary.main }}
+        sx={{ alignSelf: "start", fontSize: "1.3rem", paddingLeft: "0px" , fontFamily: theme.typography.h4.fontFamily, fontWeight: theme.typography.h4.fontWeight, color: theme.palette.primary.main,display: {md:'none'} }}
         onClick={() => navigate(-1)} // back button functionality.
       >
         &lt; Back
@@ -47,7 +66,7 @@ const UserSignIn = () => {
       {/* signup text heading */}
       <Typography
         variant="h4"
-        sx={{ fontWeight: "bold", color: theme.palette.primary.main, marginTop: "2rem" ,fontFamily: theme.typography.fontFamily, fontWeight: theme.typography.h3.fontWeight }}
+        sx={{ color: theme.palette.primary.main, marginTop: "2rem" ,fontFamily: theme.typography.fontFamily, fontWeight: theme.typography.h3.fontWeight }}
         
       >
         Sign In
@@ -75,8 +94,9 @@ const UserSignIn = () => {
               "& .MuiInputLabel-root": { color: theme.palette.background.light },
               "& .MuiInputLabel-root.Mui-focused": { color: theme.palette.background.light },
             }}
-            ref={emailRef}
+            inputRef={emailRef}
             name="email"
+            required
           />
         </FormControl>
 
@@ -98,8 +118,9 @@ const UserSignIn = () => {
               "& .MuiInputLabel-root": { color: theme.palette.background.light },
               "& .MuiInputLabel-root.Mui-focused": { color: theme.palette.background.light },
             }}
-            ref={passwordRef}
+            inputRef={passwordRef}
             name="password"
+            required
           />
         </FormControl>
 

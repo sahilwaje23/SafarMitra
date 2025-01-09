@@ -1,24 +1,23 @@
-import { createTheme } from '@mui/material/styles';
-
-const createAppTheme = (mode) => createTheme({
+import { createTheme } from "@mui/material/styles";
+const theme = createTheme({
   palette: {
-    mode: mode, // Dynamically set mode (dark or light)
-    primary: {
-      main: '#FEC400',
+    mode: "dark",
+    // added two custom colors to the palette -> yellow and red
+      primaryColor: {
+        main: "#FEC400",
+        hover: "#b79420",
+        contrastText: "#000000", // Optional: text color for contrast
+      },
+      secondaryColor: {
+        main: "#B7083C",
+        contrastText: "#ffffff", // Optional: text color for contrast
+        hover: "#7a0524",
+      },
     },
-    secondary: {
-      main: '#B7083C',
-    },
-    background: {
-      default: mode === 'dark' ? '#121212' : '#FFFFFF', // Dark or light background
-    },
-    text: {
-      primary: mode === 'dark' ? '#FFFFFF' : '#000000', // Text color based on mode
-    },
-  },
+
   typography: {
-    fontFamily: 'Poppins, Roboto, Arial, sans-serif',
-    h1: {
+    fontFamily: "Poppins, Roboto, Arial, sans-serif",
+    h1: {   
       fontFamily: '"Baloo Bhai 2", Poppins, Roboto, Arial, sans-serif',
       fontWeight: 800,
     },
@@ -43,16 +42,6 @@ const createAppTheme = (mode) => createTheme({
       fontWeight: 300,
     },
   },
-  components: {
-    MuiCssBaseline: {
-      styleOverrides: {
-        body: {
-          backgroundColor: mode === 'dark' ? '#121212' : '#FFFFFF', // Dynamically set body background
-          color: mode === 'dark' ? '#FFFFFF' : '#000000', // Dynamically set body text color
-        },
-      },
-    },
-  },
 });
 
-export default createAppTheme;
+export default theme;

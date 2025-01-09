@@ -7,10 +7,12 @@ import {
   FormControl,
 } from "@mui/material";
 import { Link, useNavigate } from "react-router-dom";
-import { useTheme } from "@mui/material/styles";
+import axios from 'axios';
+import theme from "../../styles/theme";
 
-const UserSignIn = () => {
-  const theme = useTheme();
+
+const CaptainSignIn = () => {
+  const yellowTheme = theme.palette.primaryColor.main;
   const emailRef = useRef();
   const passwordRef = useRef();
   const navigate = useNavigate();
@@ -21,108 +23,98 @@ const UserSignIn = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Logic for sending data (e.g., axios request)
+    axios.post('http://localhost:8000/login', {
+      email: emailRef.current.value,
+      password: passwordRef.current.value,
+    },{withCredentials: true})
+    .then((res) => {
+      console.log(res)
+      if(res.status === 200){
+        alert("sign in successful");
+        navigate('/user-homepage');
+      }
+    })
+    .catch((e) => {
+      // console.log(e.data.err);
+      // alert(e.data.err) 
+      alert("email or password is incorrect");
+    });
   };
 
   return (
-    <Box
-      sx={{
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "start",
-        gap: "1rem",
-        width: "100%",
-        height: { xs: "100%", sm: "100vh" },
-        backgroundColor: theme.palette.background.default,
-        padding: "1.5rem",
-        backdropFilter: "blur(10px)",
-      }}
-    >
-      {/* Back Button */}
-      <Button
-        size="large"
-        sx={{
-          alignSelf: "start",
-          fontSize: "1.3rem",
-          paddingLeft: 0,
-          fontFamily: theme.typography.h4.fontFamily,
-          fontWeight: theme.typography.h4.fontWeight,
-          color: theme.palette.primary.main,
-        }}
-        onClick={() => navigate(-1)}
+    <Box sx={{display:"flex", flexDirection:"column",rowGap: '3rem',paddingX: '1rem'}}>
+
+      {/* back button */}
+      <Button variant="text" size="large" sx={{alignSelf: 'start' , paddingLeft:'0px', color: yellowTheme,}}
+      onClick={() => navigate(-1)}
       >
-        &lt; Back
+        <Typography variant="h6">&lt; Back</Typography>
       </Button>
 
-      {/* Heading */}
-      <Typography
-        variant="h4"
-        sx={{
-          fontWeight: theme.typography.h3.fontWeight,
-          color: theme.palette.primary.main,
-          marginTop: "2rem",
-        }}
-      >
-        Sign In
-      </Typography>
-
-      {/* Form Content */}
-      <form
-        onSubmit={handleSubmit}
-        style={{ display: "flex", flexDirection: "column", gap: "1rem", width: "100%" }}
-      >
-        {/* Email Field */}
-        <FormControl fullWidth>
-          <TextField
-            id="outlined-email"
-            label="Email"
-            variant="outlined"
-            inputRef={emailRef}
-            name="email"
-            fullWidth
-          />
-        </FormControl>
-
-        {/* Password Field */}
-        <FormControl fullWidth>
-          <TextField
-            id="outlined-password"
-            label="Password"
-            variant="outlined"
-            type="password"
-            inputRef={passwordRef}
-            name="password"
-            fullWidth
-          />
-        </FormControl>
-
-        {/* Sign In Button */}
-        <Button
-          variant="contained"
-          type="submit"
-          sx={{
-            height: "3.3rem",
-            backgroundColor: theme.palette.primary.main,
-            "&:hover": { backgroundColor: theme.palette.primary.dark },
-          }}
-        >
-          <Typography sx={{ fontSize: "large", fontWeight: "700" }}>
+      <form onSubmit={handleSubmit} className="mx-3.5 flex flex-col gap-y-3 justify-center items-center">
+        <div className="flex flex-col gap-y-3 max-w-[500px] min-w-[300px] w-full">
+          {/* signup text heading */}
+          <Typography
+            variant="h4"
+            sx={{ fontWeight: 'bold'}}
+          >
             Sign In
           </Typography>
-        </Button>
 
-        {/* Sign Up Redirect */}
-        <Typography
-          sx={{ textAlign: "right", width: "100%", color: theme.palette.text.secondary }}
-        >
-          Don’t have an account?{" "}
-          <Link to="/user-signup" style={{ fontWeight: "bold", color: theme.palette.secondary.main }}>
-            Sign Up
-          </Link>
-        </Typography>
+
+          {/* form input and button */}
+          {/* Email TextField */}
+          <FormControl sx={{ width: "100%" }}>
+            <TextField
+              id="outlined-email"
+              label="Email"
+              variant="outlined"
+              fullWidth
+              inputRef={emailRef}
+              name="email"
+              required
+            />
+          </FormControl>
+
+          {/* Password TextField */}
+          <FormControl sx={{ width: "100%" }}>
+            <TextField
+              id="outlined-password"
+              label="Password"
+              variant="outlined"
+              type="password"
+              fullWidth
+              inputRef={passwordRef}
+              name="password"
+              required
+            />
+          </FormControl>
+
+          {/* Sign In Button */}
+          <Button
+            sx={{ height: "3.3rem" , backgroundColor: yellowTheme}}
+            variant="contained"
+            type="submit"
+            fullWidth
+
+          >
+            <Typography sx={{ fontSize: "large", fontWeight: "bold" }}>
+              Sign In
+            </Typography>
+          </Button>
+          <div className="text-right w-[100%] pr-2">
+            <span>
+              Don't have an account?
+              <Link to="/user-signup" className={`font-bold text-[${yellowTheme}]`}>
+                Sign Up
+              </Link>
+            </span>
+            {/* use Link or navigate here for routing to sign in page */}
+          </div>
+        </div>
       </form>
     </Box>
   );
 };
 
-export default UserSignIn;
+export default CaptainSignIn;

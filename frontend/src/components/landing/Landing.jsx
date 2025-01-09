@@ -1,74 +1,92 @@
-import React from 'react';
-import { Box, Button, Typography } from '@mui/material';
-import { Link } from 'react-router-dom';
-import { useTheme } from '@mui/material/styles';
+import React from "react";
+import theme from "../../styles/theme";
+import { Box, Button, Typography } from "@mui/material";
+import { Link } from "react-router-dom";
 
 const Landing = () => {
-    const theme = useTheme();
+  const isDarkMode = theme.palette.mode === "dark";
+  const yellowTheme = theme.palette.primaryColor.main;
+  const redTheme = theme.palette.secondaryColor.main;
+  return (
+    <Box
+      sx={{
+        display: "flex",
+        gap: "0.6rem",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        width: "100%",
+        maxWidth: "100%",
+        height: "100vh",
+        padding: "1rem",
+        borderRadius: "1rem",
+        backdropFilter: "blur(10px)",
+        textAlign: "center",
+      }}
+    >
 
-    const containerStyles = {
-        display: 'flex',
-        gap: '0.6rem',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        width: '100%',
-        maxWidth: '100%',
-        height: { xs: '100%', sm: '100vh' },
-        backgroundColor: theme.palette.background.default,
-        color: theme.palette.text.primary,
-        padding: '1rem',
-        borderRadius: '1rem',
-        backdropFilter: 'blur(10px)',
-        textAlign: 'center',
-    };
+      <Box sx={{ width: "50%", margin: "0.4rem" }}>
+        <img
+          draggable="false"
+          src="/safarmitrac.svg"
+          alt="safarmitra-logo"
+          className="drop-shadow-xl"
+          style={{ width: "100%", userSelect: "none" }}
+        />
+      </Box>
 
-    const buttonStyles = (color) => ({
-        backgroundColor: theme.palette[color].main,
-        fontWeight: 'bold',
-        width: '10rem',
-        '&:hover': { backgroundColor: theme.palette[color].dark },
-    });
+      <Typography variant="h3" component="h1">
+        Hello, welcome to SafarMitra
+      </Typography>
 
-    return (
-        <Box sx={containerStyles}>
-            <Box sx={{ width: '50%', margin: '0.4rem' }}>
-                <img
-                    draggable="false"
-                    src="/safarmitrac.svg"
-                    alt="safarmitra-logo"
-                    style={{ width: '100%', userSelect: 'none' }}
-                />
-            </Box>
-            <Typography variant="h4" component="h1" gutterBottom>
-                Hello, welcome to SafarMitra
-            </Typography>
-            <Typography variant="h6" component="p" gutterBottom>
-                Please let us know, are you a:
-            </Typography>
-            <Box
-                sx={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '1rem',
-                    [theme.breakpoints.up('sm')]: {
-                        flexDirection: 'row',
-                    },
-                }}
-            >
-                <Link to="/user-signup">
-                    <Button variant="contained" sx={buttonStyles('primary')}>
-                        User
-                    </Button>
-                </Link>
-                <Link to="/captain-signup">
-                    <Button variant="contained" sx={buttonStyles('secondary')}>
-                        Driver
-                    </Button>
-                </Link>
-            </Box>
-        </Box>
-    );
+      <Typography variant="h5" component="p" gutterBottom>
+        Please let us know, are you a:
+      </Typography>
+
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          gap: "1rem",
+          [theme.breakpoints.up("sm")]: {
+            flexDirection: "row",
+          },
+        }}
+      >
+        <Link to="/user-signup">
+          <Button
+            variant="contained"
+            sx={{
+              fontWeight: "bold",
+              width: "10rem",
+              "&:hover": { backgroundColor: theme.palette.primaryColor.hover },
+              backgroundColor: yellowTheme,
+            }}
+          >
+            User
+          </Button>
+        </Link>
+        
+        <Link to="/captain-signup">
+          <Button
+            variant="contained"
+            color="secondary"
+            sx={{
+              color: "text",
+              backgroundColor: redTheme,
+              fontWeight: "bold",
+              "&:hover": {
+                backgroundColor: theme.palette.secondaryColor.hover,
+              },
+              width: "10rem",
+            }}
+          >
+            Driver
+          </Button>
+        </Link>
+      </Box>
+    </Box>
+  );
 };
 
 export default Landing;

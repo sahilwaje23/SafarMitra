@@ -11,204 +11,255 @@ import {
   useTheme
 } from "@mui/material";
 import { Link, useNavigate } from "react-router-dom";
+import theme from "../../styles/theme";
+import Snackbar from "@mui/material/Snackbar";
+import Alert from "@mui/material/Alert";
+import axios from "axios";
 
-const UserSignUp = () => {
-  const theme = useTheme();
+const CaptainSignUp = () => {
   const nameRef = useRef();
   const emailRef = useRef();
   const passwordRef = useRef();
   const [gender, setGender] = useState("");
   const [aadhar, setAadhar] = useState();
   const [id, setId] = useState();
-  const navigate = useNavigate();
+  // const [isSignedUp, setIsSignedUp] = useState(false);
+  const yellowTheme = theme.palette.primaryColor.main;
+  const balooBhai = theme.typography.h1.fontFamily2;
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Submit form logic
+    // on successful sign up. open dialog
+    axios
+      .post(
+        "http://localhost:8000/signup",
+        {
+          fullName: nameRef.current.value,
+          email: emailRef.current.value,
+          password: passwordRef.current.value,
+          mobileNo: phoneRef.current.value,
+          gender: gender,
+          profileImageUrl: aadhar,
+          idImageUrl: id,
+        },
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+            // for file upload (multer)
+          },
+        },
+        { withCredentials: true }
+      )
+      .then((res) => {
+        if (res.status === 201) {
+          navigate("/user-homepage");
+          console.log(res);
+          alert("signed up successfully");
+          // setIsSignedUp(true);
+        }
+      })
+      .catch((e) => {
+        console.log(e);
+        console.log("error in catch");
+        if (e.response.data.errors && e.response.data.errors.length > 0) {
+          // if errors array -> if email not in .vjti.ac.in domain or pass less than 8 characters
+          console.log(e.response.data.errors.length);
+          alert(e.response.data.errors.map((error) => error.msg).join("\n"));
+        } else {
+          // duplicate error
+          alert("Email or Phone number already exists");
+        }
+      });
   };
 
-  const handleFileChange = (setter) => (e) => {
-    if (e.target.files[0]) setter(e.target.value);
+  const handleAadharFile = (e) => {
+    console.log(e.target.files[0]);
+    if (e.target.files[0]) {
+      setAadhar(e.target.files[0]);
+    }
   };
 
-  const inputStyles = {
-    input: { color: theme.palette.text.primary },
-    "& .MuiOutlinedInput-root": {
-      "& fieldset": { borderColor: theme.palette.text.primary },
-      "&:hover fieldset": { borderColor: theme.palette.text.primary },
-      "&.Mui-focused fieldset": { borderColor: theme.palette.text.primary },
-    },
-    "& .MuiInputLabel-root": { color: theme.palette.text.primary },
-    "& .MuiInputLabel-root.Mui-focused": { color: theme.palette.text.primary },
+  const handleIdFile = (e) => {
+    if (e.target.files[0]) {
+      setId(e.target.files[0]);
+    }
   };
 
   return (
-    <Box
-      sx={{
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "start",
-        gap: "0.6rem",
-        width: "100%",
-        height: { xs: "100%", sm: "100vh", lg: "auto" },
-        backgroundColor: theme.palette.background.default,
-        padding: "1rem",
-        backdropFilter: "blur(10px)",
-        px: "1.2rem",
-      }}
-    >
-      <Button
-        size="large"
+    <>
+      <Box
         sx={{
-          alignSelf: "start",
-          fontSize: "1.3rem",
-          paddingLeft: "0px",
-          fontFamily: theme.typography.h4.fontFamily,
-          fontWeight: theme.typography.h4.fontWeight,
-          color: theme.palette.primary.main,
-        }}
-        onClick={() => navigate(-1)}
-      >
-        &lt; Back
-      </Button>
-
-      <Typography
-        variant="h4"
-        sx={{
-          fontWeight: theme.typography.h3.fontWeight,
-          color: theme.palette.primary.main,
-          marginTop: "2rem",
-          fontFamily: theme.typography.fontFamily,
+          display: "flex",
+          flexDirection: "column",
+          rowGap: "1rem",
+          paddingX: "1rem",
+          justifyContent: "center",
+          alignItems: 'center'
         }}
       >
-        Sign up
-      </Typography>
-
-      <form
-        onSubmit={handleSubmit}
-        className="flex flex-col gap-y-[15px] w-full"
-      >
-        <FormControl fullWidth>
-          <TextField
-            label="Full Name"
-            variant="outlined"
-            sx={inputStyles}
-            name="fullName"
-            inputRef={nameRef}
-          />
-        </FormControl>
-
-        <FormControl fullWidth>
-          <TextField
-            label="Email"
-            variant="outlined"
-            sx={inputStyles}
-            name="email"
-            inputRef={emailRef}
-          />
-        </FormControl>
-
-        <FormControl fullWidth>
-          <TextField
-            label="Password"
-            variant="outlined"
-            type="password"
-            sx={inputStyles}
-            name="password"
-            inputRef={passwordRef}
-          />
-        </FormControl>
-
-        <FormControl fullWidth>
-          <InputLabel sx={{ color: theme.palette.text.primary }}>Gender</InputLabel>
-          <Select
-            value={gender}
-            onChange={(e) => setGender(e.target.value)}
-            sx={{
-              color: theme.palette.text.primary,
-              backgroundColor: "transparent",
-              ".MuiOutlinedInput-notchedOutline": {
-                borderColor: theme.palette.text.primary,
-              },
-              "&:hover .MuiOutlinedInput-notchedOutline": {
-                borderColor: theme.palette.text.primary,
-              },
-              "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                borderColor: theme.palette.text.primary,
-              },
-              "& .MuiSvgIcon-root": {
-                color: theme.palette.text.primary,
-              },
-            }}
-            name="gender"
+        {/* <Snackbar open={open} autoHideDuration={6000} onClose={handleClose}>
+          <Alert
+            onClose={handleClose}
+            severity="success"
+            variant="filled"
+            sx={{ width: "100%" }}
           >
-            <MenuItem value="male">Male</MenuItem>
-            <MenuItem value="female">Female</MenuItem>
-            <MenuItem value="other">Other</MenuItem>
-          </Select>
-        </FormControl>
+            Signed up successfully!
+          </Alert>
+        </Snackbar> */}
 
-        <TextField
-          label="Mobile Number"
-          variant="outlined"
-          type="tel"
-          inputProps={{ maxLength: 10, pattern: "[0-9]*" }}
-          sx={inputStyles}
-          name="mobileNo"
-        />
-
-        <FormControl fullWidth>
-          <Box
-            sx={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              backgroundColor: 'transparent',
-              color: theme.palette.text.primary,
-              border: `1px solid ${theme.palette.text.primary}`,
-              borderRadius: '4px',
-            }}
-          >
-            <Typography
-              sx={{
-                width: '35%',
-                fontSize: '1rem',
-                padding: '0.75rem 0.5rem',
-                display: 'flex',
-                alignItems: 'center',
-                borderRight: `1px solid ${theme.palette.text.primary}`,
-              }}
-            >
-              Upload ID
-            </Typography>
-            <input
-              type="file"
-              accept=".png"
-              onChange={handleFileChange(setId)}
-              style={{
-                width: '65%',
-                padding: '0.5rem',
-                color: theme.palette.text.primary,
-                cursor: 'pointer',
-              }}
-            />
-          </Box>
-        </FormControl>
-
-        <Button sx={{ height: "3.3rem" }} variant="contained" type="submit">
-          <Typography sx={{ fontSize: "large", fontWeight: "700" }}>Sign up</Typography>
+        {/* Back Button - useNavigate here for go back */}
+        <Button
+          variant="text"
+          size="large"
+          sx={{ alignSelf: "start", paddingLeft: "0px", color: yellowTheme , position: {md:'fixed'}, top: '0'}}
+          onClick={() => navigate(-1)}
+        >
+          <Typography variant="h6">&lt; Back</Typography>
         </Button>
 
-        <Typography
-          sx={{ textAlign: "right", color: theme.palette.text.primary, width: "100%" }}
+        {/* Form Content */}
+        <form
+          encType="multipart/form-data"
+          onSubmit={handleSubmit}
+          className="flex flex-col gap-2 w-full max-w-[500px] gap-y-[15px]"
         >
-          Already have an account?{" "}
-          <Link to="/user-signin" className="font-bold text-[#FEC400]">
-            Sign In
-          </Link>
-        </Typography>
-      </form>
-    </Box>
+          <div></div>
+          {/* signup text heading */}
+          <Typography
+            variant="h4"
+            sx={
+              {
+                fontFamily: balooBhai,
+                fontWeight: theme.typography.h3.fontWeight,
+              }
+            }
+          >
+            Sign up
+          </Typography>
+
+          {/* Full Name TextField */}
+          <FormControl sx={{ width: "100%" }}>
+            <TextField
+              id="outlined-full-name"
+              label="Full Name"
+              variant="outlined"
+              fullWidth
+              name="fullName"
+              inputRef={nameRef}
+              required
+            />
+          </FormControl>
+
+          {/* Email TextField */}
+          <FormControl sx={{ width: "100%" }}>
+            <TextField
+              id="outlined-email"
+              label="Email"
+              variant="outlined"
+              fullWidth
+              inputRef={emailRef}
+              name="email"
+              required
+            />
+          </FormControl>
+
+          {/* Password TextField */}
+          <FormControl sx={{ width: "100%" }}>
+            <TextField
+              id="outlined-password"
+              label="Password"
+              variant="outlined"
+              type="password"
+              fullWidth
+              inputRef={passwordRef}
+              name="password"
+              required
+            />
+          </FormControl>
+
+          {/* Gender Select */}
+          <FormControl fullWidth>
+            <InputLabel id="demo-simple-select-label">Gender</InputLabel>
+            <Select
+              labelId="gender"
+              id="gender"
+              label="Gender"
+              value={gender}
+              name="gender"
+              // required
+              onChange={(e) => setGender(e.target.value)}
+            >
+              <MenuItem value={"Male"}>male</MenuItem>
+              <MenuItem value={"Female"}>female</MenuItem>
+            </Select>
+          </FormControl>
+
+          {/* Mobile number */}
+          <TextField
+            label="Mobile Number"
+            variant="outlined"
+            fullWidth
+            type="tel" // numeric keyboard on click on mobile
+            inputProps={{
+              maxLength: 10, // max 10 number
+              pattern: "[0-9]*", // Ensure numeric input
+            }}
+            inputRef={phoneRef}
+            name="mobileNo"
+            required
+          />
+
+          {/* Aadhar */}
+          <div className="bg-transparent rounded-[1px] flex justify-between">
+            <div className="w-[35%] text-[1rem] border-[1px] rounded-l-md border-r-0 h-[100%] px-1 py-3 flex justify-left items-center pl-3 border-gray-600">
+              Upload Aadhar
+            </div>
+            <input
+              className="w-[65%] px-2 py-2 border-[1px] rounded-r-md cursor-pointer border-gray-600"
+              accept=".png"
+              type="file"
+              id="file-input"
+              required
+              onChange={handleAadharFile}
+            />
+          </div>
+
+          {/* College ID */}
+          <div className="bg-transparent rounded-[1px] flex justify-between">
+            <div className="w-[35%] text-[1rem] border-[1px] rounded-l-md border-r-0 h-[100%] px-1 py-3 flex justify-left items-center pl-3 border-gray-600">
+              Upload Id
+            </div>
+            <input
+              className="w-[65%] px-2 py-2 border-[1px] rounded-r-md bg-transparent cursor-pointer border-gray-600"
+              accept=".png"
+              type="file"
+              id="id-input"
+              required
+              onChange={handleIdFile}
+            />
+          </div>
+
+          {/* Sign Up Button */}
+          <Button sx={{ height: "3.3rem" , backgroundColor: yellowTheme}} variant="contained" type="submit">
+            <Typography sx={{ fontSize: "large", fontWeight: "700" }}>
+              Sign up
+            </Typography>
+          </Button>
+
+          <div className="text-right w-[100%] pr-2">
+            <span>
+              Already have an account?{" "}
+              <Link to="/user-signin" className={`font-bold text-[${yellowTheme}]`}>
+                Sign In
+              </Link>
+            </span>
+            {/* use Link or navigate here for routing to sign in page */}
+          </div>
+        </form>
+      </Box>
+    </>
   );
 };
 
-export default UserSignUp;
+export default CaptainSignUp;

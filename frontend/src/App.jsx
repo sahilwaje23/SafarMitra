@@ -2,12 +2,15 @@ import React from 'react';
 import theme from './styles/theme';
 import { Routes, Route } from 'react-router-dom';
 import { CaptainHomePage, CaptainSignIn, CaptainSignUp, Landing, UserHomePage, UserSignIn, UserSignUp } from './components';
+import { ThemeProvider, CssBaseline} from "@mui/material";
 
-function App({ toggleTheme }) {
-  const isDarkMode = theme.palette.mode === 'dark';
+
+function App() {
+  
 
   return (
-    < div className={`bg-${theme.palette.background.dark} min-h-screen h-[100%] bg-black flex place-content-center `} >
+    <ThemeProvider theme={theme}>
+      <CssBaseline /> {/* This makes sure the theme is applied globally */}
       <Routes>
         <Route path='/' element={<Landing />} />
         <Route path='/user-signup' element={<UserSignUp />} />
@@ -19,7 +22,7 @@ function App({ toggleTheme }) {
         
         {/* Add further routes here */}
       </Routes>
-    </div>    
+    </ThemeProvider>   
   );
 }
 

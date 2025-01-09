@@ -32,6 +32,19 @@ const CaptainSignUp = () => {
   const yellowTheme = theme.palette.primaryColor.main;
   const balooBhai = theme.typography.h1.fontFamily2;
 
+  // error sanckbar
+  const [state, setState] = React.useState({
+    open: false,
+    vertical: "top",
+    horizontal: "center",
+    message: "Sign Up failed",
+  });
+  const { vertical, horizontal, open, message } = state;
+  // snackbar(alert) close function
+  const handleClose = () => {
+    setState({ ...state, open: false });
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
     // on successful sign up. open dialog
@@ -61,25 +74,26 @@ const CaptainSignUp = () => {
         { withCredentials: true }
       )
       .then((res) => {
-        
         console.log(res);
         if (res.status === 201) {
-          navigate("/user-homepage");
+          navigate("/captain-homepage");
           alert("signed up successfully");
           // setIsSignedUp(true);
         }
       })
       .catch((e) => {
         console.log(e);
-        console.log("error in catch");
+        let message = "";
         if (e.response.data.errors && e.response.data.errors.length > 0) {
           // if errors array -> if email not in .vjti.ac.in domain or pass less than 8 characters
-          console.log(e.response.data.errors.length);
-          alert(e.response.data.errors.map((error) => error.msg).join("\n"));
+          message = e.response.data.errors.map((error) => error.msg).join("\n");
         } else {
           // duplicate error
-          alert("Email or Phone number already exists");
+          // alert("Email or Phone number already exists");
+          message = "Email or Phone number already exists";
         }
+        console.log(message)
+        setState({ ...state, open: true, message });
       });
   };
 
@@ -111,6 +125,16 @@ const CaptainSignUp = () => {
             Signed up successfully!
           </Alert>
         </Snackbar> */}
+
+        {/* sign in successful snackbar(alert) */}
+        <Snackbar
+          message={message}
+          anchorOrigin={{ vertical, horizontal }}
+          open={open}
+          onClose={handleClose}
+          key={vertical + horizontal}
+          autoHideDuration={5000}
+        />
 
         {/* Back Button - useNavigate here for go back */}
         <Button

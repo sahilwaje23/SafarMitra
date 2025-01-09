@@ -13,6 +13,8 @@ const CaptainSignIn = () => {
   // const [open, setOpen] = useState(false);
   // const vertical = "top", horizontal = "center";
   // let message = ''
+
+  // error snackbar 
   const [state, setState] = React.useState({
     open: false,
     vertical: 'top',
@@ -20,6 +22,11 @@ const CaptainSignIn = () => {
     message: 'sign in failed',
   });
   const { vertical, horizontal, open , message } = state;
+  // snackbar(alert) close function
+  const handleClose = () => {
+    setState({ ...state, open: false });
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
     const userData = {
@@ -35,7 +42,7 @@ const CaptainSignIn = () => {
     ).catch( (e) => {
       // driver email not found -> 400 error 
       // correct email but wrong password -> 400 error 
-      // console.log(e);
+      console.log(e);
       setState({ ...state, open: true, message: e.response.data });
       
     }
@@ -45,10 +52,7 @@ const CaptainSignIn = () => {
     )
   }
 
-  // snackbar(alert) close function
-  const handleClose = () => {
-    setState({ ...state, open: false });
-  };
+  
 
   return (
     <Box
@@ -60,13 +64,14 @@ const CaptainSignIn = () => {
       }}
     >
 
-      {/* sign in successful snackbar(alert) */}
+      {/* sign in errors snackbar */}
       <Snackbar
         message= {message}
         anchorOrigin={{ vertical, horizontal }}
         open={open}
         onClose={handleClose}
         key={vertical + horizontal}
+        autoHideDuration={5000}
       />
 
 

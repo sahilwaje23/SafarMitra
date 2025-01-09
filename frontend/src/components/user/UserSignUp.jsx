@@ -11,11 +11,11 @@ import {
 } from "@mui/material";
 import { Link, useNavigate } from "react-router-dom";
 import theme from "../../styles/theme";
-import Snackbar from '@mui/material/Snackbar';
-import Alert from '@mui/material/Alert';
+import Snackbar from "@mui/material/Snackbar";
+import Alert from "@mui/material/Alert";
 import axios from "axios";
 
-const UserSignUp = () => {
+const CaptainSignUp = () => {
   const nameRef = useRef();
   const emailRef = useRef();
   const passwordRef = useRef();
@@ -25,6 +25,8 @@ const UserSignUp = () => {
   const [aadhar, setAadhar] = useState();
   const [id, setId] = useState();
   // const [isSignedUp, setIsSignedUp] = useState(false);
+  const yellowTheme = theme.palette.primaryColor.main;
+  const balooBhai = theme.typography.h1.fontFamily2;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -90,16 +92,10 @@ const UserSignUp = () => {
         sx={{
           display: "flex",
           flexDirection: "column",
-          alignItems: "start",
-          gap: "0.6rem",
-          width: "100%",
-          maxWidth: { md: "40%", sm: "75%" },
-          minHeight: "100vh",
-          height: "auto",
-          backgroundColor: "rgba(0, 0, 0, 0.9)",
-          padding: "1rem",
-          backdropFilter: "blur(10px)",
-          px: "1.2rem",
+          rowGap: "1rem",
+          paddingX: "1rem",
+          justifyContent: "center",
+          alignItems: 'center'
         }}
       >
         {/* <Snackbar open={open} autoHideDuration={6000} onClose={handleClose}>
@@ -115,42 +111,34 @@ const UserSignUp = () => {
 
         {/* Back Button - useNavigate here for go back */}
         <Button
+          variant="text"
           size="large"
-          sx={{
-            alignSelf: "start",
-            fontSize: "1.3rem",
-            paddingLeft: "0px",
-            fontFamily: theme.typography.h4.fontFamily,
-            fontWeight: theme.typography.h4.fontWeight,
-            color: theme.palette.primary.main,
-            height: "3.3rem",
-            width: "auto",
-            display: { md: "none" },
-          }}
-          onClick={() => navigate(-1)} // back button functionality.
+          sx={{ alignSelf: "start", paddingLeft: "0px", color: yellowTheme , position: {md:'fixed'}, top: '0'}}
+          onClick={() => navigate(-1)}
         >
-          &lt; Back
+          <Typography variant="h6">&lt; Back</Typography>
         </Button>
-
-        {/* signup text heading */}
-        <Typography
-          variant="h4"
-          sx={{
-            color: theme.palette.primary.main,
-            marginTop: { sm: "2rem", md: "1rem" },
-            fontFamily: theme.typography.fontFamily,
-            fontWeight: theme.typography.h3.fontWeight,
-          }}
-        >
-          Sign up
-        </Typography>
 
         {/* Form Content */}
         <form
           encType="multipart/form-data"
           onSubmit={handleSubmit}
-          className="flex flex-col gap-2 w-[100%] gap-y-[15px]"
+          className="flex flex-col gap-2 w-full max-w-[500px] gap-y-[15px]"
         >
+          <div></div>
+          {/* signup text heading */}
+          <Typography
+            variant="h4"
+            sx={
+              {
+                fontFamily: balooBhai,
+                fontWeight: theme.typography.h3.fontWeight,
+              }
+            }
+          >
+            Sign up
+          </Typography>
+
           {/* Full Name TextField */}
           <FormControl sx={{ width: "100%" }}>
             <TextField
@@ -158,27 +146,9 @@ const UserSignUp = () => {
               label="Full Name"
               variant="outlined"
               fullWidth
-              sx={{
-                input: { color: theme.palette.background.light },
-                "& .MuiOutlinedInput-root": {
-                  "& fieldset": { borderColor: theme.palette.background.light },
-                  "&:hover fieldset": {
-                    borderColor: theme.palette.background.light,
-                  },
-                  "&.Mui-focused fieldset": {
-                    borderColor: theme.palette.background.light,
-                  },
-                },
-                "& .MuiInputLabel-root": {
-                  color: theme.palette.background.light,
-                },
-                "& .MuiInputLabel-root.Mui-focused": {
-                  color: theme.palette.background.light,
-                },
-              }}
               name="fullName"
               inputRef={nameRef}
-              // required
+              required
             />
           </FormControl>
 
@@ -189,27 +159,9 @@ const UserSignUp = () => {
               label="Email"
               variant="outlined"
               fullWidth
-              sx={{
-                input: { color: theme.palette.background.light },
-                "& .MuiOutlinedInput-root": {
-                  "& fieldset": { borderColor: theme.palette.background.light },
-                  "&:hover fieldset": {
-                    borderColor: theme.palette.background.light,
-                  },
-                  "&.Mui-focused fieldset": {
-                    borderColor: theme.palette.background.light,
-                  },
-                },
-                "& .MuiInputLabel-root": {
-                  color: theme.palette.background.light,
-                },
-                "& .MuiInputLabel-root.Mui-focused": {
-                  color: theme.palette.background.light,
-                },
-              }}
               inputRef={emailRef}
               name="email"
-              // required
+              required
             />
           </FormControl>
 
@@ -221,63 +173,19 @@ const UserSignUp = () => {
               variant="outlined"
               type="password"
               fullWidth
-              sx={{
-                input: { color: theme.palette.background.light },
-                "& .MuiOutlinedInput-root": {
-                  "& fieldset": { borderColor: theme.palette.background.light },
-                  "&:hover fieldset": {
-                    borderColor: theme.palette.background.light,
-                  },
-                  "&.Mui-focused fieldset": {
-                    borderColor: theme.palette.background.light,
-                  },
-                },
-                "& .MuiInputLabel-root": {
-                  color: theme.palette.background.light,
-                },
-                "& .MuiInputLabel-root.Mui-focused": {
-                  color: theme.palette.background.light,
-                },
-              }}
               inputRef={passwordRef}
               name="password"
-              // required
+              required
             />
           </FormControl>
 
           {/* Gender Select */}
           <FormControl fullWidth>
-            <InputLabel
-              id="demo-simple-select-label"
-              sx={{
-                color: theme.palette.background.light,
-                "&.Mui-focused": {
-                  color: theme.palette.background.light, // Ensure it stays primary color when focused
-                },
-              }}
-            >
-              Gender
-            </InputLabel>
+            <InputLabel id="demo-simple-select-label">Gender</InputLabel>
             <Select
               labelId="gender"
               id="gender"
               label="Gender"
-              sx={{
-                color: theme.palette.background.light,
-                backgroundColor: "transparent",
-                ".MuiOutlinedInput-notchedOutline": {
-                  borderColor: theme.palette.background.light, // Primary border
-                },
-                "&:hover .MuiOutlinedInput-notchedOutline": {
-                  borderColor: theme.palette.background.light,
-                },
-                "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                  borderColor: theme.palette.background.light,
-                },
-                "& .MuiSvgIcon-root": {
-                  color: theme.palette.background.light, // Primary dropdown arrow
-                },
-              }}
               value={gender}
               name="gender"
               // required
@@ -298,79 +206,61 @@ const UserSignUp = () => {
               maxLength: 10, // max 10 number
               pattern: "[0-9]*", // Ensure numeric input
             }}
-            sx={{
-              input: { color: theme.palette.background.light },
-              "& .MuiOutlinedInput-root": {
-                "& fieldset": { borderColor: theme.palette.background.light },
-                "&:hover fieldset": {
-                  borderColor: theme.palette.background.light,
-                },
-                "&.Mui-focused fieldset": {
-                  borderColor: theme.palette.background.light,
-                },
-              },
-              "& .MuiInputLabel-root": {
-                color: theme.palette.background.light,
-              },
-              "& .MuiInputLabel-root.Mui-focused": {
-                color: theme.palette.background.light,
-              },
-            }}
             inputRef={phoneRef}
             name="mobileNo"
-            // required
+            required
           />
 
           {/* Aadhar */}
-          <div className="bg-transparent text-white border-white rounded-[1px] flex justify-between">
-            <div className="w-[35%] text-[1rem] border-[1px] rounded-l-md border-r-0 h-[100%] px-2 py-3 flex justify-left items-center pl-3">
+          <div className="bg-transparent rounded-[1px] flex justify-between">
+            <div className="w-[35%] text-[1rem] border-[1px] rounded-l-md border-r-0 h-[100%] px-1 py-3 flex justify-left items-center pl-3 border-gray-600">
               Upload Aadhar
             </div>
             <input
-              className="w-[65%] px-2 py-2 border-[1px] rounded-r-md text-white cursor-pointer"
+              className="w-[65%] px-2 py-2 border-[1px] rounded-r-md cursor-pointer border-gray-600"
               accept=".png"
               type="file"
               id="file-input"
-              // required
+              required
               onChange={handleAadharFile}
             />
           </div>
 
           {/* College ID */}
-          <div className="bg-transparent text-white border-white rounded-[1px] flex justify-between">
-            <div className="w-[35%] text-[1rem] border-[1px] rounded-l-md border-r-0 h-[100%] px-2 py-3 flex justify-left items-center pl-3">
+          <div className="bg-transparent rounded-[1px] flex justify-between">
+            <div className="w-[35%] text-[1rem] border-[1px] rounded-l-md border-r-0 h-[100%] px-1 py-3 flex justify-left items-center pl-3 border-gray-600">
               Upload Id
             </div>
             <input
-              className="w-[65%] px-2 py-2 border-[1px] rounded-r-md bg-transparent text-white cursor-pointer"
+              className="w-[65%] px-2 py-2 border-[1px] rounded-r-md bg-transparent cursor-pointer border-gray-600"
               accept=".png"
               type="file"
               id="id-input"
-              // required
+              required
               onChange={handleIdFile}
             />
           </div>
 
           {/* Sign Up Button */}
-          <Button sx={{ height: "3.3rem" }} variant="contained" type="submit">
+          <Button sx={{ height: "3.3rem" , backgroundColor: yellowTheme}} variant="contained" type="submit">
             <Typography sx={{ fontSize: "large", fontWeight: "700" }}>
               Sign up
             </Typography>
           </Button>
 
-          <div className="text-right text-white w-[100%] pr-2">
+          <div className="text-right w-[100%] pr-2">
             <span>
               Already have an account?{" "}
-              <Link to="/user-signin" className="font-bold text-[#FEC400]">
+              <Link to="/user-signin" className={`font-bold text-[${yellowTheme}]`}>
                 Sign In
               </Link>
             </span>
             {/* use Link or navigate here for routing to sign in page */}
           </div>
-        </form>        
+        </form>
       </Box>
     </>
   );
 };
 
-export default UserSignUp;
+export default CaptainSignUp;

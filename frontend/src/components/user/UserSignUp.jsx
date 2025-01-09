@@ -8,6 +8,7 @@ import {
   Button,
   TextField,
   FormControl,
+  LinearProgress,
 } from "@mui/material";
 import { Link, useNavigate } from "react-router-dom";
 import theme from "../../styles/theme";
@@ -27,6 +28,7 @@ const UserSignUp = () => {
   // const [isSignedUp, setIsSignedUp] = useState(false);
   const yellowTheme = theme.palette.primaryColor.main;
   const balooBhai = theme.typography.h1.fontFamily2;
+  const [isLoading,setIsLoading] = useState(false);
 
   // error sanckbar
   const [state, setState] = React.useState({
@@ -44,6 +46,7 @@ const UserSignUp = () => {
   // handle form
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsLoading(true);
     // on successful sign up. open dialog
     axios
       .post(
@@ -63,30 +66,31 @@ const UserSignUp = () => {
             // for file upload (multer)
           },
         },
-        { withCredentials: true } 
+        { withCredentials: true }
       )
       .then((res) => {
+        setIsLoading(false)
         if (res.status === 201) {
           navigate("/user-homepage");
           console.log(res);
-          alert("signed up successfully");
+          // alert("signed up successfully");
           // setIsSignedUp(true);
         }
       })
       .catch((e) => {
+        setIsLoading(false)
         console.log(e);
-        let message = ""
+        let message = "";
         if (e.response.data.errors && e.response.data.errors.length > 0) {
           // if errors array -> if email not in .vjti.ac.in domain or pass less than 8 characters
           // message = e.response.data.errors.map((error) => error.msg).join
           // ("\n\n");
-          message = e.response.data.errors.map((error) => error.msg).join('\n');
-          
+          message = e.response.data.errors.map((error) => error.msg).join("\n");
         } else {
           // duplicate error
-          message = "Email or Phone number already exists";    
+          message = "Email or Phone number already exists";
         }
-        console.log(message)
+        console.log(message);
         setState({ ...state, open: true, message });
       });
   };
@@ -106,6 +110,7 @@ const UserSignUp = () => {
 
   return (
     <>
+    {/* progress */}
       <Box
         sx={{
           display: "flex",
@@ -116,17 +121,13 @@ const UserSignUp = () => {
           alignItems: "center",
         }}
       >
-        {/* <Snackbar open={open} autoHideDuration={6000} onClose={handleClose}>
-          <Alert
-            onClose={handleClose}
-            severity="success"
-            variant="filled"
-            sx={{ width: "100%" }}
-          >
-            Signed up successfully!
-          </Alert>
-        </Snackbar> */}
-
+        <LinearProgress
+          sx={{
+            width: "100%",
+            height: "2px",
+            display: isLoading ? "block" : "none",
+          }}
+        />
         {/* sign in successful snackbar(alert) */}
         <Snackbar
           message={message}

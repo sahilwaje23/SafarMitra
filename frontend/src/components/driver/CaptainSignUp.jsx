@@ -8,6 +8,7 @@ import {
   Button,
   TextField,
   FormControl,
+  LinearProgress
 } from "@mui/material";
 import { Link, useNavigate } from "react-router-dom";
 import theme from "../../styles/theme";
@@ -31,6 +32,7 @@ const CaptainSignUp = () => {
   // const [isSignedUp, setIsSignedUp] = useState(false);
   const yellowTheme = theme.palette.primaryColor.main;
   const balooBhai = theme.typography.h1.fontFamily2;
+  const [isLoading, setIsLoading] = useState(false);
 
   // error sanckbar
   const [state, setState] = React.useState({
@@ -47,6 +49,7 @@ const CaptainSignUp = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    setIsLoading(true)
     // on successful sign up. open dialog
     const newDriver = {
       fullName: nameRef.current.value,
@@ -74,6 +77,9 @@ const CaptainSignUp = () => {
         { withCredentials: true }
       )
       .then((res) => {
+        setTimeout(() => {
+          setIsLoading(false);
+        }, 500);
         console.log(res);
         if (res.status === 201) {
           navigate("/captain-homepage");
@@ -82,6 +88,9 @@ const CaptainSignUp = () => {
         }
       })
       .catch((e) => {
+        setTimeout(() => {
+          setIsLoading(false);
+        }, 500);
         console.log(e);
         let message = "";
         if (e.response.data.errors && e.response.data.errors.length > 0) {
@@ -92,7 +101,7 @@ const CaptainSignUp = () => {
           // alert("Email or Phone number already exists");
           message = "Email or Phone number already exists";
         }
-        console.log(message)
+        console.log(message);
         setState({ ...state, open: true, message });
       });
   };
@@ -105,6 +114,13 @@ const CaptainSignUp = () => {
 
   return (
     <>
+      <LinearProgress
+        sx={{
+          width: "100%",
+          height: "2px",
+          visibility: isLoading ? "" : "hidden",
+        }}
+      />
       <Box
         sx={{
           display: "flex",

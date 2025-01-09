@@ -8,36 +8,38 @@ import {
   Button,
   TextField,
   FormControl,
+  useTheme
 } from "@mui/material";
 import { Link, useNavigate } from "react-router-dom";
-import theme from "../../styles/theme";
 
 const UserSignUp = () => {
+  const theme = useTheme();
   const nameRef = useRef();
   const emailRef = useRef();
   const passwordRef = useRef();
-  const phoneRef = useRef();
   const [gender, setGender] = useState("");
-  const navigate = useNavigate();
   const [aadhar, setAadhar] = useState();
   const [id, setId] = useState();
+  const navigate = useNavigate();
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // axios code for sending data
-    // on successful sign up. open dialog
+    // Submit form logic
   };
 
-  const handleAadharFile = (e) => {
-    if (e.target.files[0]) {
-      setAadhar(e.target.value);
-    }
+  const handleFileChange = (setter) => (e) => {
+    if (e.target.files[0]) setter(e.target.value);
   };
 
-  const handleIdFile = (e) => {
-    if (e.target.files[0]) {
-      setId(e.target.value);
-    }
+  const inputStyles = {
+    input: { color: theme.palette.text.primary },
+    "& .MuiOutlinedInput-root": {
+      "& fieldset": { borderColor: theme.palette.text.primary },
+      "&:hover fieldset": { borderColor: theme.palette.text.primary },
+      "&.Mui-focused fieldset": { borderColor: theme.palette.text.primary },
+    },
+    "& .MuiInputLabel-root": { color: theme.palette.text.primary },
+    "& .MuiInputLabel-root.Mui-focused": { color: theme.palette.text.primary },
   };
 
   return (
@@ -48,211 +50,162 @@ const UserSignUp = () => {
         alignItems: "start",
         gap: "0.6rem",
         width: "100%",
-        height: { xs: "100%", sm: "100vh" ,lg: "auto"},
-        backgroundColor: "rgba(0, 0, 0, 0.9)",
+        height: { xs: "100%", sm: "100vh", lg: "auto" },
+        backgroundColor: theme.palette.background.default,
         padding: "1rem",
         backdropFilter: "blur(10px)",
         px: "1.2rem",
       }}
     >
-      {/* Back Button - useNavigate here for go back */}
       <Button
         size="large"
-        sx={{ alignSelf: "start", fontSize: "1.3rem", paddingLeft: "0px" , fontFamily: theme.typography.h4.fontFamily, fontWeight: theme.typography.h4.fontWeight, color: theme.palette.primary.main }}
-        onClick={() => navigate(-1)} // back button functionality.
+        sx={{
+          alignSelf: "start",
+          fontSize: "1.3rem",
+          paddingLeft: "0px",
+          fontFamily: theme.typography.h4.fontFamily,
+          fontWeight: theme.typography.h4.fontWeight,
+          color: theme.palette.primary.main,
+        }}
+        onClick={() => navigate(-1)}
       >
         &lt; Back
       </Button>
 
-      {/* signup text heading */}
       <Typography
         variant="h4"
-        sx={{ fontWeight: "bold", color: theme.palette.primary.main, marginTop: "2rem" ,fontFamily: theme.typography.fontFamily, fontWeight: theme.typography.h3.fontWeight }}
-        
+        sx={{
+          fontWeight: theme.typography.h3.fontWeight,
+          color: theme.palette.primary.main,
+          marginTop: "2rem",
+          fontFamily: theme.typography.fontFamily,
+        }}
       >
         Sign up
       </Typography>
 
-      {/* Form Content */}
       <form
         onSubmit={handleSubmit}
-        className="flex flex-col gap-2 w-[100%] gap-y-[15px]"
+        className="flex flex-col gap-y-[15px] w-full"
       >
-        {/* Full Name TextField */}
-        <FormControl sx={{ width: "100%" }}>
+        <FormControl fullWidth>
           <TextField
-            id="outlined-full-name"
             label="Full Name"
             variant="outlined"
-            fullWidth
-            sx={{
-              input: { color: theme.palette.background.light },
-              "& .MuiOutlinedInput-root": {
-                "& fieldset": { borderColor: theme.palette.background.light },
-                "&:hover fieldset": { borderColor: theme.palette.background.light },
-                "&.Mui-focused fieldset": { borderColor: theme.palette.background.light },
-              },
-              "& .MuiInputLabel-root": { color: theme.palette.background.light },
-              "& .MuiInputLabel-root.Mui-focused": { color: theme.palette.background.light },
-            }}
+            sx={inputStyles}
             name="fullName"
-            ref={nameRef}
+            inputRef={nameRef}
           />
         </FormControl>
 
-        {/* Email TextField */}
-        <FormControl sx={{ width: "100%" }}>
+        <FormControl fullWidth>
           <TextField
-            id="outlined-email"
             label="Email"
             variant="outlined"
-            fullWidth
-            sx={{
-              input: { color: theme.palette.background.light },
-              "& .MuiOutlinedInput-root": {
-                "& fieldset": { borderColor: theme.palette.background.light },
-                "&:hover fieldset": { borderColor: theme.palette.background.light },
-                "&.Mui-focused fieldset": { borderColor: theme.palette.background.light },
-              },
-              "& .MuiInputLabel-root": { color: theme.palette.background.light },
-              "& .MuiInputLabel-root.Mui-focused": { color: theme.palette.background.light },
-            }}
-            ref={emailRef}
+            sx={inputStyles}
             name="email"
+            inputRef={emailRef}
           />
         </FormControl>
 
-        {/* Password TextField */}
-        <FormControl sx={{ width: "100%" }}>
+        <FormControl fullWidth>
           <TextField
-            id="outlined-password"
             label="Password"
             variant="outlined"
             type="password"
-            fullWidth
-            sx={{
-              input: { color: theme.palette.background.light },
-              "& .MuiOutlinedInput-root": {
-                "& fieldset": { borderColor: theme.palette.background.light },
-                "&:hover fieldset": { borderColor: theme.palette.background.light },
-                "&.Mui-focused fieldset": { borderColor: theme.palette.background.light },
-              },
-              "& .MuiInputLabel-root": { color: theme.palette.background.light },
-              "& .MuiInputLabel-root.Mui-focused": { color: theme.palette.background.light },
-            }}
-            ref={passwordRef}
+            sx={inputStyles}
             name="password"
+            inputRef={passwordRef}
           />
         </FormControl>
 
-        {/* Gender Select */}
         <FormControl fullWidth>
-          <InputLabel
-            id="demo-simple-select-label"
-            sx={{
-              color: theme.palette.background.light,
-              "&.Mui-focused": {
-                color: theme.palette.background.light, // Ensure it stays primary color when focused
-              },
-            }}
-          >
-            Gender
-          </InputLabel>
+          <InputLabel sx={{ color: theme.palette.text.primary }}>Gender</InputLabel>
           <Select
-            labelId="gender"
-            id="gender"
-            label="Gender"
-            sx={{
-              color: theme.palette.background.light,
-              backgroundColor: "transparent",
-              ".MuiOutlinedInput-notchedOutline": {
-                borderColor: theme.palette.background.light, // Primary border
-              },
-              "&:hover .MuiOutlinedInput-notchedOutline": {
-                borderColor: theme.palette.background.light,
-              },
-              "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                borderColor: theme.palette.background.light,
-              },
-              "& .MuiSvgIcon-root": {
-                color: theme.palette.background.light, // Primary dropdown arrow
-              },
-            }}
             value={gender}
             onChange={(e) => setGender(e.target.value)}
+            sx={{
+              color: theme.palette.text.primary,
+              backgroundColor: "transparent",
+              ".MuiOutlinedInput-notchedOutline": {
+                borderColor: theme.palette.text.primary,
+              },
+              "&:hover .MuiOutlinedInput-notchedOutline": {
+                borderColor: theme.palette.text.primary,
+              },
+              "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                borderColor: theme.palette.text.primary,
+              },
+              "& .MuiSvgIcon-root": {
+                color: theme.palette.text.primary,
+              },
+            }}
             name="gender"
           >
-            <MenuItem value={"male"}>male</MenuItem>
-            <MenuItem value={"female"}>female</MenuItem>
-            <MenuItem value={"other"}>other</MenuItem>
+            <MenuItem value="male">Male</MenuItem>
+            <MenuItem value="female">Female</MenuItem>
+            <MenuItem value="other">Other</MenuItem>
           </Select>
         </FormControl>
 
-        {/* Mobile number */}
         <TextField
           label="Mobile Number"
           variant="outlined"
-          fullWidth
-          type="tel" // numeric keyboard on click on mobile
-          inputProps={{
-            maxLength: 10, // max 10 number
-            pattern: "[0-9]*", // Ensure numeric input
-          }}
-          sx={{
-            input: { color: theme.palette.background.light },
-            "& .MuiOutlinedInput-root": {
-              "& fieldset": { borderColor: theme.palette.background.light },
-              "&:hover fieldset": { borderColor: theme.palette.background.light },
-              "&.Mui-focused fieldset": { borderColor: theme.palette.background.light },
-            },
-            "& .MuiInputLabel-root": { color: theme.palette.background.light },
-            "& .MuiInputLabel-root.Mui-focused": { color: theme.palette.background.light },
-          }}
+          type="tel"
+          inputProps={{ maxLength: 10, pattern: "[0-9]*" }}
+          sx={inputStyles}
           name="mobileNo"
         />
 
-        {/* Aadhar */}
-        <div className="bg-transparent text-white border-white rounded-[1px] flex justify-between">
-          <div className="w-[35%] text-[1rem] border-[1px] rounded-l-md border-r-0 h-[100%] px-2 py-3 flex justify-left items-center pl-3">
-            Upload Aadhar
-          </div>
-          <input
-            className="w-[65%] px-2 py-2 border-[1px] rounded-r-md text-white cursor-pointer"
-            accept=".png"
-            type="file"
-            id="file-input"
-            onChange={handleAadharFile}
-          />
-        </div>
+        <FormControl fullWidth>
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              backgroundColor: 'transparent',
+              color: theme.palette.text.primary,
+              border: `1px solid ${theme.palette.text.primary}`,
+              borderRadius: '4px',
+            }}
+          >
+            <Typography
+              sx={{
+                width: '35%',
+                fontSize: '1rem',
+                padding: '0.75rem 0.5rem',
+                display: 'flex',
+                alignItems: 'center',
+                borderRight: `1px solid ${theme.palette.text.primary}`,
+              }}
+            >
+              Upload ID
+            </Typography>
+            <input
+              type="file"
+              accept=".png"
+              onChange={handleFileChange(setId)}
+              style={{
+                width: '65%',
+                padding: '0.5rem',
+                color: theme.palette.text.primary,
+                cursor: 'pointer',
+              }}
+            />
+          </Box>
+        </FormControl>
 
-        {/* College ID */}
-        <div className="bg-transparent text-white border-white rounded-[1px] flex justify-between">
-          <div className="w-[35%] text-[1rem] border-[1px] rounded-l-md border-r-0 h-[100%] px-2 py-3 flex justify-left items-center pl-3">
-            Upload Id
-          </div>
-          <input
-            className="w-[65%] px-2 py-2 border-[1px] rounded-r-md bg-transparent text-white cursor-pointer"
-            accept=".png"
-            type="file"
-            id="id-input"
-            onChange={handleIdFile}
-          />
-        </div>
-
-        {/* Sign Up Button */}
         <Button sx={{ height: "3.3rem" }} variant="contained" type="submit">
           <Typography sx={{ fontSize: "large", fontWeight: "700" }}>Sign up</Typography>
         </Button>
 
-        <div className="text-right text-white w-[100%] pr-2">
-          <span>
-            Already have an account?{" "}
-            <Link to="/user-signin" className="font-bold text-[#FEC400]">
-              Sign In
-            </Link>
-          </span>
-          {/* use Link or navigate here for routing to sign in page */}
-        </div>
+        <Typography
+          sx={{ textAlign: "right", color: theme.palette.text.primary, width: "100%" }}
+        >
+          Already have an account?{" "}
+          <Link to="/user-signin" className="font-bold text-[#FEC400]">
+            Sign In
+          </Link>
+        </Typography>
       </form>
     </Box>
   );

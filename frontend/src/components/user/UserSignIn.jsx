@@ -1,5 +1,4 @@
-import React from "react";
-import { useRef, useState } from "react";
+import React, { useRef, useEffect } from "react";
 import {
   Box,
   Typography,
@@ -8,16 +7,21 @@ import {
   FormControl,
 } from "@mui/material";
 import { Link, useNavigate } from "react-router-dom";
-import theme from "../../styles/theme";
+import { useTheme } from "@mui/material/styles";
 
 const UserSignIn = () => {
+  const theme = useTheme();
   const emailRef = useRef();
   const passwordRef = useRef();
   const navigate = useNavigate();
 
+  useEffect(() => {
+    console.log("UserSignIn component theme: ", theme);
+  }, [theme]);
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    // axios code for sending data
+    // Logic for sending data (e.g., axios request)
   };
 
   return (
@@ -26,102 +30,96 @@ const UserSignIn = () => {
         display: "flex",
         flexDirection: "column",
         alignItems: "start",
-        gap: "0.6rem",
+        gap: "1rem",
         width: "100%",
         height: { xs: "100%", sm: "100vh" },
-        backgroundColor: "rgba(0, 0, 0, 0.9)",
-        padding: "1rem",
+        backgroundColor: theme.palette.background.default,
+        padding: "1.5rem",
         backdropFilter: "blur(10px)",
-        px: "1.2rem",
       }}
     >
-      {/* Back Button - useNavigate here for go back */}
+      {/* Back Button */}
       <Button
         size="large"
-        sx={{ alignSelf: "start", fontSize: "1.3rem", paddingLeft: "0px" , fontFamily: theme.typography.h4.fontFamily, fontWeight: theme.typography.h4.fontWeight, color: theme.palette.primary.main }}
-        onClick={() => navigate(-1)} // back button functionality.
+        sx={{
+          alignSelf: "start",
+          fontSize: "1.3rem",
+          paddingLeft: 0,
+          fontFamily: theme.typography.h4.fontFamily,
+          fontWeight: theme.typography.h4.fontWeight,
+          color: theme.palette.primary.main,
+        }}
+        onClick={() => navigate(-1)}
       >
         &lt; Back
       </Button>
 
-      {/* signup text heading */}
+      {/* Heading */}
       <Typography
         variant="h4"
-        sx={{ fontWeight: "bold", color: theme.palette.primary.main, marginTop: "2rem" ,fontFamily: theme.typography.fontFamily, fontWeight: theme.typography.h3.fontWeight }}
-        
+        sx={{
+          fontWeight: theme.typography.h3.fontWeight,
+          color: theme.palette.primary.main,
+          marginTop: "2rem",
+        }}
       >
         Sign In
       </Typography>
 
       {/* Form Content */}
       <form
-        className="flex flex-col gap-2 w-[100%] gap-y-[15px]"
         onSubmit={handleSubmit}
+        style={{ display: "flex", flexDirection: "column", gap: "1rem", width: "100%" }}
       >
-        {/* Email TextField */}
-        <FormControl sx={{ width: "100%" }}>
+        {/* Email Field */}
+        <FormControl fullWidth>
           <TextField
             id="outlined-email"
             label="Email"
             variant="outlined"
-            fullWidth
-            sx={{
-              input: { color: theme.palette.background.light },
-              "& .MuiOutlinedInput-root": {
-                "& fieldset": { borderColor: theme.palette.background.light },
-                "&:hover fieldset": { borderColor: theme.palette.background.light },
-                "&.Mui-focused fieldset": { borderColor: theme.palette.background.light },
-              },
-              "& .MuiInputLabel-root": { color: theme.palette.background.light },
-              "& .MuiInputLabel-root.Mui-focused": { color: theme.palette.background.light },
-            }}
-            ref={emailRef}
+            inputRef={emailRef}
             name="email"
+            fullWidth
           />
         </FormControl>
 
-        {/* Password TextField */}
-        <FormControl sx={{ width: "100%" }}>
+        {/* Password Field */}
+        <FormControl fullWidth>
           <TextField
             id="outlined-password"
             label="Password"
             variant="outlined"
             type="password"
-            fullWidth
-            sx={{
-              input: { color: theme.palette.background.light },
-              "& .MuiOutlinedInput-root": {
-                "& fieldset": { borderColor: theme.palette.background.light },
-                "&:hover fieldset": { borderColor: theme.palette.background.light },
-                "&.Mui-focused fieldset": { borderColor: theme.palette.background.light },
-              },
-              "& .MuiInputLabel-root": { color: theme.palette.background.light },
-              "& .MuiInputLabel-root.Mui-focused": { color: theme.palette.background.light },
-            }}
-            ref={passwordRef}
+            inputRef={passwordRef}
             name="password"
+            fullWidth
           />
         </FormControl>
 
         {/* Sign In Button */}
         <Button
-          sx={{ height: "3.3rem" }}
           variant="contained"
           type="submit"
+          sx={{
+            height: "3.3rem",
+            backgroundColor: theme.palette.primary.main,
+            "&:hover": { backgroundColor: theme.palette.primary.dark },
+          }}
         >
           <Typography sx={{ fontSize: "large", fontWeight: "700" }}>
             Sign In
           </Typography>
         </Button>
-        <div className="text-right text-white w-[100%] pr-2">
-          <span>
-            Don't have an account?{" "}
-            <Link to="/user-signup" className="font-bold text-[#FEC400]">
-              Sign Up
-            </Link>
-          </span>
-          {/* use Link or navigate here for routing to sign in page */}
-        </div>
+
+        {/* Sign Up Redirect */}
+        <Typography
+          sx={{ textAlign: "right", width: "100%", color: theme.palette.text.secondary }}
+        >
+          Don’t have an account?{" "}
+          <Link to="/user-signup" style={{ fontWeight: "bold", color: theme.palette.secondary.main }}>
+            Sign Up
+          </Link>
+        </Typography>
       </form>
     </Box>
   );

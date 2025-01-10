@@ -8,6 +8,7 @@ import {
   Button,
   TextField,
   FormControl,
+  LinearProgress,
 } from "@mui/material";
 import { Link, useNavigate } from "react-router-dom";
 import theme from "../../styles/theme";
@@ -21,11 +22,74 @@ const UserSignUp = () => {
   const navigate = useNavigate();
   const [aadhar, setAadhar] = useState();
   const [id, setId] = useState();
+  // const [isSignedUp, setIsSignedUp] = useState(false);
+  const yellowTheme = theme.palette.primaryColor.main;
+  const balooBhai = theme.typography.h1.fontFamily2;
+  const [isLoading,setIsLoading] = useState(false);
 
-  const handleSubmit = (e) => {
+  // error sanckbar
+  const [state, setState] = React.useState({
+    open: false,
+    vertical: "top",
+    horizontal: "center",
+    message: "Sign Up failed",
+  });
+  const { vertical, horizontal, open, message } = state;
+  // snackbar(alert) close function
+  const handleClose = () => {
+    setState({ ...state, open: false });
+  };
+
+  // handle form
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // axios code for sending data
+    setIsLoading(true);
     // on successful sign up. open dialog
+    axios
+      .post(
+        "http://localhost:8000/signup",
+        {
+          fullName: nameRef.current.value,
+          email: emailRef.current.value,
+          password: passwordRef.current.value,
+          mobileNo: phoneRef.current.value,
+          gender: gender,
+          profileImageUrl: aadhar,
+          idImageUrl: id,
+        },
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+            // for file upload (multer)
+          },
+        },
+        { withCredentials: true }
+      )
+      .then((res) => {
+        setIsLoading(false)
+        if (res.status === 201) {
+          navigate("/user-homepage");
+          console.log(res);
+          // alert("signed up successfully");
+          // setIsSignedUp(true);
+        }
+      })
+      .catch((e) => {
+        setIsLoading(false)
+        console.log(e);
+        let message = "";
+        if (e.response.data.errors && e.response.data.errors.length > 0) {
+          // if errors array -> if email not in .vjti.ac.in domain or pass less than 8 characters
+          // message = e.response.data.errors.map((error) => error.msg).join
+          // ("\n\n");
+          message = e.response.data.errors.map((error) => error.msg).join("\n");
+        } else {
+          // duplicate error
+          message = "Email or Phone number already exists";
+        }
+        console.log(message);
+        setState({ ...state, open: true, message });
+      });
   };
 
   const handleAadharFile = (e) => {
@@ -41,37 +105,68 @@ const UserSignUp = () => {
   };
 
   return (
-    <Box
-      sx={{
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "start",
-        gap: "0.6rem",
-        width: "100%",
-        height: { xs: "100%", sm: "100vh" ,lg: "auto"},
-        backgroundColor: "rgba(0, 0, 0, 0.9)",
-        padding: "1rem",
-        backdropFilter: "blur(10px)",
-        px: "1.2rem",
-      }}
-    >
-      {/* Back Button - useNavigate here for go back */}
-      <Button
-        size="large"
-        sx={{ alignSelf: "start", fontSize: "1.3rem", paddingLeft: "0px" , fontFamily: theme.typography.h4.fontFamily, fontWeight: theme.typography.h4.fontWeight, color: theme.palette.primary.main }}
-        onClick={() => navigate(-1)} // back button functionality.
+    <>
+    {/* progress */}
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          rowGap: "1rem",
+          paddingX: "1rem",
+          justifyContent: "center",
+          alignItems: "center",
+        }}
       >
-        &lt; Back
-      </Button>
+        <LinearProgress
+          sx={{
+            width: "100%",
+            height: "2px",
+            display: isLoading ? "block" : "none",
+          }}
+        />
+        {/* sign in successful snackbar(alert) */}
+        <Snackbar
+          message={message}
+          anchorOrigin={{ vertical, horizontal }}
+          open={open}
+          onClose={handleClose}
+          key={vertical + horizontal}
+          autoHideDuration={5000}
+        />
 
-      {/* signup text heading */}
-      <Typography
-        variant="h4"
-        sx={{ fontWeight: "bold", color: theme.palette.primary.main, marginTop: "2rem" ,fontFamily: theme.typography.fontFamily, fontWeight: theme.typography.h3.fontWeight }}
-        
-      >
-        Sign up
-      </Typography>
+        {/* Back Button - useNavigate here for go back */}
+        <Button
+          variant="text"
+          size="large"
+          sx={{
+            alignSelf: "start",
+            paddingLeft: "0px",
+            color: yellowTheme,
+            position: { md: "fixed" },
+            top: "0",
+          }}
+          onClick={() => navigate(-1)}
+        >
+          <Typography variant="h6">&lt; Back</Typography>
+        </Button>
+
+        {/* Form Content */}
+        <form
+          encType="multipart/form-data"
+          onSubmit={handleSubmit}
+          className="flex flex-col gap-2 w-full max-w-[500px] gap-y-[15px]"
+        >
+          <div></div>
+          {/* signup text heading */}
+          <Typography
+            variant="h4"
+            sx={{
+              fontFamily: balooBhai,
+              fontWeight: theme.typography.h3.fontWeight,
+            }}
+          >
+            Sign up
+          </Typography>
 
       {/* Form Content */}
       <form
@@ -239,22 +334,32 @@ const UserSignUp = () => {
           />
         </div>
 
-        {/* Sign Up Button */}
-        <Button sx={{ height: "3.3rem" }} variant="contained" type="submit">
-          <Typography sx={{ fontSize: "large", fontWeight: "700" }}>Sign up</Typography>
-        </Button>
+          {/* Sign Up Button */}
+          <Button
+            sx={{ height: "3.3rem", backgroundColor: yellowTheme }}
+            variant="contained"
+            type="submit"
+          >
+            <Typography sx={{ fontSize: "large", fontWeight: "700" }}>
+              Sign up
+            </Typography>
+          </Button>
 
-        <div className="text-right text-white w-[100%] pr-2">
-          <span>
-            Already have an account?{" "}
-            <Link to="/user-signin" className="font-bold text-[#FEC400]">
-              Sign In
-            </Link>
-          </span>
-          {/* use Link or navigate here for routing to sign in page */}
-        </div>
-      </form>
-    </Box>
+          <div className="text-right w-[100%] pr-2">
+            <span>
+              Already have an account?{" "}
+              <Link
+                to="/user-signin"
+                className={`font-bold text-[${yellowTheme}]`}
+              >
+                Sign In
+              </Link>
+            </span>
+            {/* use Link or navigate here for routing to sign in page */}
+          </div>
+        </form>
+      </Box>
+    </>
   );
 };
 

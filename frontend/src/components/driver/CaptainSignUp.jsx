@@ -129,6 +129,7 @@ const CaptainSignUp = () => {
           paddingX: "1rem",
           justifyContent: "center",
           alignItems: "center",
+          marginBottom: "1rem",
         }}
       >
         {/* <Snackbar open={open} autoHideDuration={6000} onClose={handleClose}>
@@ -362,7 +363,8 @@ const CaptainSignUp = () => {
               Already have an account?{" "}
               <Link
                 to="/captain-signin"
-                className={`font-bold text-[${yellowTheme}]`}
+                className={`font-bold `}
+                style={{ color: yellowTheme }}
               >
                 Sign In
               </Link>

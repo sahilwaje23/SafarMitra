@@ -160,7 +160,10 @@ const UserSignIn = () => {
                 Don't have an account?
                 <Link
                   to="/user-signup"
-                  className={`font-bold text-[${yellowTheme}]`}
+
+                  className={`font-bold mx-1 `}
+                  style={{ color: yellowTheme}}
+
                 >
                   Sign Up
                 </Link>

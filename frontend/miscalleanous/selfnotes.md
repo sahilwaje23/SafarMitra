@@ -183,6 +183,15 @@ By following these practices, you can build a seamless hybrid project without co
 - created the main landing folders / and  driver and user folders to have their components located there the forms will be almost identical .
 - in landing page the light-theme adjustments are remaining 
 
+### entry 2 - 10th jan 2025
+- created navbar
+- empty routes for navbar are functional 
+- theme toggling,help all will be there in profile for user/driver
+- if required the earnings option can be there in driver profile 
+- user could have option to add freinds and that could be there in either navbar or profile 
+- please give suggestions and properly study following components before doing any work `App.jsx` , `Main.jsx` , `Navbar.jsx` any doubts immediately ask.
+
+
 ## Yogesh-Palve
 ### entry 1 - 06 jan 2025
 - added route for user-signup , user-signin , captain-signup , captain-signin . 

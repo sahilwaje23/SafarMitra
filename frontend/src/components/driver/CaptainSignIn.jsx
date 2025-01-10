@@ -154,7 +154,12 @@ const CaptainSignIn = () => {
                 Don't have an account?
                 <Link
                   to="/captain-signup"
-                  className={`font-bold text-[${yellowTheme}]`}
+
+                  className={`font-bold `}
+                  style={{ color: yellowTheme }}
+
+                 
+
                 >
                   Sign Up
                 </Link>

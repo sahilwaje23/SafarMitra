@@ -119,6 +119,7 @@ const UserSignUp = () => {
           paddingX: "1rem",
           justifyContent: "center",
           alignItems: "center",
+          marginBottom: "1rem",
         }}
       >
         <LinearProgress
@@ -290,7 +291,8 @@ const UserSignUp = () => {
               Already have an account?{" "}
               <Link
                 to="/user-signin"
-                className={`font-bold text-[${yellowTheme}]`}
+                className={`font-bold mx-1   `}
+                style={{ color: yellowTheme }}
               >
                 Sign In
               </Link>

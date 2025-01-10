@@ -121,7 +121,7 @@ const Navbar = ({ type }) => {
       sx={{
         backgroundColor: theme.palette.mode === 'dark' 
           ? 'rgba(18, 18, 18, 0.6)' 
-          : '#ffffff',
+          : 'rgba(255, 255, 255, 0.6)',
         backdropFilter: 'blur(10px)',
         top: 0,
       }}
@@ -192,48 +192,55 @@ const Navbar = ({ type }) => {
   );
 
   // Mobile Navigation
- const MobileNav = () => (
-  <BottomNavigation
-    value={value}
-    onChange={(event, newValue) => {
-      setValue(newValue);
-      handleNavigate(currentNavItems[newValue].path);
-    }}
-    sx={{
-      width: '100%',
-      position: 'fixed',
-      bottom: 0,
-      borderTop: 1,
-      borderColor: 'divider',
-      backgroundColor: theme.palette.mode === 'dark' 
-        ? 'rgba(18, 18, 18, 0.6)' 
-        : '#ffffff',
-      backdropFilter: 'blur(10px)',
-      '& .MuiBottomNavigationAction-root': {
-        padding: '16px 0px',
-        color: theme.palette.mode === 'dark' ? '#fff' : '#000',
-        '&.Mui-selected': {
-          color: theme.palette.primaryColor.main
+  const MobileNav = () => (
+    <BottomNavigation
+      value={value}
+      onChange={(event, newValue) => {
+        setValue(newValue);
+        handleNavigate(currentNavItems[newValue].path);
+      }}
+      sx={{
+        width: '100%',
+        position: 'fixed',
+        bottom: 0,
+        borderTop: 1,
+        borderColor: 'divider',
+        backgroundColor: theme.palette.mode === 'dark' 
+          ? 'rgba(18, 18, 18, 0.6)' 
+          : 'rgba(255, 255, 255, 0.6)',
+        backdropFilter: 'blur(10px)',
+        '& .MuiBottomNavigationAction-root': {
+          padding: '16px 0px',
+          color: theme.palette.mode === 'dark' ? '#fff' : '#000',
+          minWidth: '80px',
+          '&.Mui-selected': {
+            color: theme.palette.primaryColor.main
+          }
+        },
+        '& .MuiBottomNavigationAction-label': {
+          opacity: 1, // Force label visibility
+          fontSize: '0.75rem',
+          color: 'inherit',
+          '&.Mui-selected': {
+            fontSize: '0.875rem',
+            fontWeight: 'bold'
+          }
+        },
+        '& .MuiSvgIcon-root': {
+          color: 'inherit'
         }
-      },
-      '& .MuiBottomNavigationAction-label': {
-        fontSize: '0.75rem',
-        '&.Mui-selected': {
-          fontSize: '0.875rem',
-          fontWeight: 'bold'
-        }
-      }
-    }}
-  >
-    {currentNavItems.map((item) => (
-      <BottomNavigationAction
-        key={item.label}
-        label={item.label}
-        icon={item.icon}
-      />
-    ))}
-  </BottomNavigation>
-);
+      }}
+    >
+      {currentNavItems.map((item) => (
+        <BottomNavigationAction
+          key={item.label}
+          label={item.label}
+          icon={item.icon}
+        />
+      ))}
+    </BottomNavigation>
+  );
+
 
   return (
     <>

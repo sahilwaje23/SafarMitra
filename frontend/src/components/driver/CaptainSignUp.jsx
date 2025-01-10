@@ -129,6 +129,7 @@ const CaptainSignUp = () => {
           paddingX: "1rem",
           justifyContent: "center",
           alignItems: "center",
+          marginBottom: "1rem",
         }}
       >
         {/* <Snackbar open={open} autoHideDuration={6000} onClose={handleClose}>

@@ -45,9 +45,9 @@ const Navbar = ({ type }) => {
 
   const captainNavItems = [
     { label: 'Home', icon: <Home />, path: '/captain-homepage' },
-    { label: 'Nearby Rooms', icon: <LocationOn />, path: '/nearby-rooms' },
+    { label: 'Nearby Rooms', icon: <LocationOn />, path: '/captain-nearby-rooms' },
     { label: 'History', icon: <History />, path: '/captain-history' },
-    { label: 'Earnings', icon: <AttachMoney />, path: '/earnings' },
+    { label: 'Earnings', icon: <AttachMoney />, path: '/captain-earnings' },
     { label: 'Profile', icon: <Person />, path: '/captain-profile' },
   ];
 
@@ -65,65 +65,35 @@ const Navbar = ({ type }) => {
     }
   };
 
-  // // Desktop Navigation
-  // const DesktopNav = () => (
-  //   <AppBar position="static" color="default">
-  //     <Toolbar>
-  //       {currentNavItems.map((item) => (
-  //         <Button
-  //           key={item.label}
-  //           startIcon={item.icon}
-  //           onClick={() => handleNavigate(item.path)}
-  //           sx={{
-  //             color: location.pathname === item.path ? yellowTheme : 'inherit',
-  //             mx: 2
-  //           }}
-  //         >
-  //           {item.label}
-  //         </Button>
-  //       ))}
-  //     </Toolbar>
-  //   </AppBar>
-  // );
-
-  // // Mobile Navigation
-  // const MobileNav = () => (
-  //   <BottomNavigation
-  //     value={value}
-  //     onChange={(event, newValue) => {
-  //       setValue(newValue);
-  //       handleNavigate(currentNavItems[newValue].path);
-  //     }}
-  //     sx={{
-  //       width: '100%',
-  //       position: 'fixed',
-  //       bottom: 0,
-  //       borderTop: 1,
-  //       borderColor: 'divider'
-  //     }}
-  //   >
-  //     {currentNavItems.map((item) => (
-  //       <BottomNavigationAction
-  //         key={item.label}
-  //         label={item.label}
-  //         icon={item.icon}
-  //         sx={{
-  //           color: location.pathname === item.path ? yellowTheme : 'inherit'
-  //         }}
-  //       />
-  //     ))}
-  //   </BottomNavigation>
-  // );
-
   const DesktopNav = () => (
     <AppBar 
       position="fixed" 
       sx={{
         backgroundColor: theme.palette.mode === 'dark' 
           ? 'rgba(18, 18, 18, 0.6)' 
-          : 'rgba(255, 255, 255, 0.6)',
+          : 'rgba(255, 255, 255, 0.4)',
         backdropFilter: 'blur(10px)',
         top: 0,
+        '& .MuiBottomNavigationAction-root': {
+          padding: '16px 0px',
+          color: theme.palette.mode === 'dark' ? '#fff' : '#000',
+          minWidth: '80px',
+          '&.Mui-selected': {
+            color: theme.palette.primaryColor.main
+          }
+        },
+        '& .MuiBottomNavigationAction-label': {
+          opacity: 1, // Force label visibility
+          fontSize: '0.75rem',
+          color: 'inherit',
+          '&.Mui-selected': {
+            fontSize: '0.875rem',
+            fontWeight: 'bold'
+          }
+        },
+        '& .MuiSvgIcon-root': {
+          color: 'inherit'
+        }
       }}
     >
       <Toolbar sx={{ 
@@ -240,7 +210,6 @@ const Navbar = ({ type }) => {
       ))}
     </BottomNavigation>
   );
-
 
   return (
     <>

@@ -30,9 +30,9 @@ function App() {
           <Route path='/create-room' element={<div>Create Room</div>} />
           <Route path='/join-room' element={<div>Join Room</div>} />
           <Route path='/captain-history' element={<div>Captain History</div>} />
-          <Route path='/earnings' element={<div>Earnings</div>} />
+          <Route path='/captain-earnings' element={<div>Earnings</div>} />
           <Route path='/captain-profile' element={<div>Captain Profile</div>} />
-          <Route path='/nearby-rooms' element={<div>Nearby Rooms</div>} />
+          <Route path='/captain-nearby-rooms' element={<div>Nearby Rooms</div>} />
         </Routes>
       </div>
       <Navbar type={type} />

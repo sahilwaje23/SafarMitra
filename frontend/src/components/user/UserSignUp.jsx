@@ -12,6 +12,9 @@ import {
 } from "@mui/material";
 import { Link, useNavigate } from "react-router-dom";
 import theme from "../../styles/theme";
+import Snackbar from "@mui/material/Snackbar";
+import Alert from "@mui/material/Alert";
+import axios from "axios";
 
 const UserSignUp = () => {
   const nameRef = useRef();
@@ -93,14 +96,15 @@ const UserSignUp = () => {
   };
 
   const handleAadharFile = (e) => {
+    console.log(e.target.files[0]);
     if (e.target.files[0]) {
-      setAadhar(e.target.value);
+      setAadhar(e.target.files[0]);
     }
   };
 
   const handleIdFile = (e) => {
     if (e.target.files[0]) {
-      setId(e.target.value);
+      setId(e.target.files[0]);
     }
   };
 
@@ -168,171 +172,107 @@ const UserSignUp = () => {
             Sign up
           </Typography>
 
-      {/* Form Content */}
-      <form
-        onSubmit={handleSubmit}
-        className="flex flex-col gap-2 w-[100%] gap-y-[15px]"
-      >
-        {/* Full Name TextField */}
-        <FormControl sx={{ width: "100%" }}>
+          {/* Full Name TextField */}
+          <FormControl sx={{ width: "100%" }}>
+            <TextField
+              id="outlined-full-name"
+              label="Full Name"
+              variant="outlined"
+              fullWidth
+              name="fullName"
+              inputRef={nameRef}
+              required
+            />
+          </FormControl>
+
+          {/* Email TextField */}
+          <FormControl sx={{ width: "100%" }}>
+            <TextField
+              id="outlined-email"
+              label="Email"
+              variant="outlined"
+              fullWidth
+              inputRef={emailRef}
+              name="email"
+              required
+            />
+          </FormControl>
+
+          {/* Password TextField */}
+          <FormControl sx={{ width: "100%" }}>
+            <TextField
+              id="outlined-password"
+              label="Password"
+              variant="outlined"
+              type="password"
+              fullWidth
+              inputRef={passwordRef}
+              name="password"
+              required
+            />
+          </FormControl>
+
+          {/* Gender Select */}
+          <FormControl fullWidth>
+            <InputLabel id="demo-simple-select-label">Gender</InputLabel>
+            <Select
+              labelId="gender"
+              id="gender"
+              label="Gender"
+              value={gender}
+              name="gender"
+              // required
+              onChange={(e) => setGender(e.target.value)}
+            >
+              <MenuItem value={"Male"}>male</MenuItem>
+              <MenuItem value={"Female"}>female</MenuItem>
+            </Select>
+          </FormControl>
+
+          {/* Mobile number */}
           <TextField
-            id="outlined-full-name"
-            label="Full Name"
+            label="Mobile Number"
             variant="outlined"
             fullWidth
-            sx={{
-              input: { color: theme.palette.background.light },
-              "& .MuiOutlinedInput-root": {
-                "& fieldset": { borderColor: theme.palette.background.light },
-                "&:hover fieldset": { borderColor: theme.palette.background.light },
-                "&.Mui-focused fieldset": { borderColor: theme.palette.background.light },
-              },
-              "& .MuiInputLabel-root": { color: theme.palette.background.light },
-              "& .MuiInputLabel-root.Mui-focused": { color: theme.palette.background.light },
+            type="tel" // numeric keyboard on click on mobile
+            inputProps={{
+              maxLength: 10, // max 10 number
+              pattern: "[0-9]*", // Ensure numeric input
             }}
-            name="fullName"
-            ref={nameRef}
+            inputRef={phoneRef}
+            name="mobileNo"
+            required
           />
-        </FormControl>
 
-        {/* Email TextField */}
-        <FormControl sx={{ width: "100%" }}>
-          <TextField
-            id="outlined-email"
-            label="Email"
-            variant="outlined"
-            fullWidth
-            sx={{
-              input: { color: theme.palette.background.light },
-              "& .MuiOutlinedInput-root": {
-                "& fieldset": { borderColor: theme.palette.background.light },
-                "&:hover fieldset": { borderColor: theme.palette.background.light },
-                "&.Mui-focused fieldset": { borderColor: theme.palette.background.light },
-              },
-              "& .MuiInputLabel-root": { color: theme.palette.background.light },
-              "& .MuiInputLabel-root.Mui-focused": { color: theme.palette.background.light },
-            }}
-            ref={emailRef}
-            name="email"
-          />
-        </FormControl>
-
-        {/* Password TextField */}
-        <FormControl sx={{ width: "100%" }}>
-          <TextField
-            id="outlined-password"
-            label="Password"
-            variant="outlined"
-            type="password"
-            fullWidth
-            sx={{
-              input: { color: theme.palette.background.light },
-              "& .MuiOutlinedInput-root": {
-                "& fieldset": { borderColor: theme.palette.background.light },
-                "&:hover fieldset": { borderColor: theme.palette.background.light },
-                "&.Mui-focused fieldset": { borderColor: theme.palette.background.light },
-              },
-              "& .MuiInputLabel-root": { color: theme.palette.background.light },
-              "& .MuiInputLabel-root.Mui-focused": { color: theme.palette.background.light },
-            }}
-            ref={passwordRef}
-            name="password"
-          />
-        </FormControl>
-
-        {/* Gender Select */}
-        <FormControl fullWidth>
-          <InputLabel
-            id="demo-simple-select-label"
-            sx={{
-              color: theme.palette.background.light,
-              "&.Mui-focused": {
-                color: theme.palette.background.light, // Ensure it stays primary color when focused
-              },
-            }}
-          >
-            Gender
-          </InputLabel>
-          <Select
-            labelId="gender"
-            id="gender"
-            label="Gender"
-            sx={{
-              color: theme.palette.background.light,
-              backgroundColor: "transparent",
-              ".MuiOutlinedInput-notchedOutline": {
-                borderColor: theme.palette.background.light, // Primary border
-              },
-              "&:hover .MuiOutlinedInput-notchedOutline": {
-                borderColor: theme.palette.background.light,
-              },
-              "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                borderColor: theme.palette.background.light,
-              },
-              "& .MuiSvgIcon-root": {
-                color: theme.palette.background.light, // Primary dropdown arrow
-              },
-            }}
-            value={gender}
-            onChange={(e) => setGender(e.target.value)}
-            name="gender"
-          >
-            <MenuItem value={"male"}>male</MenuItem>
-            <MenuItem value={"female"}>female</MenuItem>
-            <MenuItem value={"other"}>other</MenuItem>
-          </Select>
-        </FormControl>
-
-        {/* Mobile number */}
-        <TextField
-          label="Mobile Number"
-          variant="outlined"
-          fullWidth
-          type="tel" // numeric keyboard on click on mobile
-          inputProps={{
-            maxLength: 10, // max 10 number
-            pattern: "[0-9]*", // Ensure numeric input
-          }}
-          sx={{
-            input: { color: theme.palette.background.light },
-            "& .MuiOutlinedInput-root": {
-              "& fieldset": { borderColor: theme.palette.background.light },
-              "&:hover fieldset": { borderColor: theme.palette.background.light },
-              "&.Mui-focused fieldset": { borderColor: theme.palette.background.light },
-            },
-            "& .MuiInputLabel-root": { color: theme.palette.background.light },
-            "& .MuiInputLabel-root.Mui-focused": { color: theme.palette.background.light },
-          }}
-          name="mobileNo"
-        />
-
-        {/* Aadhar */}
-        <div className="bg-transparent text-white border-white rounded-[1px] flex justify-between">
-          <div className="w-[35%] text-[1rem] border-[1px] rounded-l-md border-r-0 h-[100%] px-2 py-3 flex justify-left items-center pl-3">
-            Upload Aadhar
+          {/* Aadhar */}
+          <div className="bg-transparent rounded-[1px] flex justify-between">
+            <div className="w-[35%] text-[1rem] border-[1px] rounded-l-md border-r-0 h-[100%] px-1 py-3 flex justify-left items-center pl-3 border-gray-600">
+              Upload Aadhar
+            </div>
+            <input
+              className="w-[65%] px-2 py-2 border-[1px] rounded-r-md cursor-pointer border-gray-600"
+              accept=".png"
+              type="file"
+              id="file-input"
+              required
+              onChange={handleAadharFile}
+            />
           </div>
-          <input
-            className="w-[65%] px-2 py-2 border-[1px] rounded-r-md text-white cursor-pointer"
-            accept=".png"
-            type="file"
-            id="file-input"
-            onChange={handleAadharFile}
-          />
-        </div>
 
-        {/* College ID */}
-        <div className="bg-transparent text-white border-white rounded-[1px] flex justify-between">
-          <div className="w-[35%] text-[1rem] border-[1px] rounded-l-md border-r-0 h-[100%] px-2 py-3 flex justify-left items-center pl-3">
-            Upload Id
+          {/* College ID */}
+          <div className="bg-transparent rounded-[1px] flex justify-between">
+            <div className="w-[35%] text-[1rem] border-[1px] rounded-l-md border-r-0 h-[100%] px-1 py-3 flex justify-left items-center pl-3 border-gray-600">
+              Upload Id
+            </div>
+            <input
+              className="w-[65%] px-2 py-2 border-[1px] rounded-r-md bg-transparent cursor-pointer border-gray-600"
+              accept=".png"
+              type="file"
+              id="id-input"
+              required
+              onChange={handleIdFile}
+            />
           </div>
-          <input
-            className="w-[65%] px-2 py-2 border-[1px] rounded-r-md bg-transparent text-white cursor-pointer"
-            accept=".png"
-            type="file"
-            id="id-input"
-            onChange={handleIdFile}
-          />
-        </div>
 
           {/* Sign Up Button */}
           <Button

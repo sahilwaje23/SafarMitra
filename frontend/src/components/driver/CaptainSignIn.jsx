@@ -168,4 +168,4 @@ const CaptainSignIn = () => {
   );
 };
 
-export default CaptainSignIn
+export default CaptainSignIn;

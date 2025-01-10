@@ -8,6 +8,7 @@ import {
   Button,
   TextField,
   FormControl,
+  LinearProgress,
 } from "@mui/material";
 import { Link, useNavigate } from "react-router-dom";
 import theme from "../../styles/theme";
@@ -15,7 +16,7 @@ import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
 import axios from "axios";
 
-const CaptainSignUp = () => {
+const UserSignUp = () => {
   const nameRef = useRef();
   const emailRef = useRef();
   const passwordRef = useRef();
@@ -27,9 +28,25 @@ const CaptainSignUp = () => {
   // const [isSignedUp, setIsSignedUp] = useState(false);
   const yellowTheme = theme.palette.primaryColor.main;
   const balooBhai = theme.typography.h1.fontFamily2;
+  const [isLoading,setIsLoading] = useState(false);
 
+  // error sanckbar
+  const [state, setState] = React.useState({
+    open: false,
+    vertical: "top",
+    horizontal: "center",
+    message: "Sign Up failed",
+  });
+  const { vertical, horizontal, open, message } = state;
+  // snackbar(alert) close function
+  const handleClose = () => {
+    setState({ ...state, open: false });
+  };
+
+  // handle form
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsLoading(true);
     // on successful sign up. open dialog
     axios
       .post(
@@ -52,24 +69,29 @@ const CaptainSignUp = () => {
         { withCredentials: true }
       )
       .then((res) => {
+        setIsLoading(false)
         if (res.status === 201) {
           navigate("/user-homepage");
           console.log(res);
-          alert("signed up successfully");
+          // alert("signed up successfully");
           // setIsSignedUp(true);
         }
       })
       .catch((e) => {
+        setIsLoading(false)
         console.log(e);
-        console.log("error in catch");
+        let message = "";
         if (e.response.data.errors && e.response.data.errors.length > 0) {
           // if errors array -> if email not in .vjti.ac.in domain or pass less than 8 characters
-          console.log(e.response.data.errors.length);
-          alert(e.response.data.errors.map((error) => error.msg).join("\n"));
+          // message = e.response.data.errors.map((error) => error.msg).join
+          // ("\n\n");
+          message = e.response.data.errors.map((error) => error.msg).join("\n");
         } else {
           // duplicate error
-          alert("Email or Phone number already exists");
+          message = "Email or Phone number already exists";
         }
+        console.log(message);
+        setState({ ...state, open: true, message });
       });
   };
 
@@ -88,6 +110,7 @@ const CaptainSignUp = () => {
 
   return (
     <>
+    {/* progress */}
       <Box
         sx={{
           display: "flex",
@@ -95,25 +118,37 @@ const CaptainSignUp = () => {
           rowGap: "1rem",
           paddingX: "1rem",
           justifyContent: "center",
-          alignItems: 'center'
+          alignItems: "center",
         }}
       >
-        {/* <Snackbar open={open} autoHideDuration={6000} onClose={handleClose}>
-          <Alert
-            onClose={handleClose}
-            severity="success"
-            variant="filled"
-            sx={{ width: "100%" }}
-          >
-            Signed up successfully!
-          </Alert>
-        </Snackbar> */}
+        <LinearProgress
+          sx={{
+            width: "100%",
+            height: "2px",
+            display: isLoading ? "block" : "none",
+          }}
+        />
+        {/* sign in successful snackbar(alert) */}
+        <Snackbar
+          message={message}
+          anchorOrigin={{ vertical, horizontal }}
+          open={open}
+          onClose={handleClose}
+          key={vertical + horizontal}
+          autoHideDuration={5000}
+        />
 
         {/* Back Button - useNavigate here for go back */}
         <Button
           variant="text"
           size="large"
-          sx={{ alignSelf: "start", paddingLeft: "0px", color: yellowTheme , position: {md:'fixed'}, top: '0'}}
+          sx={{
+            alignSelf: "start",
+            paddingLeft: "0px",
+            color: yellowTheme,
+            position: { md: "fixed" },
+            top: "0",
+          }}
           onClick={() => navigate(-1)}
         >
           <Typography variant="h6">&lt; Back</Typography>
@@ -129,12 +164,10 @@ const CaptainSignUp = () => {
           {/* signup text heading */}
           <Typography
             variant="h4"
-            sx={
-              {
-                fontFamily: balooBhai,
-                fontWeight: theme.typography.h3.fontWeight,
-              }
-            }
+            sx={{
+              fontFamily: balooBhai,
+              fontWeight: theme.typography.h3.fontWeight,
+            }}
           >
             Sign up
           </Typography>
@@ -242,7 +275,11 @@ const CaptainSignUp = () => {
           </div>
 
           {/* Sign Up Button */}
-          <Button sx={{ height: "3.3rem" , backgroundColor: yellowTheme}} variant="contained" type="submit">
+          <Button
+            sx={{ height: "3.3rem", backgroundColor: yellowTheme }}
+            variant="contained"
+            type="submit"
+          >
             <Typography sx={{ fontSize: "large", fontWeight: "700" }}>
               Sign up
             </Typography>
@@ -251,7 +288,10 @@ const CaptainSignUp = () => {
           <div className="text-right w-[100%] pr-2">
             <span>
               Already have an account?{" "}
-              <Link to="/user-signin" className={`font-bold text-[${yellowTheme}]`}>
+              <Link
+                to="/user-signin"
+                className={`font-bold text-[${yellowTheme}]`}
+              >
                 Sign In
               </Link>
             </span>
@@ -263,4 +303,4 @@ const CaptainSignUp = () => {
   );
 };
 
-export default CaptainSignUp;
+export default UserSignUp;

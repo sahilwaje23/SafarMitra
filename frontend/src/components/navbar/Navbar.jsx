@@ -23,6 +23,9 @@ import {
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import theme from '../../styles/theme';
+import { ArrowBack } from '@mui/icons-material';
+import { IconButton } from '@mui/material';
+
 
 const Navbar = ({ type }) => {
   const isMobile = useMediaQuery('(max-width:1024px)');
@@ -111,63 +114,127 @@ const Navbar = ({ type }) => {
   //     ))}
   //   </BottomNavigation>
   // );
+
   const DesktopNav = () => (
     <AppBar 
       position="fixed" 
       sx={{
-        backgroundColor: 'rgba(18, 18, 18, 0.6)', // dark mode color with opacity
+        backgroundColor: theme.palette.mode === 'dark' 
+          ? 'rgba(18, 18, 18, 0.6)' 
+          : '#ffffff',
         backdropFilter: 'blur(10px)',
         top: 0,
       }}
     >
-      <Toolbar>
-        {currentNavItems.map((item) => (
-          <Button
-            key={item.label}
-            startIcon={item.icon}
-            onClick={() => handleNavigate(item.path)}
-            sx={{
-              color: location.pathname === item.path ? theme.palette.primaryColor.main : 'inherit',
-              mx: 2
-            }}
-          >
-            {item.label}
-          </Button>
-        ))}
+      <Toolbar sx={{ 
+        display: 'flex', 
+        justifyContent: 'space-around',
+        alignItems: 'center',
+        width: '100%',
+        px: 4
+      }}>
+        {/* Logo and Back Button Section */}
+        <Box sx={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          gap: 2,
+          width: '200px' // Adjust as needed
+        }}>
+        
+            <IconButton 
+              onClick={() => navigate(-1)}
+              sx={{ color: theme.palette.mode === 'dark' ? '#fff' : '#000' }}
+            >
+              <ArrowBack />
+            </IconButton>
+            <img
+              draggable="false"
+              src={theme.palette.mode === 'light' ? '/safarmitra-icod.svg' : '/safarmitra-icol.svg'}
+              alt="safarmitra-logo"
+              className="drop-shadow-xl"
+              style={{ 
+                width: "120px", 
+                userSelect: "none",
+                cursor: "pointer"
+              }}
+              onClick={() => navigate('/')}
+            />
+        </Box>
+  
+        {/* Navigation Items Section */}
+        <Box sx={{ display: 'flex', justifyContent: 'end', flex: 1 }}>
+          {currentNavItems.map((item) => (
+            <Button
+              key={item.label}
+              startIcon={item.icon}
+              onClick={() => handleNavigate(item.path)}
+              sx={{
+                padding: '12px 0px',
+                color: theme.palette.mode === 'dark' ? '#fff' : '#000',
+                '&.Mui-selected, &:hover': {
+                  color: theme.palette.primaryColor.main
+                },
+                ...(location.pathname === item.path && {
+                  color: theme.palette.primaryColor.main,
+                  fontWeight: 'bold'
+                }),
+                mx: 2,
+                fontSize: '0.875rem',
+                transition: 'all 0.2s ease-in-out'
+              }}
+            >
+              {item.label}
+            </Button>
+          ))}
+        </Box>
       </Toolbar>
     </AppBar>
   );
 
   // Mobile Navigation
-  const MobileNav = () => (
-    <BottomNavigation
-      value={value}
-      onChange={(event, newValue) => {
-        setValue(newValue);
-        handleNavigate(currentNavItems[newValue].path);
-      }}
-      sx={{
-        width: '100%',
-        position: 'fixed',
-        bottom: 0,
-        borderTop: 1,
-        borderColor: 'divider',
-        backgroundColor: 'rgba(18, 18, 18, 0.6)',
-        backdropFilter: 'blur(10px)'
-      }}
-    >
-      {currentNavItems.map((item) => (
-        <BottomNavigationAction
-          key={item.label}
-          label={item.label}
-          icon={item.icon}
-          sx={{
-            color: location.pathname === item.path ? theme.palette.primaryColor.main : 'inherit'
-          }}
-        />
-      ))}
-    </BottomNavigation>
-  );
+ const MobileNav = () => (
+  <BottomNavigation
+    value={value}
+    onChange={(event, newValue) => {
+      setValue(newValue);
+      handleNavigate(currentNavItems[newValue].path);
+    }}
+    sx={{
+      width: '100%',
+      position: 'fixed',
+      bottom: 0,
+      borderTop: 1,
+      borderColor: 'divider',
+      backgroundColor: theme.palette.mode === 'dark' 
+        ? 'rgba(18, 18, 18, 0.6)' 
+        : '#ffffff',
+      backdropFilter: 'blur(10px)',
+      '& .MuiBottomNavigationAction-root': {
+        padding: '16px 0px',
+        color: theme.palette.mode === 'dark' ? '#fff' : '#000',
+        '&.Mui-selected': {
+          color: theme.palette.primaryColor.main
+        }
+      },
+      '& .MuiBottomNavigationAction-label': {
+        fontSize: '0.75rem',
+        '&.Mui-selected': {
+          fontSize: '0.875rem',
+          fontWeight: 'bold'
+        }
+      }
+    }}
+  >
+    {currentNavItems.map((item) => (
+      <BottomNavigationAction
+        key={item.label}
+        label={item.label}
+        icon={item.icon}
+      />
+    ))}
+  </BottomNavigation>
+);
+
   return (
     <>
       {isMobile ? <MobileNav /> : <DesktopNav />}

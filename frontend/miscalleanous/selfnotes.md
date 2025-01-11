@@ -190,7 +190,10 @@ By following these practices, you can build a seamless hybrid project without co
 - if required the earnings option can be there in driver profile 
 - user could have option to add freinds and that could be there in either navbar or profile 
 - please give suggestions and properly study following components before doing any work `App.jsx` , `Main.jsx` , `Navbar.jsx` any doubts immediately ask.
-
+- ( for myself ) if possible add transperent bg to room actions popup and simultaneously blur entire background slightly 
+- loader should be used ideally when making user or driver homepage 
+- thinking to make history general like navbar 
+-  
 
 ## Yogesh-Palve
 ### entry 1 - 06 jan 2025

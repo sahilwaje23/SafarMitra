@@ -6,7 +6,7 @@ import Navbar from './components/navbar/Navbar';
 import theme from './styles/theme';
 
 function App() {
-  const location = useLocation();
+  const location = useLocation();// this has location object which will give information about the current url , this also triggers a re-render if the current location changes 
   const type = location.pathname.startsWith('/captain-') ? 'captain' : 'user';
   const isMobileView = window.innerWidth <= 600;
 

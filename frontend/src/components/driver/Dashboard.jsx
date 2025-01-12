@@ -15,15 +15,15 @@ const Dashboard = () => {
       <Typography variant="h6" gutterBottom>Dashboard</Typography>
       <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
         <Box>
-          <Typography variant="subtitle2">Today's Rides</Typography>
+          <Typography variant="subtitle2">Rooms served</Typography>
           <Typography variant="h5">5</Typography>
         </Box>
         <Box>
-          <Typography variant="subtitle2">Earnings</Typography>
-          <Typography variant="h5">₹500</Typography>
+          <Typography variant="subtitle2">Today's Earnings</Typography>
+          <Typography variant="h5">₹ 500</Typography>
         </Box>
         <Box>
-          <Typography variant="subtitle2">Rating</Typography>
+          <Typography variant="subtitle2">Avg Rating recieved</Typography>
           <Typography variant="h5">4.8</Typography>
         </Box>
       </Box>

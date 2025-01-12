@@ -193,7 +193,14 @@ By following these practices, you can build a seamless hybrid project without co
 - ( for myself ) if possible add transperent bg to room actions popup and simultaneously blur entire background slightly 
 - loader should be used ideally when making user or driver homepage 
 - thinking to make history general like navbar 
--  
+
+### entry 3 - 12th jan 2025
+- work in `rooms folder` for further work apart from user homepage 
+- suggested to make `todo` like room layout the main container for todos is `Room.jsx` and todo card is `RoomCard.jsx` will contain mainly three parameters `Roomid` which has drop down to showcase participants name id and other details , `source and destination` ,  `Room capacity`, and lastly the `button` to `join room for user and accept room for driver`.
+- suggested to add css to scrollbars 
+- nearby rooms may be removed from navbar
+- will make `general history or profile component` `earnings` component is unique to driver and can have some medium scale statistics 
+
 
 ## Yogesh-Palve
 ### entry 1 - 06 jan 2025

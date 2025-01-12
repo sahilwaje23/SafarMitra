@@ -66,12 +66,12 @@ const Navbar = ({ type }) => {
   };
 
   const DesktopNav = () => (
-    <AppBar 
-      position="fixed" 
+    <AppBar
+      position="fixed"
       sx={{
-        backgroundColor: theme.palette.mode === 'dark' 
-          ? 'rgba(18, 18, 18, 0.6)' 
-          : 'rgba(255, 255, 255, 0.4)',
+        backgroundColor: theme.palette.mode === 'dark'
+          ? 'rgba(18, 18, 18, 0.6)'
+          : 'rgba(255, 255, 255, 0.2)',
         backdropFilter: 'blur(10px)',
         top: 0,
         '& .MuiBottomNavigationAction-root': {
@@ -96,41 +96,41 @@ const Navbar = ({ type }) => {
         }
       }}
     >
-      <Toolbar sx={{ 
-        display: 'flex', 
+      <Toolbar sx={{
+        display: 'flex',
         justifyContent: 'space-around',
         alignItems: 'center',
         width: '100%',
         px: 4
       }}>
         {/* Logo and Back Button Section */}
-        <Box sx={{ 
-          display: 'flex', 
-          alignItems: 'center', 
+        <Box sx={{
+          display: 'flex',
+          alignItems: 'center',
           gap: 2,
           width: '200px' // Adjust as needed
         }}>
-        
-            <IconButton 
-              onClick={() => navigate(-1)}
-              sx={{ color: theme.palette.mode === 'dark' ? '#fff' : '#000' }}
-            >
-              <ArrowBack />
-            </IconButton>
-            <img
-              draggable="false"
-              src={theme.palette.mode === 'light' ? '/safarmitra-icod.svg' : '/safarmitra-icol.svg'}
-              alt="safarmitra-logo"
-              className="drop-shadow-xl"
-              style={{ 
-                width: "120px", 
-                userSelect: "none",
-                cursor: "pointer"
-              }}
-              onClick={() => navigate('/')}
-            />
+
+          <IconButton
+            onClick={() => navigate(-1)}
+            sx={{ color: theme.palette.mode === 'dark' ? '#fff' : '#000' }}
+          >
+            <ArrowBack />
+          </IconButton>
+          <img
+            draggable="false"
+            src={theme.palette.mode === 'light' ? '/safarmitra-icod.svg' : '/safarmitra-icol.svg'}
+            alt="safarmitra-logo"
+            className="drop-shadow-xl"
+            style={{
+              width: "120px",
+              userSelect: "none",
+              cursor: "pointer"
+            }}
+            onClick={() => navigate('/')}
+          />
         </Box>
-  
+
         {/* Navigation Items Section */}
         <Box sx={{ display: 'flex', justifyContent: 'end', flex: 1 }}>
           {currentNavItems.map((item) => (
@@ -139,7 +139,7 @@ const Navbar = ({ type }) => {
               startIcon={item.icon}
               onClick={() => handleNavigate(item.path)}
               sx={{
-                padding: '12px 0px',
+                padding: '12px 8px',
                 color: theme.palette.mode === 'dark' ? '#fff' : '#000',
                 '&.Mui-selected, &:hover': {
                   color: theme.palette.primaryColor.main
@@ -148,7 +148,7 @@ const Navbar = ({ type }) => {
                   color: theme.palette.primaryColor.main,
                   fontWeight: 'bold'
                 }),
-                mx: 2,
+                mx: 1.5,
                 fontSize: '0.875rem',
                 transition: 'all 0.2s ease-in-out'
               }}
@@ -175,8 +175,8 @@ const Navbar = ({ type }) => {
         bottom: 0,
         borderTop: 1,
         borderColor: 'divider',
-        backgroundColor: theme.palette.mode === 'dark' 
-          ? 'rgba(18, 18, 18, 0.6)' 
+        backgroundColor: theme.palette.mode === 'dark'
+          ? 'rgba(18, 18, 18, 0.6)'
           : 'rgba(255, 255, 255, 0.6)',
         backdropFilter: 'blur(10px)',
         '& .MuiBottomNavigationAction-root': {
@@ -214,29 +214,41 @@ const Navbar = ({ type }) => {
   return (
     <>
       {isMobile ? <MobileNav /> : <DesktopNav />}
-      
+
       {/* Room Actions Dialog */}
-      <Dialog open={openRoomDialog} onClose={() => setOpenRoomDialog(false)}>
-        <DialogTitle>Room Actions</DialogTitle>
+      <Dialog sx={{
+        display: 'flex', justifyContent: 'center', alignItems: 'center'
+        , '& .MuiDialog-paper': {
+          borderRadius: '16px', // Adjust for curved corners
+          backgroundColor: theme.palette.mode === 'dark'
+            ? 'rgba(1, 1, 1, 0.9)'
+            : 'rgba(255, 255, 255, 0.9)',     // Set the opacity for the dialog box
+        },
+      }} open={openRoomDialog} onClose={() => setOpenRoomDialog(false)}>
+        <DialogTitle sx={{ alignSelf: 'center' }}>Room Actions</DialogTitle>
         <DialogContent>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, my: 2 }}>
-            <Button 
-              variant="contained" 
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, m: 2 }}>
+            <Button
+              variant="contained"
               onClick={() => navigate('/create-room')}
-              sx={{ backgroundColor: yellowTheme }}
+              sx={{ backgroundColor: yellowTheme, fontWeight: 'bold' }}
             >
               Create Room
             </Button>
-            <Button 
-              variant="contained" 
+            <Button
+              variant="contained"
               onClick={() => navigate('/join-room')}
-              sx={{ backgroundColor: yellowTheme }}
+              sx={{ backgroundColor: yellowTheme, fontWeight: 'bold' }}
             >
               Join Room
             </Button>
           </Box>
         </DialogContent>
-        <DialogActions>
+        <DialogActions sx={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+        }} >
           <Button onClick={() => setOpenRoomDialog(false)}>Close</Button>
         </DialogActions>
       </Dialog>

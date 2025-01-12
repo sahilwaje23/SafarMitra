@@ -1,21 +1,24 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Routes, Route, useLocation } from 'react-router-dom';
 import { ThemeProvider, CssBaseline} from "@mui/material";
 import { CaptainHomePage, CaptainSignIn, CaptainSignUp, Landing, UserHomePage, UserSignIn, UserSignUp } from './components';
 import Navbar from './components/navbar/Navbar';
 import theme from './styles/theme';
-
+import {useMediaQuery} from '@mui/material'
 function App() {
   const location = useLocation();// this has location object which will give information about the current url , this also triggers a re-render if the current location changes 
   const type = location.pathname.startsWith('/captain-') ? 'captain' : 'user';
-  const isMobileView = window.innerWidth <= 600;
-
+  const isMobileView = useMediaQuery('(max-width:1024px)');
+  // useEffect(() => {
+  //   console.log(isMobileView);
+  // },[window.innerWidth]);
+  
   return (
     <ThemeProvider theme={theme}>
     <CssBaseline />
     <div style={{ 
       paddingBottom: isMobileView ? '56px' : '0',
-      paddingTop: !isMobileView ? '64px' : '0' // Add top padding for desktop navbar
+      paddingTop: isMobileView ? '0px' : '64px' // Add top padding for desktop navbar
     }}>
         <Routes>
           <Route path='/' element={<Landing />} />

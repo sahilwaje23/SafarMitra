@@ -5,7 +5,9 @@ import { CaptainHomePage, CaptainSignIn, CaptainSignUp, Landing, UserHomePage, U
 import Navbar from './components/navbar/Navbar';
 import theme from './styles/theme';
 import {useMediaQuery} from '@mui/material'
+
 import Room from './components/room/Room';
+
 function App() {
   const location = useLocation();// this has location object which will give information about the current url , this also triggers a re-render if the current location changes 
   const type = location.pathname.startsWith('/captain-') ? 'captain' : 'user';

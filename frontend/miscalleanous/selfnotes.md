@@ -209,4 +209,5 @@ By following these practices, you can build a seamless hybrid project without co
 
 ### entry 2 - 06 jan 2025 
 - completed user signin and signup with backend integration 
+- completed user Homepage ( use images instead of map so chaitanya will add map their )
 

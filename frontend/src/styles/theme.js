@@ -4,7 +4,7 @@ const theme = createTheme({
     mode: "dark",
     // added two custom colors to the palette -> yellow and red
       primaryColor: {
-        main: "#FEC400",
+        main: "#FEC400",  
         hover: "#b79420",
         contrastText: "#000000", // Optional: text color for contrast
       },

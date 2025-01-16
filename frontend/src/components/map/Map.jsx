@@ -181,6 +181,7 @@ const MapComponent = () => {
   );
 
   return (
+
     <Paper sx={{ height: isMobile ? '400px' : '80%', width: '100%', border: '1px solid black' }}>
       <GoogleMap
         onLoad={onLoad}
@@ -209,6 +210,7 @@ const MapComponent = () => {
           </>
         )}
       </GoogleMap>
+
     </Paper>
   );
 };

@@ -1,5 +1,5 @@
 import React from "react";
-import { useRef, useState } from "react";
+import { useRef, useState, useContext } from "react";
 import {
   Box,
   Typography,
@@ -9,11 +9,14 @@ import {
   Snackbar,
   LinearProgress,
 } from "@mui/material";
-import { Link, useNavigate } from "react-router-dom";
+import { data, Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import theme from "../../styles/theme";
+import { EntityContext } from "../../contexts/EntityContext";
 
 const UserSignIn = () => {
+  const { setEntity, entity } = useContext(EntityContext);
+
   const yellowTheme = theme.palette.primaryColor.main;
   const emailRef = useRef();
   const passwordRef = useRef();
@@ -37,9 +40,22 @@ const UserSignIn = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     setIsLoading(true);
+
+    // ^ Ritesh : For offline , karan u know
+
+    if (!navigator.onLine) {
+      setIsLoading(false);
+      setState({
+        ...state,
+        open: true,
+        message: "You are offline. Please check your internet connection.",
+      });
+      return;
+    }
+
     axios
       .post(
-        "http://localhost:8000/login",
+        `${import.meta.env.VITE_BASE_URL}/login`,
         {
           email: emailRef.current.value,
           password: passwordRef.current.value,
@@ -49,27 +65,36 @@ const UserSignIn = () => {
       .then((res) => {
         setTimeout(() => {
           setIsLoading(false);
-        },500)
+        }, 500);
         console.log(res);
         if (res.status === 200) {
-          alert("sign in successful");
+          setEntity({ type: "USER", data: res.data.user });
+          console.log(entity)
+          localStorage.setItem("token", res.data.token); // user credentials in local storage
+          // alert("sign in successful");
           navigate("/user-homepage");
         }
       })
       .catch((e) => {
-        setTimeout(() => {
-          setIsLoading(false);
-        },500)
-        // console.log(e.data.err);
-        // alert(e.data.err)
-        setState({
-          ...state,
-          open: true,
-          message: "email or password is incorrect",
-        });
+        setIsLoading(false);
+        console.log(e);
+        let message = "";
+        if (e.response.data.errors && e.response.data.errors.length > 0) {
+          // if errors array -> if email not in .vjti.ac.in domain or pass less than 8 characters
+          // message = e.response.data.errors.map((error) => error.msg).join
+          // ("\n\n");
+          message = e.response.data.errors.map((error) => error.msg).join("\n");
+        } else {
+          // duplicate error
+          message = e.response.data.err;
+        }
+        console.log(message);
+        
+        setState({ ...state, open: true, message });
       });
   };
 
+  // yetoy
   return (
     <>
       <LinearProgress
@@ -160,10 +185,8 @@ const UserSignIn = () => {
                 Don't have an account?
                 <Link
                   to="/user-signup"
-
                   className={`font-bold mx-1 `}
-                  style={{ color: yellowTheme}}
-
+                  style={{ color: yellowTheme }}
                 >
                   Sign Up
                 </Link>

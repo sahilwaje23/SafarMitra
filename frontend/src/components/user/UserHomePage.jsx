@@ -1,10 +1,13 @@
-import React from "react";
+import React, { useContext } from "react";
 import { Box, Input, TextField, Typography,Button } from "@mui/material";
 import Map from "../map/Map";
 import theme from "../../styles/theme";
+import {EntityContext} from '../../contexts/EntityContext'
 
 const UserHomePage = () => {
   const yellowTheme = theme.palette.primaryColor.main;
+  const {entity} = useContext(EntityContext)
+  console.log(entity);
   return (
     <>
       <Box
@@ -41,6 +44,8 @@ const UserHomePage = () => {
             <div className="flex flex-col gap-y-3 w-full justify-center items-center">
               <input type="text" id="source" className="bg-[#333] px-4 py-3 w-full rounded-md outline-none hover:bg-[rgb(40,40,40,0.5)] max-w-[342px] focus:bg-[rgb(40,40,40)] focus:outline-white focus:shadow-2xl shadow-white outline-offset-0 outline-1" placeholder="Enter Source" />
               <input type="text" id="source" className="bg-[#333] px-4 py-3 w-full rounded-md outline-none hover:bg-[rgb(40,40,40)] focus:bg-[rgb(40,40,40)] max-w-[342px] focus:outline-white outline-offset-0 outline-1" placeholder="Enter Destination" />
+              
+              {/* Confirm button */}
             <Button
               sx={{ height: "3.3rem", backgroundColor: yellowTheme, text: 'center', width: '100%', maxWidth: '342px' }}
               variant="contained"
@@ -52,7 +57,6 @@ const UserHomePage = () => {
               </Typography>
             </Button>
             </div>
-            {/* Confirm button */}
           </div>
         </Box>
         <div className=" w-[100%] h-[100%] text-center flex justify-center items-center ">

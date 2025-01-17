@@ -69,7 +69,7 @@ const Navbar = ({ type }) => {
     <AppBar
       position="fixed"
       sx={{
-        backgroundColor: theme.palette.mode === 'light' // changed temprorary by yogesh
+        backgroundColor: theme.palette.mode === 'dark'
           ? 'rgba(18, 18, 18, 0.6)' 
           : 'rgba(255, 255, 255, 0.4)',
         backdropFilter: 'blur(10px)',
@@ -230,14 +230,14 @@ const Navbar = ({ type }) => {
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, m: 2 }}>
             <Button
               variant="contained"
-              onClick={() => navigate('/create-room')}
+              onClick={() => navigate('/room-activities')}
               sx={{ backgroundColor: yellowTheme, fontWeight: 'bold' }}
             >
               Create Room
             </Button>
             <Button
               variant="contained"
-              onClick={() => navigate('/join-room')}
+              onClick={() => navigate('/room-activities')}
               sx={{ backgroundColor: yellowTheme, fontWeight: 'bold' }}
             >
               Join Room

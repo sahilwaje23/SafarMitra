@@ -16,15 +16,18 @@ const Room = () => {
     <Paper sx={{ 
       p: 2, 
       bgcolor: theme.palette.mode === 'dark' 
-        ? 'rgba(18, 18, 18, 0.6)' 
-        : 'rgba(255, 255, 255, 0.6)',
-      backdropFilter: 'blur(10px)',
-      height: isMobile ? '300px' : '100%', // Fixed height for mobile, flexible for desktop
+        ? 'rgba(18, 18, 18)' 
+        : 'rgba(255, 255, 255)',
+      // backdropFilter: 'blur(10px)',
+      // height: isMobile ? '300px' : '100%', // Fixed height for mobile, flexible for desktop,
+      backgroundImage: 'none',
       minHeight: isMobile ? '300px' : '20rem',
       color: theme.palette.mode === 'dark' ? '#fff' : '#000',
       overflowY: 'auto'
     }}>
-      <Typography variant="h6" gutterBottom>ROOM</Typography>
+      <Typography variant="h6" gutterBottom
+      sx={{textAlign:'center'}}
+      >Existing Rooms</Typography>
       <Box sx={{ 
         display: 'flex',
         flexDirection: 'column',

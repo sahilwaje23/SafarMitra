@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useContext } from "react";
 import {
   Box,
   InputLabel,
@@ -16,7 +16,13 @@ import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
 import axios from "axios";
 
+
+import { EntityContext } from "../../contexts/EntityContext";
+
 const UserSignUp = () => {
+  const { setEntity, entity } = useContext(EntityContext);
+  // console.log(entity);
+
   const nameRef = useRef();
   const emailRef = useRef();
   const passwordRef = useRef();
@@ -28,7 +34,7 @@ const UserSignUp = () => {
   // const [isSignedUp, setIsSignedUp] = useState(false);
   const yellowTheme = theme.palette.primaryColor.main;
   const balooBhai = theme.typography.h1.fontFamily2;
-  const [isLoading,setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   // error sanckbar
   const [state, setState] = React.useState({
@@ -48,9 +54,21 @@ const UserSignUp = () => {
     e.preventDefault();
     setIsLoading(true);
     // on successful sign up. open dialog
+
+    // ^ Ritesh : For offline karan to else madhe taklay email or mobile number check karna
+    if (!navigator.onLine) {
+      setIsLoading(false);
+      setState({
+        ...state,
+        open: true,
+        message: "You are offline. Please check your internet connection.",
+      });
+      return;
+    }
+
     axios
-      .post(
-        "http://localhost:8000/signup",
+      .post(`
+        ${import.meta.env.VITE_BASE_URL}/signup`,
         {
           fullName: nameRef.current.value,
           email: emailRef.current.value,
@@ -69,16 +87,22 @@ const UserSignUp = () => {
         { withCredentials: true }
       )
       .then((res) => {
-        setIsLoading(false)
+        setIsLoading(false);
         if (res.status === 201) {
+          // ^ Ritesh set in context and add token to localstorage
+          setEntity({ type: "USER", data: res.data });
+
+          const token = res.data.token;
+          localStorage.setItem("token", token);
+
           navigate("/user-homepage");
-          console.log(res);
+          // console.log(res);
           // alert("signed up successfully");
           // setIsSignedUp(true);
         }
       })
       .catch((e) => {
-        setIsLoading(false)
+        setIsLoading(false);
         console.log(e);
         let message = "";
         if (e.response.data.errors && e.response.data.errors.length > 0) {
@@ -96,7 +120,7 @@ const UserSignUp = () => {
   };
 
   const handleAadharFile = (e) => {
-    console.log(e.target.files[0]);
+    // console.log(e.target.files[0]);
     if (e.target.files[0]) {
       setAadhar(e.target.files[0]);
     }
@@ -110,7 +134,7 @@ const UserSignUp = () => {
 
   return (
     <>
-    {/* progress */}
+      {/* progress */}
       <Box
         sx={{
           display: "flex",
@@ -121,7 +145,6 @@ const UserSignUp = () => {
           alignItems: "center",
 
           marginBottom: "1rem",
-
         }}
       >
         <LinearProgress
@@ -293,10 +316,8 @@ const UserSignUp = () => {
               Already have an account?{" "}
               <Link
                 to="/user-signin"
-
                 className={`font-bold mx-1   `}
                 style={{ color: yellowTheme }}
-
               >
                 Sign In
               </Link>

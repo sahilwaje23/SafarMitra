@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { Routes, Route, useLocation } from 'react-router-dom';
 import { ThemeProvider, CssBaseline} from "@mui/material";
-import { CaptainHomePage, CaptainSignIn, CaptainSignUp, Landing, UserHomePage, UserSignIn, UserSignUp } from './components';
+import { CaptainHomePage, CaptainSignIn, CaptainSignUp, Landing, RoomActivities, UserHomePage, UserProfile, UserSignIn, UserSignUp } from './components';
 import Navbar from './components/navbar/Navbar';
 import theme from './styles/theme';
 import {useMediaQuery} from '@mui/material'
@@ -30,9 +30,8 @@ function App() {
           <Route path='/user-homepage' element={<UserHomePage />} />
           <Route path='/captain-homepage' element={<CaptainHomePage />} />
           <Route path='/user-history' element={<div>User History</div>} />
-          <Route path='/user-profile' element={<div>User Profile</div>} />
-          <Route path='/create-room' element={<div>Create Room</div>} />
-          <Route path='/join-room' element={<div>Join Room</div>} />
+          <Route path='/user-profile' element={<UserProfile/>} />
+          <Route path='/room-activities' element={<RoomActivities />} />
           <Route path='/captain-history' element={<div>Captain History</div>} />
           <Route path='/captain-earnings' element={<div>Earnings</div>} />
           <Route path='/captain-profile' element={<div>Captain Profile</div>} />

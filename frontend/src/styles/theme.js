@@ -2,6 +2,7 @@ import { createTheme } from "@mui/material/styles";
 const theme = createTheme({
   palette: {
     mode: "dark",
+    txtcol: "#ffffff", // Hardcode default for dark mode
     // added two custom colors to the palette -> yellow and red
       primaryColor: {
         main: "#FEC400",  
@@ -43,5 +44,7 @@ const theme = createTheme({
     },
   },
 });
+// Dynamically adjust txtcol based on mode
+theme.palette.txtcol = theme.palette.mode === "dark" ? "#ffffff" : "#000000";
 
 export default theme;

@@ -201,8 +201,13 @@ By following these practices, you can build a seamless hybrid project without co
 - nearby rooms may be removed from navbar
 - will make `general history or profile component` `earnings` component is unique to driver and can have some medium scale statistics 
 
-### entry 4 - 14th jan 2025
-- 
+### entry 4 - 18th jan 2025
+- For testing purpose room ui route is there in room actions join or create room 
+- yogesh fix ur theme issue in userhomepage 
+- added one property called as `textcol` which dynamically adapts textcolor according to mode 
+- modes for room are `unconfirmed,locked,accepted,running,finished`
+- suggested to use numbers to represent statuses enables for efficient communication as in the frontend corresponding to the number we display that particular status 
+
 
 ## Yogesh-Palve
 ### entry 1 - 06 jan 2025

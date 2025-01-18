@@ -1,13 +1,9 @@
 import React, { useEffect } from 'react';
 import { Routes, Route, useLocation } from 'react-router-dom';
 import { ThemeProvider, CssBaseline} from "@mui/material";
-import { CaptainHomePage, CaptainSignIn, CaptainSignUp, Landing, UserHomePage, UserSignIn, UserSignUp } from './components';
-import Navbar from './components/navbar/Navbar';
+import { CaptainHomePage, CaptainSignIn, CaptainSignUp, Landing, UserHomePage, UserSignIn, UserSignUp,Navbar,RoomInt } from './components';
 import theme from './styles/theme';
-import {useMediaQuery} from '@mui/material'
-
-import Room from './components/room/Room';
-
+import {useMediaQuery} from '@mui/material';
 function App() {
   const location = useLocation();// this has location object which will give information about the current url , this also triggers a re-render if the current location changes 
   const type = location.pathname.startsWith('/captain-') ? 'captain' : 'user';
@@ -34,8 +30,8 @@ function App() {
           <Route path='/user-history' element={<div>User History</div>} />
           <Route path='/user-profile' element={<div>User Profile</div>} />
           <Route path='/create-room' element={<div>Create Room</div>} />
-          <Route path='/join-room' element={<div>Join Room</div>} />
-          <Route path='/captain-history' element={<div>Captain History</div>} />
+          <Route path='/join-room' element={<RoomInt/>} />
+          <Route path='/captain-history' element={<RoomInt/>} />
           <Route path='/captain-earnings' element={<div>Earnings</div>} />
           <Route path='/captain-profile' element={<div>Captain Profile</div>} />
           <Route path='/captain-nearby-rooms' element={<div>Nearby Rooms</div>} />

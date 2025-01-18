@@ -58,9 +58,12 @@ const MobileView = () => {
         flexDirection: 'column',
         height: '100vh',
         position: 'relative',
+        border:'1px solid red'
       }}
     >
+      <Box>
       <Popup />
+      </Box>
       <Map />
     </Box>
   );

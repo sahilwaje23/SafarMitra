@@ -5,7 +5,7 @@ import Chat from './Chat'; // Assuming Chat is a separate component
 import RideDetails from './RideDetails'; // Assuming RideDetails is a separate component
 import theme from '../../styles/theme';
 
-const ButtonGroup = ({ activeTab, setActiveTab }) => {
+const ButtonGroup = ({ activeTab, setActiveTab}) => {
   return (
     <Box sx={{ display: 'flex', gap: 2 }}>
       <Button
@@ -27,7 +27,9 @@ const ButtonGroup = ({ activeTab, setActiveTab }) => {
         Ride Details
       </Button>
       <Button
-        onClick={() => setActiveTab('chat')}
+        onClick={() => setActiveTab('chat')
+
+        }
         sx={{
           bgcolor: activeTab === 'chat' ? theme.palette.primaryColor.main : 'transparent',
           color: activeTab === 'chat' ? theme.palette.txtcol : theme.palette.primaryColor.main,
@@ -48,7 +50,7 @@ const ButtonGroup = ({ activeTab, setActiveTab }) => {
 };
 
 const Popup = () => {
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(true);
   const [activeTab, setActiveTab] = useState('details');
   const [status, setStatus] = useState('unconfirmed');
 
@@ -59,11 +61,12 @@ const Popup = () => {
         bottom: isExpanded ? 0 : '10%',
         left: 0,
         right: 0,
-        zIndex: 10,
+        zIndex: 1,
         display: 'flex',
         flexDirection: 'column',
         transition: 'bottom 0.3s ease',
-        border:'1rem solid red'
+        //border:'1rem solid red',
+        
       }}
     >
       <Paper

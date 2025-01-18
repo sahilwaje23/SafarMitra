@@ -52,6 +52,6 @@ theme.palette.txtcol = theme.palette.mode === "dark" ? "#ffffff" : "#000000";
 theme.palette.tbgcolor =
   theme.palette.mode === "dark"
     ? "rgba(1, 1, 1, 0.8)"
-    : "rgba(223, 223, 223, 0.4)";
+    : "rgba(225, 225, 225, 0.8)";
 
 export default theme;

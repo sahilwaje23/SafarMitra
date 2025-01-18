@@ -81,6 +81,7 @@ const Popup = () => {
           alignItems: 'center',
           justifyContent: 'space-between',
           bgcolor: theme.palette.tbgcolor,
+        //   backdropFilter: 'blur(10px)',
           borderTopLeftRadius: 16,
           borderTopRightRadius: 16,
           boxShadow: 3,
@@ -88,7 +89,7 @@ const Popup = () => {
           bottom:'0',
         //   gap:'2rem',
         //   pb: '3rem',
-        //  height:'100%',
+         height:'100%',
         //   border:'2rem solid green',
     
         }}
@@ -114,18 +115,21 @@ const Popup = () => {
         {/* Popup Content */}
         <Box
           sx={{
-            position:'relative',
+            // position:'relative',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
             width: '100%',
-            height:isExpanded?'60vh':'17vh',
-            maxHeight: isExpanded ? '90vh' : '17vh',
+            height:isExpanded?'70vh':'18vh',
+            // height:'100%',
+            maxHeight: isExpanded ? '90vh' : '18vh',
             overflowY: isExpanded ? 'auto' : 'hidden',
             transition: 'max-height 0.3s ease',
             // mb:0,
             gap:'1rem',
+            boxSizing: 'border-box',
             // border:'1rem solid blue',
+             // This ensures the container fills the screen
           }}
         >
           {/* Ride Info */}

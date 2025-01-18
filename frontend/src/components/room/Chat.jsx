@@ -51,7 +51,7 @@ function Chat() {
         height: "100%",
         ptop: 2,
         bgcolor: theme.palette.mode === "dark" ? "rgba(18, 18, 18, 0.9)" : "rgba(255, 255, 255, 0.9)",
-        gap: '0.5rem',
+        gap: '0.8rem',
         borderRadius: 2,
       }}
     >
@@ -59,8 +59,8 @@ function Chat() {
       <Box
         sx={{
 
-          minHeight:'15rem',
-          maxHeight:'17rem',
+          minHeight:'20rem',
+          maxHeight:'22rem',
           pt:'4rem',
           flex: 1,
           overflowY: "auto",

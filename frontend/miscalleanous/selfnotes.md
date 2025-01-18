@@ -204,9 +204,10 @@ By following these practices, you can build a seamless hybrid project without co
 ### entry 4 - 18th jan 2025
 - For testing purpose room ui route is there in room actions join or create room 
 - yogesh fix ur theme issue in userhomepage 
-- added one property called as `textcol` which dynamically adapts textcolor according to mode 
+- added one property called as `textcol` which dynamically adapts textcolor according to mode also added `tbgcol` for enhanced transperent bg 
 - modes for room are `unconfirmed,locked,accepted,running,finished`
 - suggested to use numbers to represent statuses enables for efficient communication as in the frontend corresponding to the number we display that particular status 
+- the chat is cleared when component derenders-rerenders used `localstorage` but suggested to use some lightweight `database` to not lose everything 
 
 
 ## Yogesh-Palve

@@ -161,7 +161,7 @@ const MapComponent = () => {
       <Typography 
         variant="caption" 
         sx={{ 
-          color: theme.mode==='dark'?'#ffffff':'#000000',
+          // color: theme.palette.txtcol,
           padding: '2px 4px',
           marginBottom: '0px',
           fontFamily:theme.typography.fontFamily,

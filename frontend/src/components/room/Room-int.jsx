@@ -1,6 +1,9 @@
+// - modes for room are `unconfirmed,locked,accepted,running,finished`
+// - suggested to use numbers to represent statuses enables for efficient communication as in the frontend corresponding to the number we display that particular status
 import React, { useEffect, useState } from 'react';
 import { Box, Typography, Button, useMediaQuery ,Paper} from '@mui/material';
 import Map from '../map/Map';
+import Chat from './Chat'
 import theme from '../../styles/theme';
 const ButtonGroup = ({ activeTab, setActiveTab }) => {
  return(
@@ -119,17 +122,26 @@ function MobileView() {
 function DesktopView() {
   const [activeTab, setActiveTab] = useState('details');
   const [status, setStatus] = useState('unconfirmed');
+  const [messages, setMessages] = useState([]);
+  const [inputMessage, setInputMessage] = useState('');
+
+  const handleSendMessage = () => {
+    if (inputMessage.trim() !== '') {
+      setMessages([...messages, inputMessage]);
+      setInputMessage('');
+    }
+  };
   return (
     <Box sx={{ 
       display: 'flex', 
-      height: '100vh',
+      height: '85vh',
       width: '99%',
       marginLeft:'0.1rem',
       margin: '0.5rem' ,// For navbar
       //border:'1rem solid hotpink',
       gap:'0.4rem'
     }}>
-      <Box sx={{ flex: '60%', height: '80%',
+      <Box sx={{ flex: '60%', height: '90%',
         //border:'1px solid aqua',
         width:'70%',
        }}>
@@ -144,6 +156,7 @@ function DesktopView() {
         padding:'0.5rem',
         //paddingRight:'7rem',
         width:'90%',
+        height:'100%',
         
       }}>
         <Box sx={{ 
@@ -153,18 +166,24 @@ function DesktopView() {
           mb: 3 ,
           marginRight:'0.8rem',
           gap:3,
+          
         }}>
           <ButtonGroup activeTab={activeTab} setActiveTab={setActiveTab} />
           <Typography sx={{ color: theme.palette.primaryColor.main }}>
             Status : {status}
           </Typography>
         </Box>
-
         {activeTab === 'chat' ? (
-          <Typography>
-            Chat
-            </Typography>
-        ) : (
+            <Box
+            sx={{
+              height: "75%", // Control height of the chat container
+              maxHeight: "75%", // Max height, you can adjust this as needed
+              overflowY: "auto", // Make it scrollable if content overflows
+            }}
+          >
+            <Chat />
+          </Box>
+          ) : (
           <>
             <Typography sx={{ mb: 1,marginLeft:'1rem' }}>
               Source : <span style={{ color: theme.palette.primaryColor.main }}>DADAR STN</span>

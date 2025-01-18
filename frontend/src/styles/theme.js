@@ -2,7 +2,7 @@ import { createTheme } from "@mui/material/styles";
 
 const theme = createTheme({
   palette: {
-    mode: "light",
+    mode: "dark",
     primaryColor: {
       main: "#FEC400",
       hover: "#b79420",

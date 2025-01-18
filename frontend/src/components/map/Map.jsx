@@ -188,7 +188,7 @@ const MapComponent = () => {
 
   return (
 
-    <Paper sx={{ height: isMobile ? '400px' : '100%', width: '100%', border: '1px solid black' }}>
+    <Paper sx={{ height:isMobile?'400px':'100%', width: '100%', border: '1px solid black' }}>
       <GoogleMap
         onLoad={onLoad}
         mapContainerStyle={{

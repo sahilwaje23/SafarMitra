@@ -172,6 +172,7 @@ const Navbar = ({ type }) => {
         handleNavigate(currentNavItems[newValue].path);
       }}
       sx={{
+        zIndex:3,
         width: '100%',
         position: 'fixed',
         bottom: 0,

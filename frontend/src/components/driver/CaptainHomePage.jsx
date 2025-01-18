@@ -15,6 +15,7 @@ const CaptainHomePage = () => {
       flexDirection: 'column', 
       gap: 2, 
       p: 2,
+      height:'90vh',
       minHeight: '100vh',
       pb: '64px', // Account for bottom navigation
       bgcolor: theme.palette.mode === 'dark' 

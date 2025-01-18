@@ -51,13 +51,17 @@ function Chat() {
         height: "100%",
         ptop: 2,
         bgcolor: theme.palette.mode === "dark" ? "rgba(18, 18, 18, 0.9)" : "rgba(255, 255, 255, 0.9)",
-        gap: 2,
+        gap: '0.5rem',
         borderRadius: 2,
       }}
     >
       {/* Chat Messages Section */}
       <Box
         sx={{
+
+          minHeight:'15rem',
+          maxHeight:'17rem',
+          pt:'4rem',
           flex: 1,
           overflowY: "auto",
           display: "flex",
@@ -90,7 +94,7 @@ function Chat() {
       </Box>
 
       {/* Input and Send Button Section */}
-      <Box sx={{ display: "flex", gap: 2 }}>
+      <Box sx={{ display: "flex", gap: 1 }}>
         <TextField
           fullWidth
           size="small"

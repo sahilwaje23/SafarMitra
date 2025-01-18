@@ -1,7 +1,7 @@
 // - modes for room are `unconfirmed,locked,accepted,running,finished`
 // - suggested to use numbers to represent statuses enables for efficient communication as in the frontend corresponding to the number we display that particular status
 import React, { useEffect, useState } from 'react';
-import { Box, Typography, Button, useMediaQuery ,Paper} from '@mui/material';
+import { Box, Typography, Button, useMediaQuery ,Paper,GlobalStyles} from '@mui/material';
 import Map from '../map/Map';
 import Chat from './Chat'
 import Popup from './Popup';
@@ -52,20 +52,28 @@ const ButtonGroup = ({ activeTab, setActiveTab }) => {
 
 const MobileView = () => {
   return (
+    <>
+    <GlobalStyles styles={{ body: { overflowX: 'hidden' } }} />
     <Box
       sx={{
         display: 'flex',
         flexDirection: 'column',
         height: '100vh',
-        position: 'relative',
-        border:'1px solid red'
+      //  position: 'relative',
+      //  border:'1px solid red'
       }}
     >
-      <Box>
+      <Map />
+      <Box sx={{
+        // border:'1em solid hotpink',
+        pb:'0.4rem',
+        // mb:'1rem',
+        // height:'32px',
+        }}>
       <Popup />
       </Box>
-      <Map />
     </Box>
+    </>
   );
 };
 
@@ -73,15 +81,6 @@ const MobileView = () => {
 function DesktopView() {
   const [activeTab, setActiveTab] = useState('details');
   const [status, setStatus] = useState('unconfirmed');
-  const [messages, setMessages] = useState([]);
-  const [inputMessage, setInputMessage] = useState('');
-
-  const handleSendMessage = () => {
-    if (inputMessage.trim() !== '') {
-      setMessages([...messages, inputMessage]);
-      setInputMessage('');
-    }
-  };
   return (
     <Box sx={{ 
       display: 'flex', 
@@ -135,7 +134,15 @@ function DesktopView() {
             <Chat />
           </Box>
           ) : (
+            <>
+             <Typography sx={{ mb: 1,marginLeft:'1rem' }}>
+               Source : <span style={{ color: theme.palette.primaryColor.main }}>DADAR STN</span>
+             </Typography>
+             <Typography sx={{ mb: 2,marginLeft:'1rem' }}>
+               Destination : <span style={{ color: theme.palette.primaryColor.main }}>VJTI</span>
+             </Typography>
          <RideDetails/>
+            </>  
         )}
       </Paper>
     </Box>

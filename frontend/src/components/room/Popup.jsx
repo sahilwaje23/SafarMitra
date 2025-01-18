@@ -5,11 +5,13 @@ import Chat from './Chat'; // Assuming Chat is a separate component
 import RideDetails from './RideDetails'; // Assuming RideDetails is a separate component
 import theme from '../../styles/theme';
 
-const ButtonGroup = ({ activeTab, setActiveTab}) => {
+const ButtonGroup = ({ activeTab, setActiveTab,isExpanded,setIsExpanded}) => {
   return (
     <Box sx={{ display: 'flex', gap: 2 }}>
       <Button
-        onClick={() => setActiveTab('details')}
+        onClick={() =>{
+            setIsExpanded(true)
+            setActiveTab('details')}}
         sx={{
           bgcolor: activeTab === 'details' ? theme.palette.primaryColor.main : 'transparent',
           color: activeTab === 'details' ? theme.palette.txtcol : theme.palette.primaryColor.main,
@@ -27,9 +29,9 @@ const ButtonGroup = ({ activeTab, setActiveTab}) => {
         Ride Details
       </Button>
       <Button
-        onClick={() => setActiveTab('chat')
-
-        }
+         onClick={() =>{
+            setIsExpanded(true)
+            setActiveTab('chat')}}
         sx={{
           bgcolor: activeTab === 'chat' ? theme.palette.primaryColor.main : 'transparent',
           color: activeTab === 'chat' ? theme.palette.txtcol : theme.palette.primaryColor.main,
@@ -57,20 +59,23 @@ const Popup = () => {
   return (
     <Box
       sx={{
-        position: 'absolute',
+        position: 'sticky',
         bottom: isExpanded ? 0 : '10%',
         left: 0,
         right: 0,
-        zIndex: 1,
+        //zIndex: 1,
         display: 'flex',
         flexDirection: 'column',
         transition: 'bottom 0.3s ease',
-        //border:'1rem solid red',
-        
+    //    border:'1rem solid red',
+        height:'100%',
+        gap:'1rem',
       }}
     >
       <Paper
+      elevation={2}
         sx={{
+        //   position:'relative',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
@@ -79,7 +84,13 @@ const Popup = () => {
           borderTopLeftRadius: 16,
           borderTopRightRadius: 16,
           boxShadow: 3,
-          p: 2,
+          padding: '0.4rem 0.6rem 0rem',
+          bottom:'0',
+        //   gap:'2rem',
+        //   pb: '3rem',
+        //  height:'100%',
+        //   border:'2rem solid green',
+    
         }}
       >
         {/* Expand/Collapse Icon */}
@@ -103,13 +114,18 @@ const Popup = () => {
         {/* Popup Content */}
         <Box
           sx={{
+            position:'relative',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
             width: '100%',
-            maxHeight: isExpanded ? '60vh' : '15vh',
+            height:isExpanded?'60vh':'17vh',
+            maxHeight: isExpanded ? '90vh' : '17vh',
             overflowY: isExpanded ? 'auto' : 'hidden',
             transition: 'max-height 0.3s ease',
+            // mb:0,
+            gap:'1rem',
+            // border:'1rem solid blue',
           }}
         >
           {/* Ride Info */}
@@ -121,6 +137,8 @@ const Popup = () => {
               alignItems: 'center',
               width: '100%',
               px: 2,
+              gap:'1rem',
+            //   border:'1rem solid purple',
             }}
           >
             <Box>
@@ -137,11 +155,13 @@ const Popup = () => {
           </Box>
 
           {/* Button Group */}
-          <ButtonGroup activeTab={activeTab} setActiveTab={setActiveTab} />
+          <ButtonGroup isExpanded={isExpanded} setIsExpanded={setIsExpanded} activeTab={activeTab} setActiveTab={setActiveTab} />
 
           {/* Active Tab Content */}
-          <Box sx={{ width: '100%', px: 2 }}>
-            {activeTab === 'details' && <RideDetails />}
+          <Box sx={{
+            //  border:'1px solid green',
+            width: '100%', px: 2 }}>
+          {activeTab === 'details' && <RideDetails />}
             {activeTab === 'chat' && <Chat />}
           </Box>
         </Box>

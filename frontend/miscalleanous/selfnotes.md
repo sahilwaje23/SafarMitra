@@ -183,12 +183,35 @@ By following these practices, you can build a seamless hybrid project without co
 - created the main landing folders / and  driver and user folders to have their components located there the forms will be almost identical .
 - in landing page the light-theme adjustments are remaining 
 
-### entry 2 - 5th jan 2025
-- suggested to read the small comments and refer the designs to create user and driver homepages
-- suggested to not strictly follow my design if uber clone and other designs can be giving the same feature go for it 
-- always give me screenshots when making user driver homepages
-- created the folders for required components 
-- study theme.js in great details b4 using it is the core designing aspect 
+### entry 2 - 10th jan 2025
+- created navbar
+- empty routes for navbar are functional 
+- theme toggling,help all will be there in profile for user/driver
+- if required the earnings option can be there in driver profile 
+- user could have option to add freinds and that could be there in either navbar or profile 
+- please give suggestions and properly study following components before doing any work `App.jsx` , `Main.jsx` , `Navbar.jsx` any doubts immediately ask.
+- ( for myself ) if possible add transperent bg to room actions popup and simultaneously blur entire background slightly 
+- loader should be used ideally when making user or driver homepage 
+- thinking to make history general like navbar 
+
+### entry 3 - 12th jan 2025
+- work in `rooms folder` for further work apart from user homepage 
+- suggested to make `todo` like room layout the main container for todos is `Room.jsx` and todo card is `RoomCard.jsx` will contain mainly three parameters `Roomid` which has drop down to showcase participants name id and other details , `source and destination` ,  `Room capacity`, and lastly the `button` to `join room for user and accept room for driver`.
+- suggested to add css to scrollbars 
+- nearby rooms may be removed from navbar
+- will make `general history or profile component` `earnings` component is unique to driver and can have some medium scale statistics 
+
+### entry 4 - 14th jan 2025
+- 
+
+## Yogesh-Palve
+### entry 1 - 06 jan 2025
+- added route for user-signup , user-signin , captain-signup , captain-signin . 
+- partially made user-signup and singin ( axios pending ). 
+
+### entry 2 - 06 jan 2025 
+- completed user signin and signup with backend integration 
+- completed user Homepage ( use images instead of map so chaitanya will add map their )
 
 ## `<yogeshpalve-github-username>`
 ### entry ? ? ? 2025 

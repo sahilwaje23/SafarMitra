@@ -9,6 +9,12 @@
     /* overflow-x: hidden;  */
     /* overflow changed review */
 }
+
+
+html {
+  overflow-x: hidden; 
+}
+
 /* scroll bar styling  */
 
 /* Style the scrollbar track */

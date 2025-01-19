@@ -4,8 +4,8 @@ export const EntityContext = createContext();
 
 const EntityContextProvider = ({ children }) => {
   const [entity, setEntity] = useState({
-    type: "",
-    data: "",
+    type: null,
+    data: null,
   });
 
   return (

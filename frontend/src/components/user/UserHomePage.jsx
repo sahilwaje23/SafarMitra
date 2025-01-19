@@ -7,7 +7,7 @@ import {EntityContext} from '../../contexts/EntityContext'
 const UserHomePage = () => {
   const yellowTheme = theme.palette.primaryColor.main;
   const {entity} = useContext(EntityContext)
-  console.log(entity);
+  // console.log(entity);
   return (
     <>
       <Box

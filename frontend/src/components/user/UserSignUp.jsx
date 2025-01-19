@@ -16,7 +16,6 @@ import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
 import axios from "axios";
 
-
 import { EntityContext } from "../../contexts/EntityContext";
 
 const UserSignUp = () => {
@@ -67,7 +66,8 @@ const UserSignUp = () => {
     }
 
     axios
-      .post(`
+      .post(
+        `
         ${import.meta.env.VITE_BASE_URL}/signup`,
         {
           fullName: nameRef.current.value,
@@ -83,8 +83,8 @@ const UserSignUp = () => {
             "Content-Type": "multipart/form-data",
             // for file upload (multer)
           },
-        },
-        { withCredentials: true }
+          withCredentials: true,
+        }
       )
       .then((res) => {
         setIsLoading(false);

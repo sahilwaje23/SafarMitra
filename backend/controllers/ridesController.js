@@ -1,6 +1,7 @@
 const { validationResult } = require("express-validator");
 const { getFare, getOtp } = require("../services/ride");
 const Ride = require("../models/ride");
+const User = require("../models/user");
 
 const handleCreateRide = async (req, res) => {
   const errors = validationResult(req);
@@ -10,20 +11,22 @@ const handleCreateRide = async (req, res) => {
   }
 
   const { pickup, destination } = req.body;
-  const fare = await getFare(pickup, destination);
-
+  const { fare, distance } = await getFare(pickup, destination);
   try {
-    const newRide = await Ride.create({
-      users: [
-        { userId: req.user._id }, // Jugad : Add the first user directly
-      ],
+    const newRoom = await Ride.create({
+      creatorId: req.user._id,
       pickup,
       destination,
       fare,
+      distance: distance.text,
       otp: getOtp(),
     });
 
-    return res.status(200).json(newRide);
+    const user = await User.findByIdAndUpdate(req.user._id, {
+      $push: { ridesBooked: newRoom._id },
+    });
+
+    return res.status(200).json(newRoom);
   } catch (e) {
     res.status(400).send({ rideError: e.message });
   }

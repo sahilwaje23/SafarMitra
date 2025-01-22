@@ -2,12 +2,16 @@ const { Schema, model } = require("mongoose");
 
 const rideSchema = new Schema(
   {
-    users: [
+    creatorId: {
+      type: Schema.Types.ObjectId,
+      ref: "user",
+      required: true,
+    },
+    mitra: [
       {
         userId: {
           type: Schema.Types.ObjectId,
           ref: "user",
-          required: true,
         },
       },
     ],
@@ -25,7 +29,7 @@ const rideSchema = new Schema(
     },
     distance: {
       // in meters
-      type: Number,
+      type: String,
     },
     duration: {
       // in seconds

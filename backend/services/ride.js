@@ -13,7 +13,7 @@ const getFare = async (pickup, destination) => {
 
   const fareOfRide = (distance.value - 2000) * fare.perMetre + fare.baseFare;
 
-  return Math.ceil(fareOfRide);
+  return {fare : Math.ceil(fareOfRide), distance};
 };
 
 const getOtp = () => {

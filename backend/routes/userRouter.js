@@ -27,6 +27,8 @@ router.post("/login", validateUserSignIn, handleSignIn);
 
 router.get("/my-profile", authUser, handleGetUserProfile);
 
+router.get("/check", authUser, (req, res) => res.status(200).json(req.user));
+
 router.get("/logout", authUser, handleLogOutUser);
 
 module.exports = router;

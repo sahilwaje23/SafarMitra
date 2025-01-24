@@ -13,19 +13,15 @@ const SocketContextProvider = ({ children }) => {
     });
 
     socket.on("disconnect", () => console.log("Disconnected from server"));
-
-    // return () => {
-    //   socket.disconnect();
-    // };
   }, []);
 
   const sendMessage = (eventName, message) => {
     socket.emit(eventName, message);
   };
 
-  const recieveMessage = () => {
-    socket.on("message", (message) => {
-      console.log(message);
+  const recieveMessage = (eventName, callback) => {
+    socket.on(eventName, (message) => {
+      callback(message);
     });
   };
 

@@ -9,15 +9,11 @@ import EntityContextProvider from "./contexts/EntityContext.jsx";
 import SocketContextProvider from "./contexts/Socket.jsx";
 
 createRoot(document.getElementById("root")).render(
-  <StrictMode>
-    {/* <ThemeProvider theme={theme}> */}
+  <SocketContextProvider>
     <EntityContextProvider>
-      <SocketContextProvider>
-        <BrowserRouter>
-          <App />
-        </BrowserRouter>
-      </SocketContextProvider>
+      <BrowserRouter>
+        <App />
+      </BrowserRouter>
     </EntityContextProvider>
-    {/* </ThemeProvider> */}
-  </StrictMode>
+  </SocketContextProvider>
 );

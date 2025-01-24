@@ -201,7 +201,7 @@ const UserProfile = () => {
                         >
                           {new Date(ride.createdAt).toLocaleString()}
                         </Typography>
-                        <Typography variant="body2">{ride.distance}</Typography>
+                        <Typography variant="body2">{ride.distance} Km | {ride.duration} hours</Typography>
                       </div>
                     </div>
                   </CardContent>

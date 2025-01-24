@@ -1,4 +1,4 @@
-import React, { useContext, useEffect } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { Box, useMediaQuery } from "@mui/material";
 import QuickActions from "./QuickActions"; // Assuming the component is renamed without 'Captain'
 import Dashboard from "./Dashboard"; // Assuming the component is renamed without 'Captain'
@@ -7,16 +7,48 @@ import Room from "../room/Room";
 import theme from "../../styles/theme.js"; // Correct relative path for styles folder
 import { EntityContext } from "../../contexts/EntityContext";
 import { SocketContext } from "../../contexts/Socket";
+import { Socket } from "socket.io-client";
 
 const CaptainHomePage = () => {
   const { entity } = useContext(EntityContext);
   const driverId =
     entity.data?._id || JSON.parse(localStorage.getItem("DRIVER"))._id;
-  const { sendMessage } = useContext(SocketContext);
+  const { sendMessage, recieveMessage } = useContext(SocketContext);
+
+  // ^ Chaitanya ithe status online asel tr pratyek 10 sec la update hoil location
+  const [status, setStatus] = useState("online");
 
   useEffect(() => {
     sendMessage("join", { userType: "DRIVER", userId: driverId });
   }, []);
+
+  useEffect(() => {
+    if (status === "online") {
+      const updateLocation = () => {
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition((position) =>
+            sendMessage("update-location-driver", {
+              driverId,
+              location: {
+                ltd: position.coords.latitude,
+                lng: position.coords.longitude,
+              },
+            })
+          );
+        }
+      };
+
+      recieveMessage("new-ride", (rideData) => {
+        // ^ Chaitanya whatever new ride Data comes u will recieve it here {roomDetail , creatorDetail}
+        console.log("New ride received:", rideData);
+      });
+
+      const locationInterval = setInterval(updateLocation, 15000);
+      updateLocation();
+
+      return () => clearInterval(locationInterval);
+    }
+  }, [status]);
 
   const isMobile = useMediaQuery("(max-width:1024px)");
 

@@ -6,17 +6,17 @@ import {
   CaptainSignIn,
   CaptainSignUp,
   Landing,
-  RoomActivities,
   UserHomePage,
-  UserProfile,
   UserSignIn,
   UserSignUp,
+  Navbar,
+  RoomInt,
+  UserProfile,
 } from "./components";
-import Navbar from "./components/navbar/Navbar";
 import theme from "./styles/theme";
 import { useMediaQuery } from "@mui/material";
-import Room from "./components/room/Room";
-import UserProtectedWrapper from "./wrappers/UserProtectedWrapper";
+import UserProtectedWrapper from "./wrappers/UserProtectedWrapper"
+
 function App() {
   const location = useLocation(); // this has location object which will give information about the current url , this also triggers a re-render if the current location changes
   const type = location.pathname.startsWith("/captain-") ? "captain" : "user";
@@ -40,8 +40,8 @@ function App() {
           <Route path="/user-signin" element={<UserSignIn />} />
           <Route path="/captain-signup" element={<CaptainSignUp />} />
           <Route path="/captain-signin" element={<CaptainSignIn />} />
-
           <Route path="/user-homepage" element={<UserHomePage />} />
+          <Route path="/captain-homepage" element={<CaptainHomePage />} />
           <Route
             path="/user-history"
             element={
@@ -58,10 +58,9 @@ function App() {
               </UserProtectedWrapper>
             }
           />
-
-          <Route path="/captain-homepage" element={<CaptainHomePage />} />
-          <Route path="/room-activities" element={<RoomActivities />} />
-          <Route path="/captain-history" element={<div>Captain History</div>} />
+          <Route path="/create-room" element={<div>Create Room</div>} />
+          <Route path="/join-room" element={<RoomInt />} />
+          <Route path="/captain-history" element={<RoomInt />} />
           <Route path="/captain-earnings" element={<div>Earnings</div>} />
           <Route path="/captain-profile" element={<div>Captain Profile</div>} />
           <Route

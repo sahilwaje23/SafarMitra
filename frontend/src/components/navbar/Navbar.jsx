@@ -69,9 +69,11 @@ const Navbar = ({ type }) => {
     <AppBar
       position="fixed"
       sx={{
-        backgroundColor: theme.palette.mode === 'dark'
-          ? 'rgba(18, 18, 18, 0.6)' 
-          : 'rgba(255, 255, 255, 0.4)',
+
+        backgroundColor: theme.palette.mode === 'dark' 
+          ? 'rgba(0, 0, 0, 0.6)' 
+          : 'rgba(255, 255, 255, 0.9)',
+
         backdropFilter: 'blur(10px)',
         top: 0,
         '& .MuiBottomNavigationAction-root': {
@@ -170,6 +172,7 @@ const Navbar = ({ type }) => {
         handleNavigate(currentNavItems[newValue].path);
       }}
       sx={{
+        zIndex:3,
         width: '100%',
         position: 'fixed',
         bottom: 0,
@@ -230,14 +233,14 @@ const Navbar = ({ type }) => {
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, m: 2 }}>
             <Button
               variant="contained"
-              onClick={() => navigate('/room-activities')}
+              onClick={() => navigate('/create-room')}
               sx={{ backgroundColor: yellowTheme, fontWeight: 'bold' }}
             >
               Create Room
             </Button>
             <Button
               variant="contained"
-              onClick={() => navigate('/room-activities')}
+              onClick={() => navigate('/join-room')}
               sx={{ backgroundColor: yellowTheme, fontWeight: 'bold' }}
             >
               Join Room

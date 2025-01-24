@@ -6,8 +6,8 @@ import UserSignIn from './user/UserSignIn'
 import UserSignUp from './user/UserSignUp'
 import UserHomePage from './user/UserHomePage'
 import CaptainHomePage from './driver/CaptainHomePage'
-import RoomActivities from './user/RoomActivities'
-import Room from './room/Room'
-import UserProfile from './user/UserProfile'
+import Navbar from './navbar/Navbar';
+import RoomInt from './room/Room-int';
+import UserProfile from './user/UserProfile';
 
-export {Landing,CaptainSignUp,CaptainSignIn,UserSignIn,UserSignUp,UserHomePage,CaptainHomePage,RoomActivities,Room,UserProfile} 
+export {Landing,CaptainSignUp,CaptainSignIn,UserSignIn,UserSignUp,UserHomePage,CaptainHomePage,Navbar,RoomInt,UserProfile} 

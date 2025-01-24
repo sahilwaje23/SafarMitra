@@ -1,5 +1,5 @@
 import React from "react";
-import { useRef, useState } from "react";
+import { useRef, useState, useContext } from "react";
 import {
   Box,
   Typography,
@@ -8,11 +8,12 @@ import {
   FormControl,
   Snackbar,
   Alert,
-  LinearProgress
+  LinearProgress,
 } from "@mui/material";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import theme from "../../styles/theme";
+import { EntityContext } from "../../contexts/EntityContext";
 
 const CaptainSignIn = () => {
   const navigate = useNavigate();
@@ -20,6 +21,7 @@ const CaptainSignIn = () => {
   const emailRef = useRef();
   const passwordRef = useRef();
   const [isLoading, setIsLoading] = useState(false);
+  const { setEntity } = useContext(EntityContext);
 
   // error snackbar
   const [state, setState] = React.useState({
@@ -36,7 +38,7 @@ const CaptainSignIn = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    setIsLoading(true)
+    setIsLoading(true);
     const userData = {
       email: emailRef.current.value,
       password: passwordRef.current.value,
@@ -49,7 +51,9 @@ const CaptainSignIn = () => {
         setTimeout(() => {
           setIsLoading(false);
         }, 500);
-        console.log(res);
+        // console.log(res);
+        setEntity({ type: "DRIVER", data: res.data.driver });
+        localStorage.setItem("DRIVER", JSON.stringify(res.data.driver));
         navigate("/captain-homepage");
       })
       .catch((e) => {
@@ -154,12 +158,8 @@ const CaptainSignIn = () => {
                 Don't have an account?
                 <Link
                   to="/captain-signup"
-
                   className={`font-bold `}
                   style={{ color: yellowTheme }}
-
-                 
-
                 >
                   Sign Up
                 </Link>

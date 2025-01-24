@@ -2,6 +2,7 @@ import React, { useContext, useEffect, useState } from "react";
 import { EntityContext } from "../contexts/EntityContext";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { LinearProgress } from "@mui/material";
 
 const UserProtectedWrapper = ({ children }) => {
   const token = localStorage.getItem("token");
@@ -38,7 +39,7 @@ const UserProtectedWrapper = ({ children }) => {
   }, [token]);
 
   if (loading) {
-    return <div>Loading...</div>;
+    return <LinearProgress sx={{ width: "100%", height: "2px" }} />;
   }
 
   return <>{children}</>;

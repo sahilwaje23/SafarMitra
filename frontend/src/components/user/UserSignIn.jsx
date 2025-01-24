@@ -70,6 +70,7 @@ const UserSignIn = () => {
       if (response.status === 200) {
         setEntity({ type: "USER", data: response.data.user });
         localStorage.setItem("token", response.data.token);
+        localStorage.setItem("USER", JSON.stringify(response.data.user));
         navigate("/user-homepage");
       }
     } catch (error) {

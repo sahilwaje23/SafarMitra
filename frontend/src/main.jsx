@@ -6,15 +6,17 @@ import "./index.css";
 // import theme from "./styles/theme";
 import { BrowserRouter } from "react-router-dom";
 import EntityContextProvider from "./contexts/EntityContext.jsx";
-
+import SocketContextProvider from "./contexts/Socket.jsx";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     {/* <ThemeProvider theme={theme}> */}
     <EntityContextProvider>
-      <BrowserRouter>
-        <App />
-      </BrowserRouter>
+      <SocketContextProvider>
+        <BrowserRouter>
+          <App />
+        </BrowserRouter>
+      </SocketContextProvider>
     </EntityContextProvider>
     {/* </ThemeProvider> */}
   </StrictMode>

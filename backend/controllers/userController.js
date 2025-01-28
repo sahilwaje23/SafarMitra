@@ -30,7 +30,8 @@ const handleSignUp = async (req, res) => {
       profileImagePath,
       idImagePath,
     });
-
+    // console.log(token)
+    res.cookie("token", token);
     res.status(201).json({ msg: "success", token, newUser });
   } catch (err) {
     res.status(400).send(err.message);
@@ -59,7 +60,8 @@ const handleSignIn = async (req, res) => {
 
 const handleGetUserProfile = async (req, res) => {
   const user = req.user;
-  return res.status(200).json(user);
+  const userWithRides = await User.findById(user._id).populate("ridesBooked").select("-password -salt");
+  return res.status(200).json(userWithRides);
 };
 
 const handleLogOutUser = async (req, res) => {

@@ -25,25 +25,29 @@ const getCoordinates = async (address) => {
   }
 };
 
-const getDistanceTime = async (origin, destination) => {
-  if (!origin || !destination) {
-    throw new Error("Origin and destination are required");
+const getDistanceTime = async (pickupLat, pickupLng, dropLat, dropLng) => {
+  if (!pickupLat || !pickupLng || !dropLat || !dropLng) {
+    throw new Error("Pickup and drop coordinates are required");
   }
 
   const apiKey = process.env.GOOGLE_MAPS_API;
 
-  const url = `https://maps.googleapis.com/maps/api/distancematrix/json?origins=${encodeURIComponent(
-    origin
-  )}&destinations=${encodeURIComponent(destination)}&key=${apiKey}`;
+  // Construct the URL using latitude and longitude values
+  const url = `https://maps.googleapis.com/maps/api/distancematrix/json?origins=${pickupLat},${pickupLng}&destinations=${dropLat},${dropLng}&key=${apiKey}`;
 
   try {
     const response = await axios.get(url);
-
     if (response.data.status === "OK") {
-      if (response.data.rows[0].elements[0].status === "ZERO_RESULTS") {
-        throw new Error("No routes found");
+      const element = response.data.rows[0].elements[0];
+
+      if (element.status === "ZERO_RESULTS") {
+        throw new Error("No routes found between the given coordinates");
       }
-      return response.data.rows[0].elements[0];
+
+      return {
+        distance: element.distance.value,
+        duration: element.duration.value,
+      };
     } else {
       throw new Error("Unable to fetch distance and time");
     }
@@ -58,13 +62,34 @@ const getAutoCompleteSuggestions = async (input) => {
   }
 
   const apiKey = process.env.GOOGLE_MAPS_API;
-  const url = `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodeURIComponent(
+  const autocompleteUrl = `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodeURIComponent(
     input
   )}&key=${apiKey}`;
 
   try {
-    const response = await axios.get(url);
-    return response.data.predictions;
+    const response = await axios.get(autocompleteUrl);
+    const predictions = response.data.predictions;
+
+    if (predictions.length === 0) {
+      throw new Error("No suggestions found");
+    }
+
+    // Fetch lat/lng for each prediction using Place Details API
+    const detailsPromises = predictions.map(async (place) => {
+      const placeDetailsUrl = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${place.place_id}&key=${apiKey}`;
+      const detailsResponse = await axios.get(placeDetailsUrl);
+      const location = detailsResponse.data.result.geometry.location;
+
+      return {
+        description: place.description,
+        place_id: place.place_id,
+        lat: location.lat,
+        lng: location.lng,
+      };
+    });
+
+    const results = await Promise.all(detailsPromises);
+    return results;
   } catch (e) {
     throw e;
   }

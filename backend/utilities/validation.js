@@ -46,9 +46,13 @@ const validateDriverSignIn = [
   body("password").notEmpty().withMessage("Password is required"),
 ];
 
-const validateRideCreation = [
-  body("pickup").notEmpty().withMessage("Source is required"),
-  body("destination").notEmpty().withMessage("Destination is required"),
+const validatePickUpDrop = [
+  body("pickupText").notEmpty().withMessage("Source is required"),
+  body("dropText").notEmpty().withMessage("Destination is required"),
+  body("pickupLat").notEmpty().withMessage("Good Frontend wala is required"),
+  body("pickupLng").notEmpty().withMessage("Good Frontend wala is required"),
+  body("dropLat").notEmpty().withMessage("Good Frontend wala is required"),
+  body("dropLng").notEmpty().withMessage("Good Frontend wala is required"),
 ];
 
 module.exports = {
@@ -56,5 +60,5 @@ module.exports = {
   validateUserSignIn,
   validateDriverSignUp,
   validateDriverSignIn,
-  validateRideCreation,
+  validatePickUpDrop,
 };

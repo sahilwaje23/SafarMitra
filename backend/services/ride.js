@@ -1,23 +1,72 @@
 const { getDistanceTime } = require("./map");
 const { fare } = require("../utilities/fare");
+const Drivers = require("../models/driver");
+const Ride = require("../models/ride");
 
-const getFare = async (pickup, destination) => {
-  if (!pickup || !destination) {
-    throw new Error("Pickup and destination are required");
+const getFare = async (pickupLat, pickupLng, dropLat, dropLng) => {
+  if (!pickupLat || !pickupLng || !dropLat || !dropLng) {
+    throw new Error("Pickup and destination coordinates are required");
   }
 
-  if (pickup === destination) {
-    throw new Error("Pickup and destination cannot be same");
+  if (pickupLat === dropLat && pickupLng === dropLng) {
+    throw new Error("Pickup and destination cannot be the same");
   }
-  const { distance } = await getDistanceTime(pickup, destination);
 
-  const fareOfRide = (distance.value - 2000) * fare.perMetre + fare.baseFare;
+  const { distance, duration } = await getDistanceTime(
+    pickupLat,
+    pickupLng,
+    dropLat,
+    dropLng
+  );
 
-  return Math.ceil(fareOfRide);
+  // console.log({distance,duration})
+  const distanceCharge = Math.max(distance - 2000, 0) * fare.perMetre;
+  const fareOfRide = fare.baseFare + distanceCharge;
+
+  return {
+    fare: Math.ceil(fareOfRide),
+    distance,
+    duration,
+  };
 };
 
 const getOtp = () => {
-  return Math.floor(1000000 + Math.random() * 9000000);
+  return Math.floor(100000 + Math.random() * 900000); // 6-digit OTP
 };
 
-module.exports = { getFare, getOtp };
+const getCaptainsInTheRadius = async (lat, lng, radius) => {
+  try {
+    const captains = await Drivers.find({
+      location: {
+        $geoWithin: {
+          $centerSphere: [[lat, lng], radius / 6371],
+        },
+      },
+    });
+
+    return captains;
+  } catch (error) {
+    throw new Error(`Error fetching captains: ${error.message}`);
+  }
+};
+
+const confirmRide = async (rideId, driver) => {
+  const ride = await Ride.findOneAndUpdate(
+    { _id: rideId },
+    { driver: driver._id, status: "confirmed" }
+  )
+    .populate("creatorId", "-password -salt -ridesBooked")
+    .populate("driver", "-password -salt -ridesAcceptedUrl");
+
+  await Drivers.findByIdAndUpdate(driver._id, {
+    $push: { ridesAcceptedUrl : ride._id },
+  });
+
+  if (!ride) {
+    throw new Error("Ride not found");
+  }
+
+  return ride;
+};
+
+module.exports = { getFare, getOtp, getCaptainsInTheRadius, confirmRide };

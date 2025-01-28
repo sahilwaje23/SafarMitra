@@ -50,6 +50,14 @@ const userSchema = new Schema(
     salt: {
       type: String,
     },
+    location: {
+      ltd: {
+        type: Number,
+      },
+      lng: {
+        type: Number,
+      },
+    },
   },
   { timestamps: true }
 );
@@ -126,7 +134,7 @@ userSchema.static(
 
     // console.log(user);
     const token = createToken(user);
-    return {user,token};
+    return { user, token };
   }
 );
 

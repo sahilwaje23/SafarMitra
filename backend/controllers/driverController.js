@@ -26,7 +26,7 @@ const handleDriverSignup = async (req, res) => {
       req.files.registrationCertificate[0].path;
     const licenseImagePath = req.files.licenseImage[0].path;
 
-    const token = await Driver.addDriverAndGenerateToken({
+    const { token, newDriver } = await Driver.addDriverAndGenerateToken({
       ...req.body,
       profileImageUrl: profileImagePath,
       aadharImageUrl: aadharImagePath,
@@ -34,7 +34,7 @@ const handleDriverSignup = async (req, res) => {
       licenseImageUrl: licenseImagePath,
     });
     res.cookie("token", token);
-    res.status(201).json({ msg: "success", token });
+    res.status(201).json({ msg: "success", token, newDriver });
   } catch (err) {
     res.status(400).send(err.message);
   }
@@ -43,9 +43,12 @@ const handleDriverSignup = async (req, res) => {
 const handleDriverSignin = async (req, res) => {
   let { email, password } = req.body;
   try {
-    const token = await Driver.findDriverAndGenerateToken(email, password);
+    const { token, driver } = await Driver.findDriverAndGenerateToken(
+      email,
+      password
+    );
     res.cookie("token", token);
-    res.status(200).json({ msg: "success", token });
+    res.status(200).json({ msg: "success", token, driver });
   } catch (err) {
     res.status(400).send(err.message);
   }

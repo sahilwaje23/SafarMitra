@@ -1,6 +1,7 @@
 const { Server } = require("socket.io");
 const cors = require("cors");
 const User = require("./models/user");
+const Driver = require("./models/driver");
 
 let io; // bahar isliye declare kar rahe hai kyuki niche use karna hai
 
@@ -15,16 +16,36 @@ function initialiseSocket(server) {
   io.on("connection", (socket) => {
     console.log("Client connected ", socket.id);
 
-
-    // server will listen for join from this server
+    // server yahape listen for join from this server
     socket.on("join", async (data) => {
       const { userType, userId } = data;
-
-      if (userType === "user") {
-        await User.findByIdAndUpdate(userId, { socketId: socket.id });
-      } else if (userType === "driver") {
-        await Driver.findByIdAndUpdate(userId, { socketId: socket.id });
+      // console.log("Connted user");
+      if (userType === "USER") {
+        try {
+          await User.findByIdAndUpdate(userId, { socket_id: socket.id });
+        } catch (e) {
+          console.log(e);
+        }
+      } else if (userType === "DRIVER") {
+        await Driver.findByIdAndUpdate(userId, { socket_id: socket.id });
       }
+    });
+
+    // driver online hone pe uski location update hogi
+    socket.on("update-location-driver", async (data) => {
+      const { driverId, location } = data;
+      // console.log(location);
+      // console.log(driverId)
+
+      if (!location || !location.ltd || !location.lng)
+        return socket.emit("error", { message: "Location not found" });
+
+      await Driver.findByIdAndUpdate(driverId, {
+        location: {
+          ltd: location.ltd,
+          lng: location.lng,
+        },
+      });
     });
 
     socket.on("disconnect", () => {
@@ -33,9 +54,10 @@ function initialiseSocket(server) {
   });
 }
 
-const sendMessageToSocketId = (socketId, data) => {
+const sendMessageToSocketId = (event, socketId, data) => {
+  console.log("sending message to ", socketId);
   if (io) {
-    io.to(socketId).emit("message", data);
+    io.to(socketId).emit(event, data);
   } else {
     console.log("Socket is not initialized");
   }

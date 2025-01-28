@@ -7,14 +7,17 @@ const rideSchema = new Schema(
       ref: "user",
       required: true,
     },
+
     mitra: [
       {
         userId: {
           type: Schema.Types.ObjectId,
           ref: "user",
+          required: true,
         },
       },
     ],
+
     driver: {
       type: Schema.Types.ObjectId,
       ref: "driver",
@@ -52,6 +55,10 @@ const rideSchema = new Schema(
       type: Number,
       required: true,
       select: false,
+    },
+    duration: {
+      type: Number,
+      required: true,
     },
   },
   { timestamps: true }

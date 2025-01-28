@@ -7,12 +7,24 @@ import { EntityContext } from "../../contexts/EntityContext";
 
 const UserHomePage = () => {
   const yellowTheme = theme.palette.primaryColor.main;
-  const { sendMessage } = useContext(SocketContext);
+  const { sendMessage, recieveMessage } = useContext(SocketContext);
   const { entity } = useContext(EntityContext);
-  const userId = entity.data?._id || JSON.parse(localStorage.getItem("USER"))._id;
+  console.log(entity);
+  const userId =
+    entity.data?._id || JSON.parse(localStorage.getItem("USER"))._id;
 
   useEffect(() => {
     sendMessage("join", { userType: "USER", userId });
+
+    recieveMessage("confirm-ride", (rideData) => {
+      // ^ Chaitanya whatever new ride is confirmed by driver u will get data here
+      console.log("Ride Confirmed", rideData);
+    });
+
+    recieveMessage("user-joined", (rideData) => {
+      // ^ Chaitanya whenever a new user joins a ride u will get data here
+      console.log("New User Joined", rideData);
+    });
   }, []);
 
   return (

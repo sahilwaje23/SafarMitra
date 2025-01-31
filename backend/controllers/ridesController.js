@@ -5,7 +5,7 @@ const User = require("../models/user");
 const { getCaptainsInTheRadius } = require("../services/ride");
 const { sendMessageToSocketId } = require("../socket");
 
-const handleCreateRide = async (req, res) => {
+const handleCreateRoom = async (req, res) => {
   const errors = validationResult(req);
 
   if (!errors.isEmpty()) {
@@ -25,12 +25,21 @@ const handleCreateRide = async (req, res) => {
   try {
     const newRoom = await Ride.create({
       creatorId: req.user._id,
-      pickup: pickupText,
-      destination: dropText,
+      pickup: {
+        lat: pickupLat,
+        lng: pickupLng,
+        text: pickupText,
+      },
+      destination: {
+        lat: dropLat,
+        lng: dropLng,
+        text: dropText,
+      },
       fare,
       distance: Math.ceil(distance / 1000),
       otp: getOtp(),
       duration: Math.ceil(duration / 60),
+      status: "open",
     });
 
     const user = await User.findByIdAndUpdate(req.user._id, {
@@ -38,17 +47,47 @@ const handleCreateRide = async (req, res) => {
     }).select("-password -salt -ridesBooked");
 
     res.status(200).json({ newRoom });
+  } catch (e) {
+    res.status(400).send({ rideError: e.message });
+  }
+};
+
+const handleCloseRoom = async (req, res) => {
+  const errors = validationResult(req);
+
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ fieldErrors: errors.array() });
+  }
+
+  try {
+    const { roomId } = req.body;
+    const roomData = await Ride.findById(roomId).populate("creatorId");
+    if (!roomData) {
+      throw new Error("Room not found");
+    }
 
     try {
-      const captians = await getCaptainsInTheRadius(pickupLat, pickupLng, 300);
+      const captians = await getCaptainsInTheRadius(
+        roomData.pickup.lat,
+        roomData.pickup.lng,
+        300
+      );
       // console.log(captians);
 
+      roomData.status = "closed";
+      await roomData.save();
+
       // remove otp
-      newRoom.otp = null;
+      roomData.otp = null;
 
       captians.forEach((captain) => {
-        sendMessageToSocketId("new-ride", captain.socket_id, { newRoom, user });
+        sendMessageToSocketId("new-ride", captain.socket_id, {
+          roomData,
+          user: req.user,
+        });
       });
+
+      res.status(200).json({ roomData });
     } catch (e) {
       return res.status(400).send({ rideError: e.message });
     }
@@ -69,8 +108,8 @@ const searchRoom = async (req, res) => {
 
     const rooms = await Ride.find({
       $or: [
-        { pickup: { $regex: pickup, $options: "i" } },
-        { destination: { $regex: destination, $options: "i" } },
+        { "pickup.text": { $regex: pickup, $options: "i" } },
+        { "destination.text": { $regex: destination, $options: "i" } },
       ],
     });
 
@@ -104,9 +143,25 @@ const handleConfirmRide = async (req, res) => {
     const { rideId } = req.body;
     const ride = await confirmRide(rideId, req.driver);
 
+    if (!ride) {
+      throw new Error("Ride not found");
+    }
+
+    ride.status = "ongoing";
+    await ride.save();
+
     sendMessageToSocketId("confirm-ride", ride.creatorId.socket_id, {
       ride,
       user: req.driver,
+    });
+
+    room.mitra.forEach((m) => {
+      if (m.userId.socket_id) {
+        sendMessageToSocketId("confirm-ride", m.userId.socket_id, {
+          room,
+          user: req.user,
+        });
+      }
     });
 
     return res.status(200).json(ride);
@@ -167,10 +222,31 @@ const handleJoinRoom = async (req, res) => {
   }
 };
 
+const getAllOpenRooms = async (req, res) => {
+  try {
+    const rooms = await Ride.find({ status: "open" });
+    return res.status(200).json(rooms);
+  } catch (e) {
+    return res.status(500).json({ rideError: e.message });
+  }
+};
+
+const getAllWaitingClosedRooms = async (req, res) => {
+  try {
+    const rooms = await Ride.find({ status: "closed" });
+    return res.status(200).json(rooms);
+  } catch (e) {
+    return res.status(500).json({ rideError: e.message });
+  }
+};
+
 module.exports = {
-  handleCreateRide,
+  handleCreateRoom,
   handleGetFare,
   handleConfirmRide,
   searchRoom,
   handleJoinRoom,
+  handleCloseRoom,
+  getAllOpenRooms,
+  getAllWaitingClosedRooms,
 };

@@ -15,7 +15,7 @@ import { useNavigate } from "react-router-dom";
 const UserProfile = () => {
   const yellowTheme = theme.palette.primaryColor.main;
   const [profile, setProfile] = useState(null);
-  const token = localStorage.getItem("token");
+  const token = localStorage.getItem("token") ;
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
 
@@ -170,7 +170,7 @@ const UserProfile = () => {
                               sx={{ color: "#FF4444", fontSize: 20 }}
                             />
                             <Typography variant="body2" color="text.secondary">
-                              From: {ride.pickup}
+                              From: {ride.pickup.text}
                             </Typography>
                           </div>
                           <div className="flex items-center gap-2">
@@ -178,7 +178,7 @@ const UserProfile = () => {
                               sx={{ color: "#4CAF50", fontSize: 20 }}
                             />
                             <Typography variant="body2" color="text.secondary">
-                              To: {ride.destination}
+                              To: {ride.destination.text}
                             </Typography>
                           </div>
                         </div>
@@ -201,7 +201,9 @@ const UserProfile = () => {
                         >
                           {new Date(ride.createdAt).toLocaleString()}
                         </Typography>
-                        <Typography variant="body2">{ride.distance} Km | {ride.duration} hours</Typography>
+                        <Typography variant="body2">
+                          {ride.distance} Km | {ride.duration} hours
+                        </Typography>
                       </div>
                     </div>
                   </CardContent>

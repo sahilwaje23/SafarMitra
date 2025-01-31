@@ -22,7 +22,7 @@ connectToMongoDb(MONGO_URL)
 // ^ Middle Wares
 app.use(
   cors({
-    origin: "https://g4xx34w2-5173.inc1.devtunnels.ms",
+    origin: "https://ts7bsnzs-5173.inc1.devtunnels.ms/",
     methods: ["GET", "POST", "PATCH", "DELETE"],
     credentials: true,
   })

@@ -64,17 +64,12 @@ const UserHomePage = () => {
           }}
         >
           <div className="flex flex-col justify-center items-center w-[100%] gap-y-5 sm:items-center md:ml-[5rem]">
-<<<<<<< HEAD
-          <div className="text-5xl font-semibold w-full text-center mx-auto">Hello user</div>
-            <div className="text-2xl font-semibold w-full text-center mx-auto">Please enter Ride Details</div>
-=======
             <div className="text-5xl font-semibold w-full text-center mx-auto">
               Hello user
             </div>
             <div className="text-2xl font-semibold w-full text-center mx-auto">
               Please enter Ride Details
             </div>
->>>>>>> main
             <div className="flex flex-col gap-y-3 w-full justify-center items-center">
               <input
                 type="text"

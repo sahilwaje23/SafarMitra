@@ -1,63 +1,109 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Button, Typography } from "@mui/material";
 import theme from "../../styles/theme";
 import Room from "../room/Room";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 const RoomActivities = () => {
-  const yellowTheme = theme.palette.primaryColor.main;
+  const [roomData, setroomData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [source, setSource] = useState("");
+  const [destination, setDestination] = useState("");
+  const navigate = useNavigate();
+
+  const fetchProfile = async () => {
+    const token = localStorage.getItem("token");
+
+    try {
+      const res = await axios.get(`${import.meta.env.VITE_BASE_URL}/check`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        withCredentials: true,
+      });
+    } catch (err) {
+      console.error(err);
+      navigate("/user/signin"); // Redirect if unauthorized
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchRooms = async () => {
+    const token = localStorage.getItem("token"); // Retrieve the token
+  
+    if (!token) {
+      console.error("No token found, cannot fetch rooms");
+      navigate("/user/signin"); // Redirect if no token
+      return;
+    }
+  
+    try {
+      const res = await axios.get(`${import.meta.env.VITE_BASE_URL}/ride/get-all-open-rooms`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        withCredentials: true,
+      });
+      setroomData(res.data);
+      console.log(res.data);
+      
+    } catch (err) {
+      console.error("Error fetching rooms:", err);
+      if (err.response && err.response.status === 401) {
+        navigate("/user/signin"); // Redirect to login if unauthorized
+      }
+    }
+  };
+
+  useEffect(() => {
+    fetchProfile(); // Fetch user profile on mount
+    fetchRooms(); // Fetch all open rooms on mount
+  }, []);
+
+  useEffect(() => {
+    if (source.trim() !== "" && destination.trim() !== "") {
+      fetchRooms();
+    }
+  }, [source, destination]); // Refetch rooms when both fields are filled
 
   return (
     <div className="w-full h-[calc(100vh-64px)] min-w-[100vw] grid grid-cols-1 md:grid-cols-2">
-      {/* left or create room */}
+      {/* Left: Create Room Form */}
       <div className="flex flex-col items-center justify-center w-full h-full max-h-screen gap-y-8">
-        {/* inputs fileds */}
+        {/* Input Fields */}
         <div className="hidden md:flex flex-col gap-y-3 w-full justify-center items-center pb-2">
-          <label
-            className="text-start w-full max-w-[342px] pl-1 text-xl"
-            htmlFor=""
-          >
+          <label className="text-start w-full max-w-[342px] pl-1 text-xl">
             Source :
           </label>
           <input
             type="text"
             id="source"
+            value={source}
+            onChange={(e) => setSource(e.target.value)}
             className="bg-[#333] px-4 py-3 w-full rounded-md outline-none hover:bg-[rgb(40,40,40,0.5)] max-w-[342px] focus:bg-[rgb(40,40,40)] focus:outline-white/50 focus:shadow-2xl shadow-white outline-offset-0 outline-2"
             placeholder="Enter Source"
           />
-          <label
-            className="text-start w-full max-w-[342px] pl-1 text-xl"
-            htmlFor=""
-          >
+          <label className="text-start w-full max-w-[342px] pl-1 text-xl">
             Destination :
           </label>
           <input
             type="text"
             id="destination"
+            value={destination}
+            onChange={(e) => setDestination(e.target.value)}
             className="bg-[#333] px-4 py-3 w-full rounded-md outline-none hover:bg-[rgb(40,40,40)] focus:bg-[rgb(40,40,40)] max-w-[342px] focus:outline-white/50 outline-offset-0 outline-2"
             placeholder="Enter Destination"
           />
-          <label
-            className="text-start w-full max-w-[342px] pl-1 text-xl"
-            htmlFor=""
-          >
-            Passenger Limit :
-          </label>
-          <input
-            type="number"
-            max={4}
-            min={1}
-            id="limit"
-            className="bg-[#333] px-4 py-3 w-full rounded-md outline-none hover:bg-[rgb(40,40,40)] focus:bg-[rgb(40,40,40)] max-w-[342px] focus:outline-white/50 outline-offset-0 outline-2"
-            placeholder="Passenger Limit"
-          />
         </div>
 
-        {/* Button */}
+        {/* Create Room Button */}
         <div className="flex flex-col gap-y-3 w-full justify-center items-center mt-12 md:mt-0">
           <Button
             sx={{
               height: "3.3rem",
-              backgroundColor: yellowTheme,
+              backgroundColor: theme.palette.primaryColor.main,
               text: "center",
               width: "100%",
               maxWidth: "342px",
@@ -79,12 +125,9 @@ const RoomActivities = () => {
         <div className="bg-white/30 h-[0.5px] w-full"></div>
       </div>
 
-      {/* relavant rooms */}
+      {/* Right: Display Relevant Rooms */}
       <div className="border-2 rounded-lg border-white/30 m-1 max-h-screen h-auto flex flex-col gap-y-3 overflow-y-scroll overflow-x-hidden">
-        {/* <div className="text-center text-xl pt-3">Existing Rooms</div> */}
-        <div>
-          <Room />
-        </div>
+        <Room roomData={roomData} />
       </div>
     </div>
   );

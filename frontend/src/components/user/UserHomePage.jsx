@@ -25,6 +25,11 @@ const UserHomePage = () => {
       // ^ Chaitanya whenever a new user joins a ride u will get data here
       console.log("New User Joined", rideData);
     });
+
+    recieveMessage("new-userJoin", (rideData) => {
+      // ^ Chaitanya whenever a new user joins a ride u will get data here
+      console.log("New User Joined", rideData);
+    });
   }, []);
 
   return (

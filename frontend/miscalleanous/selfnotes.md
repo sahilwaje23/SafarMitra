@@ -201,8 +201,6 @@ By following these practices, you can build a seamless hybrid project without co
 - nearby rooms may be removed from navbar
 - will make `general history or profile component` `earnings` component is unique to driver and can have some medium scale statistics 
 
-### entry 4 - 14th jan 2025
-- 
 
 ## Yogesh-Palve
 ### entry 1 - 06 jan 2025

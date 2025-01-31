@@ -62,7 +62,7 @@ const driverSchema = new Schema(
       type: Number,
       default: 0,
     },
-    location: {
+    location : {
       ltd: {
         type: Number,
       },

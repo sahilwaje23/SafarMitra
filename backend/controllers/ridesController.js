@@ -39,9 +39,8 @@ const handleCreateRide = async (req, res) => {
 
     res.status(200).json({ newRoom });
 
-    // res.status(201).json(newRoom);
     try {
-      const captians = await getCaptainsInTheRadius(pickupLat, pickupLng, 3);
+      const captians = await getCaptainsInTheRadius(pickupLat, pickupLng, 300);
       // console.log(captians);
 
       // remove otp
@@ -116,40 +115,62 @@ const handleConfirmRide = async (req, res) => {
   }
 };
 
-// const handleJoinRoom = async (req, res) => {
-//   const errors = validationResult(req);
+const handleJoinRoom = async (req, res) => {
+  const errors = validationResult(req);
 
-//   if (!errors.isEmpty()) {
-//     return res.status(400).json({ fieldErrors: errors.array() });
-//   }
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ fieldErrors: errors.array() });
+  }
 
-//   try {
-//     const { roomId } = req.query;
+  try {
+    const { roomId } = req.query;
 
-//     const room = await Ride.findById(roomId);
-//     if (!room) {
-//       return res.status(404).send({ rideError: "Room not found" });
-//     }
+    const room = await Ride.findById(roomId).populate(
+      "mitra.userId",
+      "socket_id"
+    );
+    if (!room) {
+      return res.status(404).json({ rideError: "Room not found" });
+    }
 
-//     if (room.mitra.includes(req.user._id)) {
-//       return res
-//         .status(400)
-//         .send({ rideError: "User already joined the room" });
-//     }
+    if (
+      room.mitra.some((m) => m.userId.toString() === req.user._id.toString())
+    ) {
+      return res
+        .status(400)
+        .json({ rideError: "User already joined the room" });
+    }
 
-//     room.mitra.push(req.user._id);
-//     await room.save();
+    room.mitra.push({ userId: req.user._id });
+    await room.save();
 
-//     return res.status(200).json(room);
-//   } catch (e) {
-//     return res.status(500).send({ rideError: e.message });
-//   }
-// };
+    sendMessageToSocketId(
+      "new-userJoin",
+      (await room.populate("creatorId", "-password -salt -ridesBooked"))
+        .creatorId.socket_id,
+      { room, user: req.user }
+    );
+
+    // Notify all mitra members
+    room.mitra.forEach((m) => {
+      if (m.userId.socket_id) {
+        sendMessageToSocketId("new-userJoin", m.userId.socket_id, {
+          room,
+          user: req.user,
+        });
+      }
+    });
+
+    return res.status(200).json(room);
+  } catch (e) {
+    return res.status(500).json({ rideError: e.message });
+  }
+};
 
 module.exports = {
   handleCreateRide,
   handleGetFare,
   handleConfirmRide,
-  handleJoinRoom,
   searchRoom,
+  handleJoinRoom,
 };

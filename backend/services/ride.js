@@ -53,13 +53,13 @@ const getCaptainsInTheRadius = async (lat, lng, radius) => {
 const confirmRide = async (rideId, driver) => {
   const ride = await Ride.findOneAndUpdate(
     { _id: rideId },
-    { driver: driver._id, status: "confirmed" }
+    { driver: driver._id, status: "ongoing" }
   )
     .populate("creatorId", "-password -salt -ridesBooked")
     .populate("driver", "-password -salt -ridesAcceptedUrl");
 
   await Drivers.findByIdAndUpdate(driver._id, {
-    $push: { ridesAcceptedUrl : ride._id },
+    $push: { ridesAcceptedUrl: ride._id },
   });
 
   if (!ride) {

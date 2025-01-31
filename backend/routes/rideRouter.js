@@ -45,7 +45,7 @@ router.post(
   handleConfirmRide
 );
 
-// this is doubtfull :
-// router.get("/join-room", authUser, query("roomId").isString(), handleJoinRoom);
+// this is doubtfull : 
+router.get("/join-room", authUser, query("roomId").isString(), handleJoinRoom);
 
 module.exports = router;

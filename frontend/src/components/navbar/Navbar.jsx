@@ -74,6 +74,11 @@ const Navbar = ({ type }) => {
           ? 'rgba(0, 0, 0, 0.6)' 
           : 'rgba(255, 255, 255, 0.9)',
 
+
+        // backgroundColor: theme.palette.mode === 'light' // changed temprorary by yogesh
+        //   ? 'rgba(18, 18, 18, 0.6)' 
+        //   : 'rgba(255, 255, 255, 0.4)',
+
         backdropFilter: 'blur(10px)',
         top: 0,
         '& .MuiBottomNavigationAction-root': {

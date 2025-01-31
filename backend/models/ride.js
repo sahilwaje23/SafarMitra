@@ -18,18 +18,41 @@ const rideSchema = new Schema(
       },
     ],
 
+    pickup: {
+      lat: {
+        type: Number,
+        required: true,
+      },
+      lng: {
+        type: Number,
+        required: true,
+      },
+      text: {
+        type: String,
+        required: true,
+      },
+    },
+
+    destination: {
+      lat: {
+        type: Number,
+        required: true,
+      },
+      lng: {
+        type: Number,
+        required: true,
+      },
+      text: {
+        type: String,
+        required: true,
+      },
+    },
+
     driver: {
       type: Schema.Types.ObjectId,
       ref: "driver",
     },
-    pickup: {
-      type: String,
-      required: true,
-    },
-    destination: {
-      type: String,
-      required: true,
-    },
+
     distance: {
       // in meters
       type: String,
@@ -44,8 +67,8 @@ const rideSchema = new Schema(
     },
     status: {
       type: String,
-      enum: ["pending", "ongoing", "accepted", "completed", "cancelled"],
-      default: "pending",
+      enum: ["open", "ongoing", "accepted", "completed", "cancelled", "closed"],
+      default: "open",
     },
     orderId: {
       type: String,

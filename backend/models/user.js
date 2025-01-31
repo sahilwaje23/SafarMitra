@@ -50,6 +50,14 @@ const userSchema = new Schema(
     salt: {
       type: String,
     },
+    location: {
+      ltd: {
+        type: Number,
+      },
+      lng: {
+        type: Number,
+      },
+    },
   },
   { timestamps: true }
 );
@@ -96,9 +104,12 @@ userSchema.static("addUserAndGenerateToken", async function (data) {
       },
     });
 
+    newUser.password = "";
+    newUser.salt = "";
+
     // Generate token
     const token = createToken(newUser);
-    return token;
+    return { newUser, token };
   } catch (e) {
     throw new Error(e.message);
   }
@@ -118,9 +129,12 @@ userSchema.static(
 
     if (hashedPassword !== user.password) throw new Error("Wrong Password");
 
+    user.password = "";
+    user.salt = "";
+
     // console.log(user);
     const token = createToken(user);
-    return token;
+    return { user, token };
   }
 );
 

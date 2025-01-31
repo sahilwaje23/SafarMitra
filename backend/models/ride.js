@@ -1,57 +1,62 @@
 const { Schema, model } = require("mongoose");
 
-const driverSchema = new Schema(
+const rideSchema = new Schema(
   {
-    fullName: {
+    creatorId: {
+      type: Schema.Types.ObjectId,
+      ref: "user",
+      required: true,
+    },
+
+    mitra: [
+      {
+        userId: {
+          type: Schema.Types.ObjectId,
+          ref: "user",
+          required: true,
+        },
+      },
+    ],
+
+    driver: {
+      type: Schema.Types.ObjectId,
+      ref: "driver",
+    },
+    pickup: {
       type: String,
       required: true,
     },
-    email: {
-      type: String,
-      required: true,
-      unique: true,
-    },
-    password: {
+    destination: {
       type: String,
       required: true,
     },
-    mobileNo: {
+    distance: {
+      // in meters
+      type: String,
+    },
+    duration: {
+      // in seconds
+      type: Number,
+    },
+    fare: {
       type: Number,
       required: true,
-      unique: true,
     },
-    gender: {
+    status: {
       type: String,
-      enum: ["Male", "Female"],
-      required: true,
+      enum: ["pending", "ongoing", "accepted", "completed", "cancelled"],
+      default: "pending",
     },
-    docs: {
-      profileImageUrl: {
-        type: String,
-        required: true,
-      },
-      aadharImageUrl: {
-        type: String,
-      },
+    orderId: {
+      type: String,
     },
-    details: {
-      vehicleNo: { type: String, required: true },
-      chassisNo: { type: String, required: true },
-      registrationCertificateUrl: { type: String, required: true },
-      licenseImageUrl: {
-        type: String,
-        required: true,
-      },
-    },
-    ridesAcceptedUrl: {
-      type: [Schema.Types.ObjectId],
-      ref: "ride",
-    },
-    rating: {
+    socketID: {},
+    otp: {
       type: Number,
-      default: 0,
+      required: true,
+      select: false,
     },
-    currentLocation: {
+    duration: {
       type: Number,
       required: true,
     },
@@ -59,4 +64,5 @@ const driverSchema = new Schema(
   { timestamps: true }
 );
 
-const Driver = model("driver", driverSchema);
+const Ride = model("ride", rideSchema);
+module.exports = Ride;

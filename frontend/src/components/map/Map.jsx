@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect,memo } from 'react';
 import { OverlayView } from '@react-google-maps/api';
 import { Paper, CircularProgress, Typography, Box, useMediaQuery } from '@mui/material';
 import { GoogleMap, useJsApiLoader, Marker, InfoWindow } from '@react-google-maps/api';
@@ -12,6 +12,11 @@ const defaultCenter = {
   lng: 72.8354
 };
 const getLightMapStyles = (theme) => [
+  // {
+  //   featureType: "all",
+  //   elementType: "geometry",
+  //   stylers: [{ color: "#ffffff" }]
+  // },
   {
     featureType: "water",
     elementType: "geometry",
@@ -20,7 +25,7 @@ const getLightMapStyles = (theme) => [
   {
     featureType: "road",
     elementType: "geometry",
-    stylers: [{ color: "#ffffff" }]
+    stylers: [{ color: "#808080" }]
   },
   {
     featureType: "road.highway",
@@ -87,13 +92,14 @@ const mapOptions = {
   mapTypeControl: false,
   streetViewControl: false,
   fullscreenControl: false,
-  minZoom: 12,
+  minZoom: 16,
   maxZoom: 18,
   zoom: 15,
   styles: theme.palette.mode === 'dark' ? getDarkMapStyles(theme) : getLightMapStyles(theme)
 };
 
 const MapComponent = () => {
+  console.log('Map rendered'); 
   // ...existing state declarations...
   const [map, setMap] = useState(null);
 
@@ -155,7 +161,7 @@ const MapComponent = () => {
       <Typography 
         variant="caption" 
         sx={{ 
-          color: 'white',
+          // color: theme.palette.txtcol,
           padding: '2px 4px',
           marginBottom: '0px',
           fontFamily:theme.typography.fontFamily,
@@ -182,7 +188,10 @@ const MapComponent = () => {
 
   return (
 
-    <Paper sx={{ height: isMobile ? '400px' : '80%', width: '100%', border: '1px solid black' }}>
+    <Paper sx={{ 
+      //height:isMobile?'400px':'100%',
+      height:'100%',
+      width: '100%', border: '1px solid black' }}>
       <GoogleMap
         onLoad={onLoad}
         mapContainerStyle={{
@@ -215,4 +224,5 @@ const MapComponent = () => {
   );
 };
 
-export default MapComponent;
+export default memo(MapComponent);
+// this memo is added to prevent unnecessary child re - renders 

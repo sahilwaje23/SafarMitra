@@ -8,5 +8,6 @@ import UserHomePage from './user/UserHomePage'
 import CaptainHomePage from './driver/CaptainHomePage'
 import Navbar from './navbar/Navbar';
 import RoomInt from './room/Room-int';
+import UserProfile from './user/UserProfile';
 
-export {Landing,CaptainSignUp,CaptainSignIn,UserSignIn,UserSignUp,UserHomePage,CaptainHomePage,Navbar,RoomInt} 
+export {Landing,CaptainSignUp,CaptainSignIn,UserSignIn,UserSignUp,UserHomePage,CaptainHomePage,Navbar,RoomInt,UserProfile} 

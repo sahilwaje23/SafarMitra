@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useContext } from "react";
 import {
   Box,
   InputLabel,
@@ -8,13 +8,14 @@ import {
   Button,
   TextField,
   FormControl,
-  LinearProgress
+  LinearProgress,
 } from "@mui/material";
 import { Link, useNavigate } from "react-router-dom";
 import theme from "../../styles/theme";
 import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
 import axios from "axios";
+import { EntityContext } from "../../contexts/EntityContext";
 
 const CaptainSignUp = () => {
   const nameRef = useRef();
@@ -33,6 +34,7 @@ const CaptainSignUp = () => {
   const yellowTheme = theme.palette.primaryColor.main;
   const balooBhai = theme.typography.h1.fontFamily2;
   const [isLoading, setIsLoading] = useState(false);
+  const { setEntity } = useContext(EntityContext);
 
   // error sanckbar
   const [state, setState] = React.useState({
@@ -49,7 +51,7 @@ const CaptainSignUp = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    setIsLoading(true)
+    setIsLoading(true);
     // on successful sign up. open dialog
     const newDriver = {
       fullName: nameRef.current.value,
@@ -80,11 +82,12 @@ const CaptainSignUp = () => {
         setTimeout(() => {
           setIsLoading(false);
         }, 500);
-        console.log(res);
+        // console.log(res);
         if (res.status === 201) {
-          navigate("/captain-homepage");
+          setEntity({ type: "DRIVER", data: res.data.newDriver });
+          localStorage.setItem("DRIVER", JSON.stringify(res.data.newDriver));
           alert("signed up successfully");
-          // setIsSignedUp(true);
+          navigate("/captain-homepage");
         }
       })
       .catch((e) => {

@@ -6,4 +6,38 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+    /* overflow-x: hidden;  */
+    /* overflow changed review */
 }
+
+
+html {
+  overflow-x: hidden; 
+}
+
+/* scroll bar styling  */
+
+/* Style the scrollbar track */
+::-webkit-scrollbar {
+    width: 2px; 
+    /* Width of the scrollbar */
+  }
+  
+  /* Style the scrollbar thumb */
+  ::-webkit-scrollbar-thumb {
+    background-color: #FEC400; /* Color of the scrollbar */
+    border-radius: 2px; /* Rounded corners */
+    border: 2px solid transparent; /* Space around the thumb */
+  }
+  
+  /* Hover effect for the scrollbar thumb */
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: #555; /* Darker on hover */
+  }
+  
+  /* Style the scrollbar track */
+  ::-webkit-scrollbar-track {
+    background-color: #f1f1f1; /* Background of the track */
+    border-radius: 2px;
+  }
+  

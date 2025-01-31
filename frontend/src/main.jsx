@@ -5,13 +5,18 @@ import App from "./App.jsx";
 import "./index.css";
 // import theme from "./styles/theme";
 import { BrowserRouter } from "react-router-dom";
+import EntityContextProvider from "./contexts/EntityContext.jsx";
+import SocketContextProvider from "./contexts/Socket.jsx";
+import LocationContextProvider from "./contexts/LocationsContext.jsx";
 
 createRoot(document.getElementById("root")).render(
-  <StrictMode>
-    {/* <ThemeProvider theme={theme}> */}
-      <BrowserRouter>
-        <App />
-      </BrowserRouter>
-    {/* </ThemeProvider> */}
-  </StrictMode>
+  <SocketContextProvider>
+    <EntityContextProvider>
+      <LocationContextProvider>
+        <BrowserRouter>
+          <App />
+        </BrowserRouter>
+      </LocationContextProvider>
+    </EntityContextProvider>
+  </SocketContextProvider>
 );

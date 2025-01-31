@@ -21,7 +21,7 @@ connectToMongoDb(MONGO_URL)
 // ^ Middle Wares
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: "https://6cxjd9px-5173.inc1.devtunnels.ms",
     methods: ["GET", "POST", "PATCH", "DELETE"],
     credentials: true,
   })

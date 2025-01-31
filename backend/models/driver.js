@@ -36,7 +36,7 @@ const driverSchema = new Schema(
         type: String,
       },
     },
-    socketId: {
+    socket_id: {
       type: String,
       default: null,
     },
@@ -62,11 +62,11 @@ const driverSchema = new Schema(
       type: Number,
       default: 0,
     },
-    currentLocation: {
-      lat: {
+    location : {
+      ltd: {
         type: Number,
       },
-      len: {
+      lng: {
         type: Number,
       },
     },
@@ -128,7 +128,7 @@ driverSchema.static("addDriverAndGenerateToken", async function (driverData) {
     });
 
     const token = createToken(newDriver);
-    return token;
+    return { token, newDriver };
   } catch (err) {
     throw new Error(err.message);
   }
@@ -153,7 +153,7 @@ driverSchema.static(
       throw new Error("Wrong Password");
 
     const token = createToken(driver);
-    return token;
+    return { token, driver };
   }
 );
 

@@ -1,57 +1,85 @@
 const { Schema, model } = require("mongoose");
 
-const driverSchema = new Schema(
+const rideSchema = new Schema(
   {
-    fullName: {
-      type: String,
+    creatorId: {
+      type: Schema.Types.ObjectId,
+      ref: "user",
       required: true,
     },
-    email: {
-      type: String,
-      required: true,
-      unique: true,
-    },
-    password: {
-      type: String,
-      required: true,
-    },
-    mobileNo: {
-      type: Number,
-      required: true,
-      unique: true,
-    },
-    gender: {
-      type: String,
-      enum: ["Male", "Female"],
-      required: true,
-    },
-    docs: {
-      profileImageUrl: {
-        type: String,
+
+    mitra: [
+      {
+        userId: {
+          type: Schema.Types.ObjectId,
+          ref: "user",
+          required: true,
+        },
+      },
+    ],
+
+    pickup: {
+      lat: {
+        type: Number,
         required: true,
       },
-      aadharImageUrl: {
-        type: String,
+      lng: {
+        type: Number,
+        required: true,
       },
-    },
-    details: {
-      vehicleNo: { type: String, required: true },
-      chassisNo: { type: String, required: true },
-      registrationCertificateUrl: { type: String, required: true },
-      licenseImageUrl: {
+      text: {
         type: String,
         required: true,
       },
     },
-    ridesAcceptedUrl: {
-      type: [Schema.Types.ObjectId],
-      ref: "ride",
+
+    destination: {
+      lat: {
+        type: Number,
+        required: true,
+      },
+      lng: {
+        type: Number,
+        required: true,
+      },
+      text: {
+        type: String,
+        required: true,
+      },
     },
-    rating: {
+
+    driver: {
+      type: Schema.Types.ObjectId,
+      ref: "driver",
+    },
+
+    distance: {
+      // in meters
+      type: String,
+    },
+    duration: {
+      // in seconds
       type: Number,
-      default: 0,
     },
-    currentLocation: {
+    fare: {
+      type: Number,
+      required: true,
+    },
+    status: {
+      type: String,
+      enum: ["open", "ongoing", "accepted", "completed", "cancelled", "closed"],
+      default: "open",
+    },
+    orderId: {
+      type: String,
+    },
+    socketID: {},
+    otp: {
+      type: Number,
+      required: true,
+      select: false,
+    },
+    duration: {
       type: Number,
       required: true,
     },
@@ -59,4 +87,5 @@ const driverSchema = new Schema(
   { timestamps: true }
 );
 
-const Driver = model("driver", driverSchema);
+const Ride = model("ride", rideSchema);
+module.exports = Ride;

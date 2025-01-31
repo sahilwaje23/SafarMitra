@@ -1,6 +1,11 @@
-import React from 'react'
+import React from "react";
+import { Button, Typography } from "@mui/material";
+import theme from "../../styles/theme";
+import Room from "../room/Room";
 
 const RoomActivities = () => {
+  const yellowTheme = theme.palette.primaryColor.main;
+
   return (
     <div className="w-full h-[calc(100vh-64px)] min-w-[100vw] grid grid-cols-1 md:grid-cols-2">
       {/* left or create room */}
@@ -86,4 +91,4 @@ const RoomActivities = () => {
   );
 };
 
-export default RoomActivities
+export default RoomActivities;

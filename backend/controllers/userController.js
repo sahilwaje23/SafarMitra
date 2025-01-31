@@ -21,7 +21,7 @@ const handleSignUp = async (req, res) => {
     const idImagePath = req.files.idImageUrl[0].path;
 
     // Add user and generate token
-    const token = await User.addUserAndGenerateToken({
+    const { newUser, token } = await User.addUserAndGenerateToken({
       fullName,
       email,
       password,
@@ -30,27 +30,29 @@ const handleSignUp = async (req, res) => {
       profileImagePath,
       idImagePath,
     });
-
-    res.status(201).json({ msg: "success", token });
+    // console.log(token)
+    res.cookie("token", token);
+    res.status(201).json({ msg: "success", token, newUser });
   } catch (err) {
-    res.status(400).json({duplicate_errors: err.message});
+    res.status(400).send(err.message);
   }
 };
 
 const handleSignIn = async (req, res) => {
-  console.log(req.body);
   const errors = validationResult(req);
 
   if (!errors.isEmpty()) {
-    console.log("this is actual error");
     return res.status(400).json({ errors: errors.array() });
   }
   let { email, password } = req.body;
   try {
-    const token = await User.checkPasswordAndGenerateToken(email, password);
+    const { user, token } = await User.checkPasswordAndGenerateToken(
+      email,
+      password
+    );
     // console.log(token);
     res.cookie("token", token);
-    return res.status(200).json({ msg: "success", token: token });
+    return res.status(200).json({ msg: "success", token: token, user });
   } catch (err) {
     return res.status(400).json({ err: err.message });
   }
@@ -58,7 +60,8 @@ const handleSignIn = async (req, res) => {
 
 const handleGetUserProfile = async (req, res) => {
   const user = req.user;
-  return res.status(200).json(user);
+  const userWithRides = await User.findById(user._id).populate("ridesBooked").select("-password -salt");
+  return res.status(200).json(userWithRides);
 };
 
 const handleLogOutUser = async (req, res) => {

@@ -70,9 +70,9 @@ const Navbar = ({ type }) => {
       position="fixed"
       sx={{
 
-        backgroundColor: theme.palette.mode === 'light' // changed temprorary by yogesh
-          ? 'rgba(18, 18, 18, 0.6)' 
-          : 'rgba(255, 255, 255, 0.4)',
+        backgroundColor: theme.palette.mode === 'dark' 
+          ? 'rgba(0, 0, 0, 0.6)' 
+          : 'rgba(255, 255, 255, 0.9)',
 
         backdropFilter: 'blur(10px)',
         top: 0,
@@ -172,6 +172,7 @@ const Navbar = ({ type }) => {
         handleNavigate(currentNavItems[newValue].path);
       }}
       sx={{
+        zIndex:3,
         width: '100%',
         position: 'fixed',
         bottom: 0,

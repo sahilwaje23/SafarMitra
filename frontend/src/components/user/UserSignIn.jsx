@@ -1,5 +1,10 @@
-import React from "react";
-import { useRef, useState } from "react";
+import React, {
+  useRef,
+  useState,
+  useContext,
+  useEffect,
+  useCallback,
+} from "react";
 import {
   Box,
   Typography,
@@ -9,168 +14,180 @@ import {
   Snackbar,
   LinearProgress,
 } from "@mui/material";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import theme from "../../styles/theme";
+import { EntityContext } from "../../contexts/EntityContext";
 
 const UserSignIn = () => {
+  const { setEntity } = useContext(EntityContext);
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  const { msgForUser } = location.state || {};
   const yellowTheme = theme.palette.primaryColor.main;
+
   const emailRef = useRef();
   const passwordRef = useRef();
-  const navigate = useNavigate();
-  const [isLoading, setIsLoading] = useState(false);
 
-  // error sanckbar
-  const [state, setState] = React.useState({
+  const [isLoading, setIsLoading] = useState(false);
+  const [snackbar, setSnackbar] = useState({
     open: false,
+    message: "",
     vertical: "top",
     horizontal: "center",
-    message: "Sign In failed",
   });
-  const { vertical, horizontal, open, message } = state;
-  // snackbar(alert) close function
-  const handleClose = () => {
-    setState({ ...state, open: false });
+
+  const handleCloseSnackbar = () => {
+    setSnackbar((prev) => ({ ...prev, open: false }));
   };
 
-  // handle form
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-    axios
-      .post(
-        "http://localhost:8000/login",
+
+    if (!navigator.onLine) {
+      setIsLoading(false);
+      setSnackbar({
+        open: true,
+        message: "You are offline. Please check your internet connection.",
+        vertical: "top",
+        horizontal: "center",
+      });
+      return;
+    }
+
+    try {
+      const response = await axios.post(
+        `${import.meta.env.VITE_BASE_URL}/login`,
         {
           email: emailRef.current.value,
           password: passwordRef.current.value,
         },
         { withCredentials: true }
-      )
-      .then((res) => {
-        setTimeout(() => {
-          setIsLoading(false);
-        },500)
-        console.log(res);
-        if (res.status === 200) {
-          alert("sign in successful");
-          navigate("/user-homepage");
-        }
-      })
-      .catch((e) => {
-        setTimeout(() => {
-          setIsLoading(false);
-        },500)
-        // console.log(e.data.err);
-        // alert(e.data.err)
-        setState({
-          ...state,
-          open: true,
-          message: "email or password is incorrect",
-        });
+      );
+
+      if (response.status === 200) {
+        setEntity({ type: "USER", data: response.data.user });
+        localStorage.setItem("token", response.data.token);
+        localStorage.setItem("USER", JSON.stringify(response.data.user));
+        navigate("/user-homepage");
+      }
+    } catch (error) {
+      const message =
+        error.response?.data?.errors?.map((err) => err.msg).join("\n") ||
+        error.response?.data?.err ||
+        "An unexpected error occurred";
+      setSnackbar({
+        open: true,
+        message,
+        vertical: "top",
+        horizontal: "center",
       });
+    } finally {
+      setIsLoading(false);
+    }
   };
+
+  useEffect(() => {
+    if (msgForUser) {
+      setSnackbar({
+        open: true,
+        message: msgForUser,
+        vertical: "top",
+        horizontal: "center",
+      });
+    }
+  }, [msgForUser]);
 
   return (
     <>
-      <LinearProgress
-        sx={{
-          width: "100%",
-          height: "2px",
-          visibility: isLoading ? "" : "hidden",
-        }}
-      />
+      {isLoading && <LinearProgress sx={{ width: "100%", height: "2px" }} />}
       <Box
         sx={{
           display: "flex",
           flexDirection: "column",
-          rowGap: "3rem",
-          paddingX: "1rem",
+          gap: 4,
+          px: 2,
         }}
       >
         <Snackbar
-          message={message}
-          anchorOrigin={{ vertical, horizontal }}
-          open={open}
-          onClose={handleClose}
-          key={vertical + horizontal}
+          open={snackbar.open}
+          message={snackbar.message}
+          anchorOrigin={{
+            vertical: snackbar.vertical,
+            horizontal: snackbar.horizontal,
+          }}
+          onClose={handleCloseSnackbar}
           autoHideDuration={5000}
         />
-
-        {/* back button */}
         <Button
           variant="text"
           size="large"
-          sx={{ alignSelf: "start", paddingLeft: "0px", color: yellowTheme }}
+          sx={{ alignSelf: "start", color: yellowTheme }}
           onClick={() => navigate(-1)}
         >
           <Typography variant="h6">&lt; Back</Typography>
         </Button>
-
         <form
           onSubmit={handleSubmit}
-          className="mx-3.5 flex flex-col gap-y-3 justify-center items-center"
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: "1.5rem",
+          }}
         >
-          <div className="flex flex-col gap-y-3 max-w-[500px] min-w-[300px] w-full">
-            {/* signup text heading */}
-            <Typography variant="h4" sx={{ fontWeight: "bold" }}>
+          <Box
+            sx={{
+              maxWidth: 500,
+              width: "100%",
+              gap: 2,
+              display: "flex",
+              flexDirection: "column",
+            }}
+          >
+            <Typography variant="h4" fontWeight="bold">
               Sign In
             </Typography>
-
-            {/* form input and button */}
-            {/* Email TextField */}
-            <FormControl sx={{ width: "100%" }}>
+            <FormControl fullWidth>
               <TextField
-                id="outlined-email"
                 label="Email"
                 variant="outlined"
-                fullWidth
                 inputRef={emailRef}
-                name="email"
                 required
               />
             </FormControl>
-
-            {/* Password TextField */}
-            <FormControl sx={{ width: "100%" }}>
+            <FormControl fullWidth>
               <TextField
-                id="outlined-password"
                 label="Password"
                 variant="outlined"
                 type="password"
-                fullWidth
                 inputRef={passwordRef}
-                name="password"
                 required
               />
             </FormControl>
-
-            {/* Sign In Button */}
             <Button
-              sx={{ height: "3.3rem", backgroundColor: yellowTheme }}
-              variant="contained"
               type="submit"
+              variant="contained"
               fullWidth
+              disabled={isLoading}
+              sx={{ height: 54, backgroundColor: yellowTheme }}
             >
-              <Typography sx={{ fontSize: "large", fontWeight: "bold" }}>
-                Sign In
+              <Typography fontWeight="bold" fontSize="large">
+                {isLoading ? "Signing In..." : "Sign In"}
               </Typography>
             </Button>
-            <div className="text-right w-[100%] pr-2">
-              <span>
-                Don't have an account?
-                <Link
-                  to="/user-signup"
-
-                  className={`font-bold mx-1 `}
-                  style={{ color: yellowTheme}}
-
-                >
-                  Sign Up
-                </Link>
-              </span>
-              {/* use Link or navigate here for routing to sign in page */}
-            </div>
-          </div>
+            <Typography align="right">
+              Don't have an account?{" "}
+              <Link
+                to="/user-signup"
+                style={{ color: yellowTheme, fontWeight: "bold" }}
+              >
+                Sign Up
+              </Link>
+            </Typography>
+          </Box>
         </form>
       </Box>
     </>

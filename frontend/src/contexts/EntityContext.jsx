@@ -1,5 +1,4 @@
 import React, { createContext, useState } from "react";
-
 export const EntityContext = createContext();
 
 const EntityContextProvider = ({ children }) => {

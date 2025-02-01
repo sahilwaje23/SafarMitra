@@ -1,46 +1,93 @@
-import React, { useContext, useEffect ,useState} from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { Box, Input, TextField, Typography, Button } from "@mui/material";
 import Map from "../map/Map";
 import theme from "../../styles/theme";
 import { SocketContext } from "../../contexts/Socket";
 import { EntityContext } from "../../contexts/EntityContext";
 import InputWithSuggestions from "./SuggestionsList";
-import {useLocations} from "../../contexts/LocationsContext"
-// import 
+import { useLocations } from "../../contexts/LocationsContext"
+import axios from 'axios';
 
 const UserHomePage = () => {
+  const [loading, setLoading] = useState(true);
   const yellowTheme = theme.palette.primaryColor.main;
   const { sendMessage, recieveMessage } = useContext(SocketContext);
   const { entity } = useContext(EntityContext);
-  console.log(entity);
+  const fetchProfile = async () => {
+    const token = localStorage.getItem("token");
+
+    try {
+      const res = await axios.get(`${import.meta.env.VITE_BASE_URL}/check`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        withCredentials: true,
+      });
+    } catch (err) {
+      console.error(err);
+      navigate("/user/signin"); // Redirect if unauthorized
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  console.log("entity from user home page", entity);
   const userId =
     entity.data?._id || JSON.parse(localStorage.getItem("USER"))._id;
 
-    const {pickupLat,setPickupLat,pickupLng,setPickupLng,dropLat,setDropLat,dropLng,setDropLng,pickupText,setPickupText,dropText,setDropText} = useLocations();
-    // chaitanya use this varibles 
+  const { pickupLat, setPickupLat, pickupLng, setPickupLng, dropLat, setDropLat, dropLng, setDropLng, pickupText, setPickupText, dropText, setDropText } = useLocations();
+  // chaitanya use this varibles 
 
-    const [pickupData,setPickupData] = {pickupLat,pickupLng,pickupText};
-    const [dropData,setDropData] = {dropLat,dropLng,dropText};
+  const [pickupData, setPickupData] = useState({
+    pickupLat,
+    pickupLng,
+    pickupText
+  });
 
+  const [dropData, setDropData] = useState({
+    dropLat,
+    dropLng,
+    dropText
+  });
+
+
+  // useEffect(() => {
+  //   sendMessage("join", { userType: "USER", userId });
+
+  //   recieveMessage("confirm-ride", (rideData) => {
+  //     // ^ Chaitanya whatever new ride is confirmed by driver u will get data here
+  //     console.log("Ride Confirmed", rideData);
+  //   });
+
+  //   recieveMessage("user-joined", (rideData) => {
+  //     // ^ Chaitanya whenever a new user joins a ride u will get data here
+  //     console.log("New User Joined", rideData);
+  //   });
+
+  //   recieveMessage("new-userJoin", (rideData) => {
+  //     // ^ Chaitanya whenever a new user joins a ride u will get data here
+  //     console.log("New User Joined", rideData);
+  //   });
+  // }, []);
 
   useEffect(() => {
+    if (!userId) return;
+
     sendMessage("join", { userType: "USER", userId });
 
     recieveMessage("confirm-ride", (rideData) => {
-      // ^ Chaitanya whatever new ride is confirmed by driver u will get data here
       console.log("Ride Confirmed", rideData);
     });
 
     recieveMessage("user-joined", (rideData) => {
-      // ^ Chaitanya whenever a new user joins a ride u will get data here
       console.log("New User Joined", rideData);
     });
 
     recieveMessage("new-userJoin", (rideData) => {
-      // ^ Chaitanya whenever a new user joins a ride u will get data here
       console.log("New User Joined", rideData);
     });
-  }, []);
+
+  }, [userId]);
 
   return (
     <>
@@ -97,9 +144,20 @@ const UserHomePage = () => {
               /> */}
 
               {/* source destination inputs with suggestion - from SuggestionList.jsx */}
-              <InputWithSuggestions inputId="source" placeholder="Enter Source" onSelect={setPickupData} chai = "source
-              "/>
-              <InputWithSuggestions inputId="destination" placeholder="Enter Destination" onSelect={setDropData} />
+              {/* <InputWithSuggestions inputId="source" placeholder="Enter Source" onSelect={setPickupData} chai = "source"/>
+              <InputWithSuggestions inputId="destination" placeholder="Enter Destination" onSelect={setDropData} /> */}
+              <InputWithSuggestions
+                inputId="source"
+                placeholder="Enter Source"
+                onSelect={(value) => setPickupData({ ...pickupData, pickupText: value })}
+              />
+
+              <InputWithSuggestions
+                inputId="destination"
+                placeholder="Enter Destination"
+                onSelect={(value) => setDropData({ ...dropData, dropText: value })}
+              />
+
               <Button
                 sx={{
                   height: "3.3rem",

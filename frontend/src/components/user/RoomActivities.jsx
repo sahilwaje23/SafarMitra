@@ -12,7 +12,8 @@ const RoomActivities = () => {
   const [loading, setLoading] = useState(true);
   const [participantsLimit, setParticipantsLimit] = useState(1);
   const navigate = useNavigate();
-
+  useEffect(()=>{},[])
+  
   const {
     pickupLat,
     setPickupLat,
@@ -27,6 +28,24 @@ const RoomActivities = () => {
     dropText,
     setDropText,
   } = useLocations();
+
+  const [pickupData, setPickupData] = useState({
+      pickupLat,
+      pickupLng,
+      pickupText
+    });
+  
+    const [dropData, setDropData] = useState({
+      dropLat,
+      dropLng,
+      dropText
+    });
+
+     useEffect(() => {
+        console.log("Pickup Data", pickupData);
+        console.log("Drop Data", dropData);
+      }, [dropData, pickupData]);
+    
 
   const fetchProfile = async () => {
     const token = localStorage.getItem("token");
@@ -73,11 +92,20 @@ const RoomActivities = () => {
     fetchRooms();
   }, []);
 
+ 
   const handlePickupSelect = (value) => {
     if (value && value.lat && value.lng && value.description) {
       setPickupLat(value.lat);
       setPickupLng(value.lng);
       setPickupText(value.description);
+
+      setPickupData({
+        pickupText: value.description,
+        pickupLat: value.lat,
+        pickupLng: value.lng
+      });
+    } else {
+      console.error("Selected value does not have the required structure.");
     }
   };
 
@@ -86,6 +114,14 @@ const RoomActivities = () => {
       setDropLat(value.lat);
       setDropLng(value.lng);
       setDropText(value.description);
+
+      setDropData({
+        dropText: value.description,
+        dropLat: value.lat,
+        dropLng: value.lng
+      });
+    } else {
+      console.error("Selected value does not have the required structure.");
     }
   };
 

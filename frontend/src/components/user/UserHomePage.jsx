@@ -1,42 +1,19 @@
 import React, { useContext, useEffect, useState } from "react";
-import { Box, Input, TextField, Typography, Button } from "@mui/material";
+import { Box, Typography, Button } from "@mui/material";
 import Map from "../map/Map";
 import theme from "../../styles/theme";
 import { SocketContext } from "../../contexts/Socket";
 import { EntityContext } from "../../contexts/EntityContext";
 import InputWithSuggestions from "./SuggestionsList";
-import { useLocations } from "../../contexts/LocationsContext"
+import { useLocations } from "../../contexts/LocationsContext";
 import axios from 'axios';
 
 const UserHomePage = () => {
   const [loading, setLoading] = useState(true);
   const yellowTheme = theme.palette.primaryColor.main;
-  const { sendMessage, recieveMessage } = useContext(SocketContext);
+  //const { sendMessage, recieveMessage } = useContext(SocketContext);
   const { entity } = useContext(EntityContext);
-  const fetchProfile = async () => {
-    const token = localStorage.getItem("token");
-
-    try {
-      const res = await axios.get(`${import.meta.env.VITE_BASE_URL}/check`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        withCredentials: true,
-      });
-    } catch (err) {
-      console.error(err);
-      navigate("/user/signin"); // Redirect if unauthorized
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  console.log("entity from user home page", entity);
-  const userId =
-    entity.data?._id || JSON.parse(localStorage.getItem("USER"))._id;
-
   const { pickupLat, setPickupLat, pickupLng, setPickupLng, dropLat, setDropLat, dropLng, setDropLng, pickupText, setPickupText, dropText, setDropText } = useLocations();
-  // chaitanya use this varibles 
 
   const [pickupData, setPickupData] = useState({
     pickupLat,
@@ -50,45 +27,87 @@ const UserHomePage = () => {
     dropText
   });
 
+  useEffect(() => {
+    console.log("Pickup Data", pickupData);
+    console.log("Drop Data", dropData);
+  }, [dropData, pickupData]);
 
+  useEffect(() => {
+    const fetchProfile = async () => {
+      const token = localStorage.getItem("token");
+      try {
+        const res = await axios.get(`${import.meta.env.VITE_BASE_URL}/check`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          withCredentials: true,
+        });
+      } catch (err) {
+        console.error(err);
+        navigate("/user/signin");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProfile();
+  }, []);
+
+ // const userId = entity.data?._id || JSON.parse(localStorage.getItem("USER"))._id;
+  // is the below even needed in userhomepage it may be needed only in roomactivities
   // useEffect(() => {
+  //   if (!userId) return;
+
   //   sendMessage("join", { userType: "USER", userId });
 
   //   recieveMessage("confirm-ride", (rideData) => {
-  //     // ^ Chaitanya whatever new ride is confirmed by driver u will get data here
   //     console.log("Ride Confirmed", rideData);
   //   });
 
   //   recieveMessage("user-joined", (rideData) => {
-  //     // ^ Chaitanya whenever a new user joins a ride u will get data here
   //     console.log("New User Joined", rideData);
   //   });
 
   //   recieveMessage("new-userJoin", (rideData) => {
-  //     // ^ Chaitanya whenever a new user joins a ride u will get data here
   //     console.log("New User Joined", rideData);
   //   });
-  // }, []);
 
-  useEffect(() => {
-    if (!userId) return;
+  // }, [userId]);
 
-    sendMessage("join", { userType: "USER", userId });
+  const handlePickupSelect = (value) => {
+    // Check if the value contains lat, lng, and description
+    if (value && value.lat && value.lng && value.description) {
+      setPickupLat(value.lat);
+      setPickupLng(value.lng);
+      setPickupText(value.description);
+  
+      setPickupData({ 
+        pickupText: value.description, 
+        pickupLat: value.lat, 
+        pickupLng: value.lng 
+      });
+    } else {
+      console.error("Selected value does not have the required structure.");
+    }
+  };
 
-    recieveMessage("confirm-ride", (rideData) => {
-      console.log("Ride Confirmed", rideData);
-    });
-
-    recieveMessage("user-joined", (rideData) => {
-      console.log("New User Joined", rideData);
-    });
-
-    recieveMessage("new-userJoin", (rideData) => {
-      console.log("New User Joined", rideData);
-    });
-
-  }, [userId]);
-
+  const handleDropSelect = (value) => {
+    // Check if the value contains lat, lng, and description
+    if (value && value.lat && value.lng && value.description) {
+      setDropLat(value.lat);
+      setDropLng(value.lng);
+      setDropText(value.description);
+  
+      setDropData({ 
+        dropText: value.description, 
+        dropLat: value.lat, 
+        dropLng: value.lng 
+      });
+    } else {
+      console.error("Selected value does not have the required structure.");
+    }
+  };
+  
   return (
     <>
       <Box
@@ -104,8 +123,6 @@ const UserHomePage = () => {
             xs: `"map"
                  "info"`,
             sm: `"info map"`,
-
-            // md: `"info map"`,
           },
           gap: "1rem",
         }}
@@ -128,36 +145,16 @@ const UserHomePage = () => {
               Please enter Ride Details
             </div>
             <div className="flex flex-col gap-y-3 w-full justify-center items-center">
-
-              {/* ignore this inputs */}
-              {/* <input
-                type="text"
-                id="source"
-                className="bg-[#333] px-4 py-3 w-full rounded-md outline-none hover:bg-[rgb(40,40,40,0.5)] max-w-[342px] focus:bg-[rgb(40,40,40)] focus:outline-white focus:shadow-2xl shadow-white outline-offset-0 outline-1"
-                placeholder="Enter Source"
-              />
-              <input
-                type="text"
-                id="source"
-                className="bg-[#333] px-4 py-3 w-full rounded-md outline-none hover:bg-[rgb(40,40,40)] focus:bg-[rgb(40,40,40)] max-w-[342px] focus:outline-white outline-offset-0 outline-1"
-                placeholder="Enter Destination"
-              /> */}
-
-              {/* source destination inputs with suggestion - from SuggestionList.jsx */}
-              {/* <InputWithSuggestions inputId="source" placeholder="Enter Source" onSelect={setPickupData} chai = "source"/>
-              <InputWithSuggestions inputId="destination" placeholder="Enter Destination" onSelect={setDropData} /> */}
               <InputWithSuggestions
                 inputId="source"
                 placeholder="Enter Source"
-                onSelect={(value) => setPickupData({ ...pickupData, pickupText: value })}
+                onSelect={handlePickupSelect}
               />
-
               <InputWithSuggestions
                 inputId="destination"
                 placeholder="Enter Destination"
-                onSelect={(value) => setDropData({ ...dropData, dropText: value })}
+                onSelect={handleDropSelect}
               />
-
               <Button
                 sx={{
                   height: "3.3rem",
@@ -175,11 +172,11 @@ const UserHomePage = () => {
                 </Typography>
               </Button>
             </div>
-            {/* Confirm button */}
           </div>
         </Box>
         <div className=" w-[100%] h-[100%] text-center flex justify-center items-center ">
-          <Map />
+          <Map pickupData={pickupData} dropData={dropData} />
+           {/* map may simply recieve data via context rather than props */}
         </div>
       </Box>
     </>

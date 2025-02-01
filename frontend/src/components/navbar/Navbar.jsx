@@ -15,7 +15,7 @@ import {
 } from '@mui/material';
 import {
   Home,
-  History,
+ // History,
   Person,
   Room,
   LocationOn,
@@ -38,16 +38,16 @@ const Navbar = ({ type }) => {
 
   const userNavItems = [
     { label: 'Home', icon: <Home />, path: '/user-homepage' },
-    { label: 'Room Actions', icon: <Room />, path: '/room-actions' },
-    { label: 'History', icon: <History />, path: '/user-history' },
+    //{ label: 'Room Actions', icon: <Room />, path: '/room-actions' },
+   // { label: 'History', icon: <History />, path: '/user-history' },
     { label: 'Profile', icon: <Person />, path: '/user-profile' },
   ];
 
   const captainNavItems = [
     { label: 'Home', icon: <Home />, path: '/captain-homepage' },
-    { label: 'Nearby Rooms', icon: <LocationOn />, path: '/captain-nearby-rooms' },
-    { label: 'History', icon: <History />, path: '/captain-history' },
-    { label: 'Earnings', icon: <AttachMoney />, path: '/captain-earnings' },
+    //{ label: 'Nearby Rooms', icon: <LocationOn />, path: '/captain-nearby-rooms' },
+    //{ label: 'History', icon: <History />, path: '/captain-history' },
+    //{ label: 'Earnings', icon: <AttachMoney />, path: '/captain-earnings' },
     { label: 'Profile', icon: <Person />, path: '/captain-profile' },
   ];
 

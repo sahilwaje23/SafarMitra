@@ -10,38 +10,42 @@ export default function InputWithSuggestions({
   const [inputValue, setInputValue] = useState("");
   const [suggestions, setSuggestions] = useState([]);
   const [showDropdown, setShowDropdown] = useState(false);
+  const [debouncedValue, setDebouncedValue] = useState(""); // New state for the debounced input
   const token = localStorage.getItem("token");
 
+  // Debounce input value
   useEffect(() => {
-    if (inputValue.length > 0) {
+    const handler = setTimeout(() => {
+      setDebouncedValue(inputValue);
+    }, 2000); // Wait for 2 seconds after the user stops typing
+
+    return () => clearTimeout(handler);
+  }, [inputValue]);
+
+  // Fetch suggestions when debounced value changes and input length > 2
+  useEffect(() => {
+    if (debouncedValue.length > 2) {
       axios
-        .get(
-          `${
-            import.meta.env.VITE_BASE_URL
-          }/map/get-suggestion`,
-          {
+        .get(`${import.meta.env.VITE_BASE_URL}/map/get-suggestion`, {
           params: {
-            input: inputValue,  // params axios
+            input: debouncedValue, // Use the debounced value
           },
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-            withCredentials: true,
-          }
-        )
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          withCredentials: true,
+        })
         .then((res) => {
-          console.log(res);
           setSuggestions(res.data);
         })
         .catch((err) => console.error("Error fetching suggestions:", err));
     } else {
       setSuggestions([]);
     }
-  }, [inputValue]);
+  }, [debouncedValue]);
 
   return (
     <div className="w-full max-w-[342px] relative">
-      
       <input
         type="text"
         id={inputId}
@@ -56,7 +60,7 @@ export default function InputWithSuggestions({
         onBlur={() => setTimeout(() => setShowDropdown(false), 200)}
       />
       {showDropdown && suggestions.length > 0 && (
-        <div className="absolute left-0 right-0 rounded  shadow-lg z-10  bg-[rgb(40,40,40)] py-3 w-full outline-none max-w-[342px] h-[200px] overflow-y-scroll mt-[1px] ">
+        <div className="absolute left-0 right-0 rounded shadow-lg z-10 bg-[rgb(40,40,40)] py-3 w-full outline-none max-w-[342px] h-[200px] overflow-y-scroll mt-[1px]">
           {suggestions.map((suggestion, index) => (
             <div
               key={index}
@@ -67,7 +71,6 @@ export default function InputWithSuggestions({
                 onSelect(suggestion);
               }}
             >
-              {/* {suggestion.description} */}
               <SuggestionItem suggestion={suggestion} onSelect={onSelect} />
             </div>
           ))}

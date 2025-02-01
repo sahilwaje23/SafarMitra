@@ -1,17 +1,30 @@
 import axios from "axios";
 import { useState, useEffect } from "react";
 import SuggestionItem from "./Suggestion";
+import { useLocations } from "../../contexts/LocationsContext.jsx";
 
 export default function InputWithSuggestions({
   inputId,
   placeholder,
   onSelect,
+  value,
+
 }) {
-  const [inputValue, setInputValue] = useState("");
+  const [inputValue, setInputValue] = useState(value);
   const [suggestions, setSuggestions] = useState([]);
   const [showDropdown, setShowDropdown] = useState(false);
   const [debouncedValue, setDebouncedValue] = useState(""); // New state for the debounced input
   const token = localStorage.getItem("token");
+  const {
+     
+      
+     
+    
+      pickupText,
+     
+      dropText,
+  
+    } = useLocations();
 
   // Debounce input value
   useEffect(() => {
@@ -24,7 +37,7 @@ export default function InputWithSuggestions({
 
   // Fetch suggestions when debounced value changes and input length > 2
   useEffect(() => {
-    if (debouncedValue.length > 2) {
+
       axios
         .get(`${import.meta.env.VITE_BASE_URL}/map/get-suggestion`, {
           params: {
@@ -38,10 +51,7 @@ export default function InputWithSuggestions({
         .then((res) => {
           setSuggestions(res.data);
         })
-        .catch((err) => console.error("Error fetching suggestions:", err));
-    } else {
-      setSuggestions([]);
-    }
+        .catch((err) => {});
   }, [debouncedValue]);
 
   return (

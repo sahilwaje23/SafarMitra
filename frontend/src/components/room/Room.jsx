@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Paper, Typography, Box, Card, Button, useMediaQuery } from "@mui/material";
+import { Typography, Box, Card, Button, useMediaQuery } from "@mui/material";
 import { LocationOn, AttachMoney, AccessTime, Group, DirectionsCar } from "@mui/icons-material";
 import theme from "../../styles/theme";
 import { useLocations } from "../../contexts/LocationsContext.jsx";
@@ -9,20 +9,28 @@ const Room = ({ roomData = [] }) => {
   const { pickupText, dropText } = useLocations();
   const [filteredRoomData, setFilteredRoomData] = useState(roomData);
 
-  // Filtering logic updated to work directly with context values
   useEffect(() => {
-    if (Array.isArray(roomData)) {
-      const filteredRooms = roomData.filter(
-        (room) =>
-          (!pickupText || room.pickup.text.toLowerCase().includes(pickupText.toLowerCase())) &&
-          (!dropText || room.destination.text.toLowerCase().includes(dropText.toLowerCase()))
-      );
-      setFilteredRoomData(filteredRooms);
-    }
-  }, [roomData, pickupText, dropText]);
+   console.log("In room.jsx",roomData);
+    }, []);
+  // Simple filtering logic using string matching on pickup and destination text
+  // useEffect(() => {
+  //   if (Array.isArray(roomData)) {
+  //     const filteredRooms = roomData.filter((room) => {
+  //       const pickupMatch = pickupText
+  //         ? room.pickup.text.toLowerCase().includes(pickupText.toLowerCase())
+  //         : true;
+  //       const dropMatch = dropText
+  //         ? room.destination.text.toLowerCase().includes(dropText.toLowerCase())
+  //         : true;
+  //       return pickupMatch && dropMatch;
+  //     });
+  //     setFilteredRoomData(filteredRooms);
+  //   }
+  // }, [roomData, pickupText, dropText]);
 
   const handleJoinRoom = (roomId) => {
     console.log(`Joining room with ID: ${roomId}`);
+    // Add additional join room logic here (e.g., navigation)
   };
 
   return (
@@ -94,16 +102,13 @@ const Room = ({ roomData = [] }) => {
                   </Box>
                 </Box>
               </Box>
-
               <Button
                 variant="contained"
                 color="primary"
                 onClick={() => handleJoinRoom(room._id)}
                 sx={{
                   backgroundColor: theme.palette.primaryColor.main,
-                  "&:hover": {
-                    backgroundColor: theme.palette.primaryColor.hover,
-                  },
+                  "&:hover": { backgroundColor: theme.palette.primaryColor.hover },
                   alignSelf: "flex-start",
                   fontWeight: "bold",
                 }}

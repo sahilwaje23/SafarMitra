@@ -106,18 +106,28 @@ const searchRoom = async (req, res) => {
   try {
     const { pickup, destination } = req.body;
 
-    const rooms = await Ride.find({
-      $or: [
-        { "pickup.text": { $regex: pickup, $options: "i" } },
-        { "destination.text": { $regex: destination, $options: "i" } },
-      ],
-    });
+    // Ensure both pickup & destination are not empty before querying
+    if (!pickup && !destination) {
+      return res.status(400).json({ message: "Pickup or destination is required" });
+    }
+
+    // Construct dynamic query
+    let query = {};
+    if (pickup) {
+      query["pickup.text"] = { $regex: pickup, $options: "i" };
+    }
+    if (destination) {
+      query["destination.text"] = { $regex: destination, $options: "i" };
+    }
+
+    const rooms = await Ride.find({ $or: [query] });
 
     return res.status(200).json(rooms);
   } catch (e) {
-    res.status(400).send({ rideError: e.message });
+    res.status(400).json({ rideError: e.message });
   }
 };
+
 
 const handleGetFare = async (req, res) => {
   const errors = validationResult(req);

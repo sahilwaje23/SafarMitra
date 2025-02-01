@@ -26,7 +26,7 @@ router.get(
 
 router.get(
   "/get-suggestion",
-  query("input").isString().isLength({ min: 3 }),
+  query("input").isString().isLength({ min: 1 }),
   authUser,
   handleGetAutoCompleteSuggestions
 );

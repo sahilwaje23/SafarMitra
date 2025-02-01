@@ -1,19 +1,38 @@
 import axios from "axios";
 import { useState, useEffect } from "react";
+import SuggestionItem from "./Suggestion";
 
-export default function InputWithSuggestions({ inputId, placeholder, onSelect }) {
+export default function InputWithSuggestions({
+  inputId,
+  placeholder,
+  onSelect,
+}) {
   const [inputValue, setInputValue] = useState("");
   const [suggestions, setSuggestions] = useState([]);
   const [showDropdown, setShowDropdown] = useState(false);
+  const token = localStorage.getItem("token");
 
   useEffect(() => {
     if (inputValue.length > 0) {
       axios
-      .get(
-        `${import.meta.env.VITE_BASE_URL}/map/get-suggestion?input=${inputValue}`
-      )
-        .then((res) => res.json())
-        .then((data) => setSuggestions(data))
+        .get(
+          `${
+            import.meta.env.VITE_BASE_URL
+          }/map/get-suggestion`,
+          {
+          params: {
+            input: inputValue,  // params axios
+          },
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+            withCredentials: true,
+          }
+        )
+        .then((res) => {
+          console.log(res);
+          setSuggestions(res.data);
+        })
         .catch((err) => console.error("Error fetching suggestions:", err));
     } else {
       setSuggestions([]);
@@ -21,7 +40,8 @@ export default function InputWithSuggestions({ inputId, placeholder, onSelect })
   }, [inputValue]);
 
   return (
-    <div className="relative w-full max-w-md">
+    <div className="w-full max-w-[342px] relative">
+      
       <input
         type="text"
         id={inputId}
@@ -36,18 +56,19 @@ export default function InputWithSuggestions({ inputId, placeholder, onSelect })
         onBlur={() => setTimeout(() => setShowDropdown(false), 200)}
       />
       {showDropdown && suggestions.length > 0 && (
-        <div className="absolute left-0 right-0 mt-1 border rounded bg-white shadow-lg z-10">
+        <div className="absolute left-0 right-0 rounded  shadow-lg z-10  bg-[rgb(40,40,40)] py-3 w-full outline-none max-w-[342px] h-[200px] overflow-y-scroll mt-[1px] ">
           {suggestions.map((suggestion, index) => (
             <div
               key={index}
-              className="p-2 cursor-pointer hover:bg-gray-100 rounded"
+              className="py-2 cursor-pointer hover:bg-[#333] rounded px-2"
               onClick={() => {
-                setInputValue(suggestion);
+                setInputValue(suggestion.description);
                 setShowDropdown(false);
                 onSelect(suggestion);
               }}
             >
-              {suggestion}
+              {/* {suggestion.description} */}
+              <SuggestionItem suggestion={suggestion} onSelect={onSelect} />
             </div>
           ))}
         </div>

@@ -1,10 +1,16 @@
-import React from "react";
+import React , {useState} from "react";
 import { Button, Typography } from "@mui/material";
 import theme from "../../styles/theme";
 import Room from "../room/Room";
+import InputWithSuggestions from "../../components/user/SuggestionsList.jsx"
 
+// frontend\src\components\user\SuggestionsList.jsx
 const RoomActivities = () => {
   const yellowTheme = theme.palette.primaryColor.main;
+
+  const {pickupLat,setPickupLat,pickupLng,setPickupLng,dropLat,setDropLat,dropLng,setDropLng,pickupText,setPickupText,dropText,setDropText} = useLocations();
+      // chaitanya use this varibles
+  // since we are focusing on mobile for now , so i will do the pickup and drop in userHomepage (chaitanya kindly remove that dialog box of create room and join room)
 
   return (
     <div className="w-full h-[calc(100vh-64px)] min-w-[100vw] grid grid-cols-1 md:grid-cols-2">
@@ -12,31 +18,25 @@ const RoomActivities = () => {
       <div className="flex flex-col items-center justify-center w-full h-full max-h-screen gap-y-8">
         {/* inputs fileds */}
         <div className="hidden md:flex flex-col gap-y-3 w-full justify-center items-center pb-2">
+          
+          {/* source */}
           <label
             className="text-start w-full max-w-[342px] pl-1 text-xl"
             htmlFor=""
           >
             Source :
           </label>
-          <input
-            type="text"
-            id="source"
-            className="bg-[#333] px-4 py-3 w-full rounded-md outline-none hover:bg-[rgb(40,40,40,0.5)] max-w-[342px] focus:bg-[rgb(40,40,40)] focus:outline-white/50 focus:shadow-2xl shadow-white outline-offset-0 outline-2"
-            placeholder="Enter Source"
-          />
+          <InputWithSuggestions inputId="source" placeholder="Enter Source" onSelect={{setPickupLat,setPickupLng,setPickupText}} />
+          {/* chaitanya make setPickupData  */}
           
+          {/* destination */}
           <label
             className="text-start w-full max-w-[342px] pl-1 text-xl"
             htmlFor=""
           >
             Destination :
           </label>
-          <input
-            type="text"
-            id="destination"
-            className="bg-[#333] px-4 py-3 w-full rounded-md outline-none hover:bg-[rgb(40,40,40)] focus:bg-[rgb(40,40,40)] max-w-[342px] focus:outline-white/50 outline-offset-0 outline-2"
-            placeholder="Enter Destination"
-          />
+          <InputWithSuggestions inputId="destination" placeholder="Enter Destination" onSelect={{setDropLat,setDropLng,setDropText}} />
           <label
             className="text-start w-full max-w-[342px] pl-1 text-xl"
             htmlFor=""

@@ -28,6 +28,6 @@ export default LocationContextProvider;
 
 // custom hook for Locations
 
-const useLocations = () => {
+export const useLocations = () => {
     return useContext(LocationContext);
 }

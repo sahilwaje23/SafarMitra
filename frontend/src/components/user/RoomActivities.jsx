@@ -8,7 +8,7 @@ import InputWithSuggestions from "../../components/user/SuggestionsList.jsx";
 import { useLocations } from "../../contexts/LocationsContext.jsx";
 
 const RoomActivities = () => {
-  const [roomData, setRoomData] = useState(null);
+  const [roomData, setRoomData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [participantsLimit, setParticipantsLimit] = useState(1);
   const navigate = useNavigate();
@@ -85,7 +85,7 @@ const RoomActivities = () => {
       return;
     }
     try {
-      const res = await axios.get(`${import.meta.env.VITE_BASE_URL}/ride/get-all-rooms`, 
+      const res = await axios.get(`${import.meta.env.VITE_BASE_URL}/ride/get-all-open-rooms`, 
         
         {
           headers: {
@@ -168,7 +168,7 @@ return (
         </label>
         <InputWithSuggestions
           inputId="destination"
-          placeholder="Enter Destination"
+          placeholder={dropText}
           onSelect={handleDropSelect}
           value={dropText}
           onChange={handleDropChange}

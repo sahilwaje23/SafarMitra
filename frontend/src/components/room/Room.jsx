@@ -4,29 +4,39 @@ import { LocationOn, AttachMoney, AccessTime, Group, DirectionsCar } from "@mui/
 import theme from "../../styles/theme";
 import { useLocations } from "../../contexts/LocationsContext.jsx";
 
-const Room = ({ roomData = [] }) => {
+const Room = ({ roomData = []}) => {
   const isMobile = useMediaQuery("(max-width:1024px)");
   const { pickupText, dropText } = useLocations();
   const [filteredRoomData, setFilteredRoomData] = useState(roomData);
-
   useEffect(() => {
-   console.log("In room.jsx",roomData);
-    }, []);
-  // Simple filtering logic using string matching on pickup and destination text
-  // useEffect(() => {
-  //   if (Array.isArray(roomData)) {
-  //     const filteredRooms = roomData.filter((room) => {
-  //       const pickupMatch = pickupText
-  //         ? room.pickup.text.toLowerCase().includes(pickupText.toLowerCase())
-  //         : true;
-  //       const dropMatch = dropText
-  //         ? room.destination.text.toLowerCase().includes(dropText.toLowerCase())
-  //         : true;
-  //       return pickupMatch && dropMatch;
-  //     });
-  //     setFilteredRoomData(filteredRooms);
-  //   }
-  // }, [roomData, pickupText, dropText]);
+    console.log("Updated filteredRoomData:", filteredRoomData);
+  }, [filteredRoomData]);
+  
+  useEffect(() => {
+    console.log("In room.jsx", filteredRoomData);
+    console.log("pickup text",pickupText);
+    console.log("drop text",dropText);
+    for (const room of roomData) {
+      console.log("Room stuff", room);
+    }
+    
+    if (Array.isArray(roomData)) {
+      
+      const filteredRooms = roomData.filter((room) => {
+        console.log("Each entity" , pickupText.toLowerCase().includes(room.pickup.text.toLowerCase())  &&  dropText.toLowerCase().includes(room.destination.text.toLowerCase()) );
+        const pickupMatch = pickupText
+          ? pickupText.toLowerCase().includes(room.pickup.text.toLowerCase())
+          : true;
+        const dropMatch = dropText
+          ? dropText.toLowerCase().includes(room.destination.text.toLowerCase())
+          : true;
+        return pickupMatch && dropMatch;
+      });
+    
+      setFilteredRoomData([...filteredRooms]);
+    }
+    
+  }, [roomData, pickupText, dropText]);
 
   const handleJoinRoom = (roomId) => {
     console.log(`Joining room with ID: ${roomId}`);

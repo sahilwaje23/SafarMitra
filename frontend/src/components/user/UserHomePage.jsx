@@ -1,9 +1,12 @@
-import React, { useContext, useEffect } from "react";
+import React, { useContext, useEffect ,useState} from "react";
 import { Box, Input, TextField, Typography, Button } from "@mui/material";
 import Map from "../map/Map";
 import theme from "../../styles/theme";
 import { SocketContext } from "../../contexts/Socket";
 import { EntityContext } from "../../contexts/EntityContext";
+import InputWithSuggestions from "./SuggestionsList";
+import {useLocations} from "../../contexts/LocationsContext"
+// import 
 
 const UserHomePage = () => {
   const yellowTheme = theme.palette.primaryColor.main;
@@ -12,6 +15,13 @@ const UserHomePage = () => {
   console.log(entity);
   const userId =
     entity.data?._id || JSON.parse(localStorage.getItem("USER"))._id;
+
+    const {pickupLat,setPickupLat,pickupLng,setPickupLng,dropLat,setDropLat,dropLng,setDropLng,pickupText,setPickupText,dropText,setDropText} = useLocations();
+    // chaitanya use this varibles 
+
+    const [pickupData,setPickupData] = {pickupLat,pickupLng,pickupText};
+    const [dropData,setDropData] = {dropLat,dropLng,dropText};
+
 
   useEffect(() => {
     sendMessage("join", { userType: "USER", userId });
@@ -71,7 +81,9 @@ const UserHomePage = () => {
               Please enter Ride Details
             </div>
             <div className="flex flex-col gap-y-3 w-full justify-center items-center">
-              <input
+
+              {/* ignore this inputs */}
+              {/* <input
                 type="text"
                 id="source"
                 className="bg-[#333] px-4 py-3 w-full rounded-md outline-none hover:bg-[rgb(40,40,40,0.5)] max-w-[342px] focus:bg-[rgb(40,40,40)] focus:outline-white focus:shadow-2xl shadow-white outline-offset-0 outline-1"
@@ -82,7 +94,12 @@ const UserHomePage = () => {
                 id="source"
                 className="bg-[#333] px-4 py-3 w-full rounded-md outline-none hover:bg-[rgb(40,40,40)] focus:bg-[rgb(40,40,40)] max-w-[342px] focus:outline-white outline-offset-0 outline-1"
                 placeholder="Enter Destination"
-              />
+              /> */}
+
+              {/* source destination inputs with suggestion - from SuggestionList.jsx */}
+              <InputWithSuggestions inputId="source" placeholder="Enter Source" onSelect={setPickupData} chai = "source
+              "/>
+              <InputWithSuggestions inputId="destination" placeholder="Enter Destination" onSelect={setDropData} />
               <Button
                 sx={{
                   height: "3.3rem",

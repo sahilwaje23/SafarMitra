@@ -71,7 +71,7 @@ const Room = ({ roomData = []}) => {
             >
               <Box sx={{ display: "flex", flexDirection: "column", gap: 1, flex: 1 }}>
                 <Typography variant="h6" sx={{ fontWeight: "bold" }}>
-                  #{index + 1} Room ID: {room._id.substring(0, 6)}
+                  #{index + 1} Room ID: {room._id.substring(0, 8)}
                 </Typography>
                 <Box sx={{ display: "grid", gap: 1 }}>
                   <Box sx={{ display: "flex", alignItems: "center" }}>

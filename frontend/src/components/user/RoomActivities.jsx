@@ -106,6 +106,50 @@ const RoomActivities = () => {
   }
 };
 
+const createRoom = async (roomData) => {
+  const token = localStorage.getItem("token");
+  if (!token) {
+    console.error("No token found, cannot create room");
+    navigate("/user/signin");
+    return;
+  }
+
+  try {
+    const res = await axios.post(
+      `${import.meta.env.VITE_BASE_URL}/ride/create-room`,
+      roomData,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          // "Content-Type": "application/json"
+        },
+        withCredentials: true,
+      }
+    );
+    console.log("Room created successfully:", res.data);
+    // Handle state update if needed, e.g., updating the room list
+    setRoomData((prevRooms) => [...prevRooms, res.data.newRoom]);
+  } catch (err) {
+    console.error("Error creating room:", err);
+    if (err.response && err.response.status === 401) {
+      navigate("/user/signin");
+    }
+  }
+};
+
+const handleCreateRoom = () => {
+  const roomData = {
+    pickupLat: pickupLat,
+    pickupLng: pickupLng,
+    dropLat: dropLat,
+    dropLng: dropLng,
+    pickupText: pickupText,
+    dropText: dropText,
+  };
+  createRoom(roomData);
+};
+
+
 useEffect(() => {
   fetchProfile();
   fetchRooms();
@@ -199,6 +243,7 @@ return (
           variant="contained"
           type="submit"
           fullWidth
+          onClick={handleCreateRoom}
         >
           <Typography sx={{ fontSize: "large", fontWeight: "bold" }}>
             Create Room

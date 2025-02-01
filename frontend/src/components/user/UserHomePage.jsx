@@ -1,8 +1,8 @@
 import React, { useContext, useEffect, useState } from "react";
 import { Box, Typography, Button } from "@mui/material";
+import { useNavigate } from "react-router-dom"; // Import useNavigate
 import Map from "../map/Map";
 import theme from "../../styles/theme";
-import { SocketContext } from "../../contexts/Socket";
 import { EntityContext } from "../../contexts/EntityContext";
 import InputWithSuggestions from "./SuggestionsList";
 import { useLocations } from "../../contexts/LocationsContext";
@@ -11,9 +11,9 @@ import axios from 'axios';
 const UserHomePage = () => {
   const [loading, setLoading] = useState(true);
   const yellowTheme = theme.palette.primaryColor.main;
-  //const { sendMessage, recieveMessage } = useContext(SocketContext);
   const { entity } = useContext(EntityContext);
   const { pickupLat, setPickupLat, pickupLng, setPickupLng, dropLat, setDropLat, dropLng, setDropLng, pickupText, setPickupText, dropText, setDropText } = useLocations();
+  const navigate = useNavigate(); // Initialize navigate
 
   const [pickupData, setPickupData] = useState({
     pickupLat,
@@ -53,38 +53,16 @@ const UserHomePage = () => {
     fetchProfile();
   }, []);
 
- // const userId = entity.data?._id || JSON.parse(localStorage.getItem("USER"))._id;
-  // is the below even needed in userhomepage it may be needed only in roomactivities
-  // useEffect(() => {
-  //   if (!userId) return;
-
-  //   sendMessage("join", { userType: "USER", userId });
-
-  //   recieveMessage("confirm-ride", (rideData) => {
-  //     console.log("Ride Confirmed", rideData);
-  //   });
-
-  //   recieveMessage("user-joined", (rideData) => {
-  //     console.log("New User Joined", rideData);
-  //   });
-
-  //   recieveMessage("new-userJoin", (rideData) => {
-  //     console.log("New User Joined", rideData);
-  //   });
-
-  // }, [userId]);
-
   const handlePickupSelect = (value) => {
-    // Check if the value contains lat, lng, and description
     if (value && value.lat && value.lng && value.description) {
       setPickupLat(value.lat);
       setPickupLng(value.lng);
       setPickupText(value.description);
-  
-      setPickupData({ 
-        pickupText: value.description, 
-        pickupLat: value.lat, 
-        pickupLng: value.lng 
+
+      setPickupData({
+        pickupText: value.description,
+        pickupLat: value.lat,
+        pickupLng: value.lng
       });
     } else {
       console.error("Selected value does not have the required structure.");
@@ -92,22 +70,29 @@ const UserHomePage = () => {
   };
 
   const handleDropSelect = (value) => {
-    // Check if the value contains lat, lng, and description
     if (value && value.lat && value.lng && value.description) {
       setDropLat(value.lat);
       setDropLng(value.lng);
       setDropText(value.description);
-  
-      setDropData({ 
-        dropText: value.description, 
-        dropLat: value.lat, 
-        dropLng: value.lng 
+
+      setDropData({
+        dropText: value.description,
+        dropLat: value.lat,
+        dropLng: value.lng
       });
     } else {
       console.error("Selected value does not have the required structure.");
     }
   };
-  
+
+  const handleContinue = () => {
+    if (!pickupLat || !pickupLng || !dropLat || !dropLng) {
+      alert("Please select both source and destination.");
+      return;
+    }
+    navigate("/room-activities"); // Navigate to RoomActivities
+  };
+
   return (
     <>
       <Box
@@ -166,6 +151,7 @@ const UserHomePage = () => {
                 variant="contained"
                 type="submit"
                 fullWidth
+                onClick={handleContinue} // Add onClick handler
               >
                 <Typography sx={{ fontSize: "large", fontWeight: "bold" }}>
                   Continue
@@ -176,7 +162,6 @@ const UserHomePage = () => {
         </Box>
         <div className=" w-[100%] h-[100%] text-center flex justify-center items-center ">
           <Map pickupData={pickupData} dropData={dropData} />
-           {/* map may simply recieve data via context rather than props */}
         </div>
       </Box>
     </>

@@ -1,22 +1,36 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Paper, Typography, Box, Card, Button, useMediaQuery } from "@mui/material";
 import { LocationOn, AttachMoney, AccessTime, Group, DirectionsCar } from "@mui/icons-material";
 import theme from "../../styles/theme";
 
-const Room = ({ roomData }) => {
+const Room = ({ roomData = [], inputValue = "" }) => {
   const isMobile = useMediaQuery("(max-width:1024px)");
 
-  const RoomData = roomData || []; // Use real room data if available
-  console.log("RoomData:", RoomData);
+  const [filteredRoomData, setFilteredRoomData] = useState(roomData);
+
+  useEffect(() => {
+    // Ensure roomData is an array before filtering
+    if (Array.isArray(roomData)) {
+      // Filter rooms based on input value
+      if (inputValue.length > 0) {
+        const filteredRooms = roomData.filter(
+          (room) =>
+            room.pickup.text.toLowerCase().includes(inputValue.toLowerCase()) ||
+            room.destination.text.toLowerCase().includes(inputValue.toLowerCase())
+        );
+        setFilteredRoomData(filteredRooms);
+      } else {
+        setFilteredRoomData(roomData);
+      }
+    }
+  }, [inputValue, roomData]);
 
   const handleJoinRoom = (roomId) => {
-    // Logic for joining the room
     console.log(`Joining room with ID: ${roomId}`);
-    // Navigate to the room or handle room joining
   };
 
   return (
-    <Paper
+    <Box
       sx={{
         p: 2,
         bgcolor: theme.palette.mode === "dark" ? "rgba(18, 18, 18)" : "rgba(255, 255, 255)",
@@ -29,8 +43,8 @@ const Room = ({ roomData }) => {
         Existing Rooms
       </Typography>
       <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-        {RoomData.length > 0 ? (
-          RoomData.map((room, index) => (
+        {Array.isArray(filteredRoomData) && filteredRoomData.length > 0 ? (
+          filteredRoomData.map((room, index) => (
             <Card
               key={index}
               sx={{
@@ -85,7 +99,6 @@ const Room = ({ roomData }) => {
                 </Box>
               </Box>
 
-              {/* Join Button */}
               <Button
                 variant="contained"
                 color="primary"
@@ -95,7 +108,8 @@ const Room = ({ roomData }) => {
                   "&:hover": {
                     backgroundColor: theme.palette.primaryColor.hover,
                   },
-                  alignSelf: "flex-start", // Align the button to the top of the right side
+                  alignSelf: "flex-start",
+                  fontWeight: "bold",
                 }}
               >
                 JOIN
@@ -108,7 +122,7 @@ const Room = ({ roomData }) => {
           </Typography>
         )}
       </Box>
-    </Paper>
+    </Box>
   );
 };
 

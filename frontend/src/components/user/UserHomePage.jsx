@@ -161,7 +161,7 @@ const UserHomePage = () => {
           </div>
         </Box>
         <div className=" w-[100%] h-[100%] text-center flex justify-center items-center ">
-          <Map pickupData={pickupData} dropData={dropData} />
+          {/* <Map pickupData={pickupData} dropData={dropData} /> */}
         </div>
       </Box>
     </>

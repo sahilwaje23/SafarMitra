@@ -12,8 +12,7 @@ const RoomActivities = () => {
   const [loading, setLoading] = useState(true);
   const [participantsLimit, setParticipantsLimit] = useState(1);
   const navigate = useNavigate();
-  useEffect(()=>{},[])
-  
+
   const {
     pickupLat,
     setPickupLat,
@@ -30,27 +29,41 @@ const RoomActivities = () => {
   } = useLocations();
 
   const [pickupData, setPickupData] = useState({
-      pickupLat,
-      pickupLng,
-      pickupText
-    });
-  
-    const [dropData, setDropData] = useState({
-      dropLat,
-      dropLng,
-      dropText
-    });
+    pickupLat,
+    pickupLng,
+    pickupText,
+  });
 
-     useEffect(() => {
-        console.log("Pickup Data", pickupData);
-        console.log("Drop Data", dropData);
-      }, [dropData, pickupData]);
-    
+  const [dropData, setDropData] = useState({
+    dropLat,
+    dropLng,
+    dropText,
+  });
+
+  useEffect(() => {
+    // Update context values when pickupData or dropData changes
+    setPickupLat(pickupData.pickupLat);
+    setPickupLng(pickupData.pickupLng);
+    setDropLat(dropData.dropLat);
+    setDropLng(dropData.dropLng);
+    setPickupText(pickupData.pickupText);
+    setDropText(dropData.dropText);
+  }, [pickupData, dropData]);
+
+  useEffect(() => {
+    console.log("Pickup Data", pickupData);
+    console.log("Drop Data", dropData);
+  }, [pickupData, dropData]);
+
+  // Log updated roomData whenever it changes
+  useEffect(() => {
+    console.log("Updated roomData:", roomData);
+  }, [roomData]);
 
   const fetchProfile = async () => {
     const token = localStorage.getItem("token");
     try {
-      const res = await axios.get(`${import.meta.env.VITE_BASE_URL}/check`, {
+      await axios.get(`${import.meta.env.VITE_BASE_URL}/check`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -78,6 +91,7 @@ const RoomActivities = () => {
         },
         withCredentials: true,
       });
+      console.log("API response:", res.data); // Check what the API returns
       setRoomData(res.data);
     } catch (err) {
       console.error("Error fetching rooms:", err);
@@ -92,17 +106,15 @@ const RoomActivities = () => {
     fetchRooms();
   }, []);
 
- 
   const handlePickupSelect = (value) => {
     if (value && value.lat && value.lng && value.description) {
       setPickupLat(value.lat);
       setPickupLng(value.lng);
       setPickupText(value.description);
-
       setPickupData({
         pickupText: value.description,
         pickupLat: value.lat,
-        pickupLng: value.lng
+        pickupLng: value.lng,
       });
     } else {
       console.error("Selected value does not have the required structure.");
@@ -114,11 +126,10 @@ const RoomActivities = () => {
       setDropLat(value.lat);
       setDropLng(value.lng);
       setDropText(value.description);
-
       setDropData({
         dropText: value.description,
         dropLat: value.lat,
-        dropLng: value.lng
+        dropLng: value.lng,
       });
     } else {
       console.error("Selected value does not have the required structure.");
@@ -145,9 +156,8 @@ const RoomActivities = () => {
             placeholder="Enter Source"
             onSelect={handlePickupSelect}
             value={pickupText}
-            onChange={handlePickupChange} // Handle pickup text change
+            onChange={handlePickupChange}
           />
-
           <label className="text-start w-full max-w-[342px] pl-1 text-xl" htmlFor="">
             Destination :
           </label>
@@ -156,9 +166,8 @@ const RoomActivities = () => {
             placeholder="Enter Destination"
             onSelect={handleDropSelect}
             value={dropText}
-            onChange={handleDropChange} // Handle drop text change
+            onChange={handleDropChange}
           />
-
           <label className="text-start w-full max-w-[342px] pl-1 text-xl" htmlFor="">
             Passenger Limit :
           </label>
@@ -173,7 +182,6 @@ const RoomActivities = () => {
             onChange={(e) => setParticipantsLimit(Math.min(Math.max(1, e.target.value), 4))}
           />
         </div>
-
         <div className="flex flex-col gap-y-3 w-full justify-center items-center mt-12 md:mt-0">
           <Button
             sx={{
@@ -193,13 +201,11 @@ const RoomActivities = () => {
           </Button>
         </div>
       </div>
-
       <div className="md:hidden text-center my-10 grid grid-cols-[1fr,auto,1fr] place-content-center items-center">
         <div className="bg-white/30 h-[0.5px] w-full"></div>
         <div className="text-center text-white px-4 ">OR</div>
         <div className="bg-white/30 h-[0.5px] w-full"></div>
       </div>
-
       <div className="border-2 rounded-lg border-white/30 m-1 max-h-screen h-auto flex flex-col gap-y-3 overflow-y-scroll overflow-x-hidden">
         <Room roomData={roomData} />
       </div>

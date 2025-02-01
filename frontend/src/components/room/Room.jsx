@@ -2,28 +2,24 @@ import React, { useState, useEffect } from "react";
 import { Paper, Typography, Box, Card, Button, useMediaQuery } from "@mui/material";
 import { LocationOn, AttachMoney, AccessTime, Group, DirectionsCar } from "@mui/icons-material";
 import theme from "../../styles/theme";
+import { useLocations } from "../../contexts/LocationsContext.jsx";
 
-const Room = ({ roomData = [], inputValue = "" }) => {
+const Room = ({ roomData = [] }) => {
   const isMobile = useMediaQuery("(max-width:1024px)");
-
+  const { pickupText, dropText } = useLocations();
   const [filteredRoomData, setFilteredRoomData] = useState(roomData);
 
+  // Filtering logic updated to work directly with context values
   useEffect(() => {
-    // Ensure roomData is an array before filtering
     if (Array.isArray(roomData)) {
-      // Filter rooms based on input value
-      if (inputValue.length > 0) {
-        const filteredRooms = roomData.filter(
-          (room) =>
-            room.pickup.text.toLowerCase().includes(inputValue.toLowerCase()) ||
-            room.destination.text.toLowerCase().includes(inputValue.toLowerCase())
-        );
-        setFilteredRoomData(filteredRooms);
-      } else {
-        setFilteredRoomData(roomData);
-      }
+      const filteredRooms = roomData.filter(
+        (room) =>
+          (!pickupText || room.pickup.text.toLowerCase().includes(pickupText.toLowerCase())) &&
+          (!dropText || room.destination.text.toLowerCase().includes(dropText.toLowerCase()))
+      );
+      setFilteredRoomData(filteredRooms);
     }
-  }, [inputValue, roomData]);
+  }, [roomData, pickupText, dropText]);
 
   const handleJoinRoom = (roomId) => {
     console.log(`Joining room with ID: ${roomId}`);

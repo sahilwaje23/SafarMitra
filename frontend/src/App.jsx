@@ -59,9 +59,23 @@ function App() {
               </UserProtectedWrapper>
             }
           />
-          <Route path="/room-activities" element={<RoomActivities />} />
+          <Route
+            path="/room-activities"
+            element={
+              <UserProtectedWrapper>
+                <RoomActivities />
+              </UserProtectedWrapper>
+            }
+          />
           <Route path="/create-room" element={<div>Create Room</div>} />
-          <Route path="/join-room" element={<RoomInt />} />
+          <Route
+            path="/join-room"
+            element={
+              <UserProtectedWrapper>
+                <RoomInt />
+              </UserProtectedWrapper>
+            }
+          />
           <Route path="/captain-history" element={<RoomInt />} />
           <Route path="/captain-earnings" element={<div>Earnings</div>} />
           <Route path="/captain-profile" element={<div>Captain Profile</div>} />

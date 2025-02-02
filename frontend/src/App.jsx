@@ -15,7 +15,8 @@ import {
 } from "./components";
 import theme from "./styles/theme";
 import { useMediaQuery } from "@mui/material";
-import UserProtectedWrapper from "./wrappers/UserProtectedWrapper"
+import UserProtectedWrapper from "./wrappers/UserProtectedWrapper";
+import RoomActivities from "./components/user/RoomActivities";
 
 function App() {
   const location = useLocation(); // this has location object which will give information about the current url , this also triggers a re-render if the current location changes
@@ -35,21 +36,39 @@ function App() {
         }}
       >
         <Routes>
-          <Route path='/' element={<Landing />} />
-          <Route path='/user-signup' element={<UserSignUp />} />
-          <Route path='/user-signin' element={<UserSignIn />} />
-          <Route path='/captain-signup' element={<CaptainSignUp />} />
-          <Route path='/captain-signin' element={<CaptainSignIn />} />
-          <Route path='/user-homepage' element={<UserHomePage />} />
-          <Route path='/captain-homepage' element={<CaptainHomePage />} />
-          <Route path='/user-history' element={<div>User History</div>} />
-          <Route path='/user-profile' element={<div>User Profile</div>} />
-          <Route path='/create-room' element={<div>Create Room</div>} />
-          <Route path='/join-room' element={<div>Join Room</div>} />
-          <Route path='/captain-history' element={<div>Captain History</div>} />
-          <Route path='/captain-earnings' element={<div>Earnings</div>} />
-          <Route path='/captain-profile' element={<div>Captain Profile</div>} />
-          <Route path='/captain-nearby-rooms' element={<div>Nearby Rooms</div>} />
+          <Route path="/" element={<Landing />} />
+          <Route path="/user-signup" element={<UserSignUp />} />
+          <Route path="/user-signin" element={<UserSignIn />} />
+          <Route path="/captain-signup" element={<CaptainSignUp />} />
+          <Route path="/captain-signin" element={<CaptainSignIn />} />
+          <Route path="/user-homepage" element={<UserHomePage />} />
+          <Route path="/captain-homepage" element={<CaptainHomePage />} />
+          <Route
+            path="/user-history"
+            element={
+              <UserProtectedWrapper>
+                <div>history </div>
+              </UserProtectedWrapper>
+            }
+          />
+          <Route
+            path="/user-profile"
+            element={
+              <UserProtectedWrapper>
+                <UserProfile />
+              </UserProtectedWrapper>
+            }
+          />
+          <Route path="/room-activities" element={<RoomActivities />} />
+          <Route path="/create-room" element={<div>Create Room</div>} />
+          <Route path="/join-room" element={<RoomInt />} />
+          <Route path="/captain-history" element={<RoomInt />} />
+          <Route path="/captain-earnings" element={<div>Earnings</div>} />
+          <Route path="/captain-profile" element={<div>Captain Profile</div>} />
+          <Route
+            path="/captain-nearby-rooms"
+            element={<div>Nearby Rooms</div>}
+          />
         </Routes>
       </div>
       <Navbar type={type} />

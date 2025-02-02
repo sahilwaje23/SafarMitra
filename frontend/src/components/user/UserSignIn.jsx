@@ -56,10 +56,8 @@ const UserSignIn = () => {
       });
       return;
     }
-
     try {
-      const response = await axios.post(
-        `${import.meta.env.VITE_BASE_URL}/login`,
+      const response = await axios.post( `${import.meta.env.VITE_BASE_URL}/login`,
         {
           email: emailRef.current.value,
           password: passwordRef.current.value,
@@ -74,6 +72,9 @@ const UserSignIn = () => {
         navigate("/user-homepage");
       }
     } catch (error) {
+      console.log("Error Response:", error.response); // Inspect the error response)
+      console.log("Email ref" ,  emailRef.current.value); // Inspect the error response)
+      console.log("Password ref" , passwordRef.current.value ); // Inspect the error response)
       const message =
         error.response?.data?.errors?.map((err) => err.msg).join("\n") ||
         error.response?.data?.err ||

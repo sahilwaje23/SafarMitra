@@ -7,13 +7,16 @@ import "./index.css";
 import { BrowserRouter } from "react-router-dom";
 import EntityContextProvider from "./contexts/EntityContext.jsx";
 import SocketContextProvider from "./contexts/Socket.jsx";
+import LocationContextProvider from "./contexts/LocationsContext.jsx";
 
 createRoot(document.getElementById("root")).render(
   <SocketContextProvider>
     <EntityContextProvider>
-      <BrowserRouter>
-        <App />
-      </BrowserRouter>
+      <LocationContextProvider>
+        <BrowserRouter>
+          <App />
+        </BrowserRouter>
+      </LocationContextProvider>
     </EntityContextProvider>
   </SocketContextProvider>
 );

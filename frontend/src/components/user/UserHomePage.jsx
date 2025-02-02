@@ -1,36 +1,97 @@
-import React, { useContext, useEffect } from "react";
-import { Box, Input, TextField, Typography, Button } from "@mui/material";
+import React, { useContext, useEffect, useState } from "react";
+import { Box, Typography, Button } from "@mui/material";
+import { useNavigate } from "react-router-dom"; // Import useNavigate
 import Map from "../map/Map";
 import theme from "../../styles/theme";
-import { SocketContext } from "../../contexts/Socket";
 import { EntityContext } from "../../contexts/EntityContext";
+import InputWithSuggestions from "./SuggestionsList";
+import { useLocations } from "../../contexts/LocationsContext";
+import axios from 'axios';
 
 const UserHomePage = () => {
+  const [loading, setLoading] = useState(true);
   const yellowTheme = theme.palette.primaryColor.main;
-  const { sendMessage, recieveMessage } = useContext(SocketContext);
   const { entity } = useContext(EntityContext);
-  console.log(entity);
-  const userId =
-    entity.data?._id || JSON.parse(localStorage.getItem("USER"))._id;
+  const { pickupLat, setPickupLat, pickupLng, setPickupLng, dropLat, setDropLat, dropLng, setDropLng, pickupText, setPickupText, dropText, setDropText } = useLocations();
+  const navigate = useNavigate(); // Initialize navigate
+
+  const [pickupData, setPickupData] = useState({
+    pickupLat,
+    pickupLng,
+    pickupText
+  });
+
+  const [dropData, setDropData] = useState({
+    dropLat,
+    dropLng,
+    dropText
+  });
 
   useEffect(() => {
-    sendMessage("join", { userType: "USER", userId });
+    console.log("Pickup Data", pickupData);
+    console.log("Drop Data", dropData);
+  }, [dropData, pickupData]);
 
-    recieveMessage("confirm-ride", (rideData) => {
-      // ^ Chaitanya whatever new ride is confirmed by driver u will get data here
-      console.log("Ride Confirmed", rideData);
-    });
+  useEffect(() => {
+    const fetchProfile = async () => {
+      const token = localStorage.getItem("token");
+      try {
+        const res = await axios.get(`${import.meta.env.VITE_BASE_URL}/check`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          withCredentials: true,
+        });
+      } catch (err) {
+        console.error(err);
+        navigate("/user/signin");
+      } finally {
+        setLoading(false);
+      }
+    };
 
-    recieveMessage("user-joined", (rideData) => {
-      // ^ Chaitanya whenever a new user joins a ride u will get data here
-      console.log("New User Joined", rideData);
-    });
-
-    recieveMessage("new-userJoin", (rideData) => {
-      // ^ Chaitanya whenever a new user joins a ride u will get data here
-      console.log("New User Joined", rideData);
-    });
+    fetchProfile();
   }, []);
+
+  const handlePickupSelect = (value) => {
+    if (value && value.lat && value.lng && value.description) {
+      setPickupLat(value.lat);
+      setPickupLng(value.lng);
+      setPickupText(value.description);
+
+      setPickupData({
+        pickupText: value.description,
+        pickupLat: value.lat,
+        pickupLng: value.lng
+      });
+    } else {
+      console.error("Selected value does not have the required structure.");
+    }
+  };
+
+  const handleDropSelect = (value) => {
+    if (value && value.lat && value.lng && value.description) {
+      setDropLat(value.lat);
+      setDropLng(value.lng);
+      setDropText(value.description);
+
+      setDropData({
+        dropText: value.description,
+        dropLat: value.lat,
+        dropLng: value.lng
+      });
+    } else {
+      console.error("Selected value does not have the required structure.");
+    }
+  };
+
+  const handleContinue = () => {
+    if (!pickupLat || !pickupLng || !dropLat || !dropLng) {
+      alert("Please select both source and destination.");
+      return;
+    }
+    navigate("/room-activities"); // Navigate to RoomActivities
+  };
 
   return (
     <>
@@ -47,8 +108,6 @@ const UserHomePage = () => {
             xs: `"map"
                  "info"`,
             sm: `"info map"`,
-
-            // md: `"info map"`,
           },
           gap: "1rem",
         }}
@@ -64,29 +123,22 @@ const UserHomePage = () => {
           }}
         >
           <div className="flex flex-col justify-center items-center w-[100%] gap-y-5 sm:items-center md:ml-[5rem]">
-<<<<<<< HEAD
-          <div className="text-5xl font-semibold w-full text-center mx-auto">Hello user</div>
-            <div className="text-2xl font-semibold w-full text-center mx-auto">Please enter Ride Details</div>
-=======
             <div className="text-5xl font-semibold w-full text-center mx-auto">
               Hello user
             </div>
             <div className="text-2xl font-semibold w-full text-center mx-auto">
               Please enter Ride Details
             </div>
->>>>>>> main
             <div className="flex flex-col gap-y-3 w-full justify-center items-center">
-              <input
-                type="text"
-                id="source"
-                className="bg-[#333] px-4 py-3 w-full rounded-md outline-none hover:bg-[rgb(40,40,40,0.5)] max-w-[342px] focus:bg-[rgb(40,40,40)] focus:outline-white focus:shadow-2xl shadow-white outline-offset-0 outline-1"
+              <InputWithSuggestions
+                inputId="source"
                 placeholder="Enter Source"
+                onSelect={handlePickupSelect}
               />
-              <input
-                type="text"
-                id="source"
-                className="bg-[#333] px-4 py-3 w-full rounded-md outline-none hover:bg-[rgb(40,40,40)] focus:bg-[rgb(40,40,40)] max-w-[342px] focus:outline-white outline-offset-0 outline-1"
+              <InputWithSuggestions
+                inputId="destination"
                 placeholder="Enter Destination"
+                onSelect={handleDropSelect}
               />
               <Button
                 sx={{
@@ -99,17 +151,17 @@ const UserHomePage = () => {
                 variant="contained"
                 type="submit"
                 fullWidth
+                onClick={handleContinue} // Add onClick handler
               >
                 <Typography sx={{ fontSize: "large", fontWeight: "bold" }}>
                   Continue
                 </Typography>
               </Button>
             </div>
-            {/* Confirm button */}
           </div>
         </Box>
         <div className=" w-[100%] h-[100%] text-center flex justify-center items-center ">
-          <Map />
+          {/* <Map pickupData={pickupData} dropData={dropData} /> */}
         </div>
       </Box>
     </>

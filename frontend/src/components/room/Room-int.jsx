@@ -63,7 +63,7 @@ const MobileView = () => {
       //  border:'1px solid red'
       }}
     >
-      <Map />
+      {/* <Map /> */}
       <Box sx={{
         // border:'1em solid hotpink',
         pb:'0.4rem',
@@ -95,7 +95,7 @@ function DesktopView() {
         //border:'1px solid aqua',
         width:'70%',
        }}>
-        <Map />
+        {/* <Map /> */}
       </Box>
       <Paper sx={{
         flex: '40%',

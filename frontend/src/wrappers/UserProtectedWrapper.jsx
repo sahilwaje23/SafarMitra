@@ -29,7 +29,9 @@ const UserProtectedWrapper = ({ children }) => {
         setEntity(res.data);
       } catch (err) {
         console.error(err);
-        navigate("/user/signin");
+        navigate("/user-signin", {
+          state: { msgForUser: "You must be logged in to access the page" },
+        });
       } finally {
         setLoading(false);
       }

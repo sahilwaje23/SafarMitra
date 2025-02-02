@@ -8,7 +8,6 @@ export default function InputWithSuggestions({
   placeholder,
   onSelect,
   value,
-
 }) {
   const [inputValue, setInputValue] = useState(value);
   const [suggestions, setSuggestions] = useState([]);
@@ -16,42 +15,35 @@ export default function InputWithSuggestions({
   const [debouncedValue, setDebouncedValue] = useState(""); // New state for the debounced input
   const token = localStorage.getItem("token");
   const {
-     
-      
-     
-    
-      pickupText,
-     
-      dropText,
-  
-    } = useLocations();
+    pickupText,
+    dropText,
+  } = useLocations();
 
   // Debounce input value
   useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedValue(inputValue);
-    }, 2000); // Wait for 2 seconds after the user stops typing
+    }, 500); // Wait for 2 seconds after the user stops typing
 
     return () => clearTimeout(handler);
   }, [inputValue]);
 
   // Fetch suggestions when debounced value changes and input length > 2
   useEffect(() => {
-
-      axios
-        .get(`${import.meta.env.VITE_BASE_URL}/map/get-suggestion`, {
-          params: {
-            input: debouncedValue, // Use the debounced value
-          },
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-          withCredentials: true,
-        })
-        .then((res) => {
-          setSuggestions(res.data);
-        })
-        .catch((err) => {});
+    axios
+      .get(`${import.meta.env.VITE_BASE_URL}/map/get-suggestion`, {
+        params: {
+          input: debouncedValue, // Use the debounced value
+        },
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        withCredentials: true,
+      })
+      .then((res) => {
+        setSuggestions(res.data);
+      })
+      .catch((err) => {});
   }, [debouncedValue]);
 
   return (

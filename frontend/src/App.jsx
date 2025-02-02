@@ -17,6 +17,8 @@ import theme from "./styles/theme";
 import { useMediaQuery } from "@mui/material";
 import UserProtectedWrapper from "./wrappers/UserProtectedWrapper";
 import RoomActivities from "./components/user/RoomActivities";
+import UserProtectedWrapper from "./wrappers/UserProtectedWrapper";
+import RoomActivities from "./components/user/RoomActivities";
 
 function App() {
   const location = useLocation(); // this has location object which will give information about the current url , this also triggers a re-render if the current location changes

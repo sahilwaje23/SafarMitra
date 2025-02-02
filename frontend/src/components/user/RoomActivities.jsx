@@ -90,7 +90,7 @@ const RoomActivities = () => {
     const token = localStorage.getItem("token");
     if (!token) {
       console.error("No token found, cannot create room");
-      navigate("/user/signin");
+      navigate("/user-signin");
       return;
     }
 
@@ -127,6 +127,7 @@ const RoomActivities = () => {
       dropText: dropText,
     };
     createRoom(roomData);
+    navigate("/room-int");
   };
 
   useEffect(() => {

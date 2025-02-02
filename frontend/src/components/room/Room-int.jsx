@@ -1,12 +1,16 @@
 // - modes for room are `unconfirmed,locked,accepted,running,finished`
 // - suggested to use numbers to represent statuses enables for efficient communication as in the frontend corresponding to the number we display that particular status
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState,useContext } from 'react';
 import { Box, Typography, Button, useMediaQuery ,Paper,GlobalStyles} from '@mui/material';
 import Map from '../map/Map';
 import Chat from './Chat'
 import Popup from './Popup';
 import theme from '../../styles/theme';
 import RideDetails from './RideDetails'
+import { SocketContext } from "../../contexts/Socket";
+import { EntityContext } from "../../contexts/EntityContext";
+import axios from 'axios';
+
 const ButtonGroup = ({ activeTab, setActiveTab }) => {
  return(
   <Box sx={{ display: 'flex', gap: 2 }}>
@@ -63,7 +67,7 @@ const MobileView = () => {
       //  border:'1px solid red'
       }}
     >
-      {/* <Map /> */}
+      <Map />
       <Box sx={{
         // border:'1em solid hotpink',
         pb:'0.4rem',
@@ -95,7 +99,7 @@ function DesktopView() {
         //border:'1px solid aqua',
         width:'70%',
        }}>
-        {/* <Map /> */}
+        <Map />
       </Box>
       <Paper sx={{
         flex: '40%',
@@ -149,8 +153,34 @@ function DesktopView() {
   );
 }
 
+
 function RoomInt() {
   const isMobile = useMediaQuery('(max-width:1024px)');
+  const { sendMessage, recieveMessage } = useContext(SocketContext);
+  const { entity } = useContext(EntityContext);
+  // useEffect(() => {
+  //   sendMessage("join", { userType: "USER", userId });
+  
+  //   recieveMessage("confirm-ride", (rideData) => {
+  //     // ^ Chaitanya whatever new ride is confirmed by driver u will get data here
+  //     console.log("Ride Confirmed", rideData);
+  //   });
+  
+  //   recieveMessage("user-joined", (rideData) => {
+  //     // ^ Chaitanya whenever a new user joins a ride u will get data here
+  //     console.log("New User Joined", rideData);
+  //   });
+  
+  //   recieveMessage("new-userJoin", (rideData) => {
+  //     // ^ Chaitanya whenever a new user joins a ride u will get data here
+  //     console.log("New User Joined", rideData);
+  //   });
+  
+  //   recieveMessage("new-chat", ({ msg, name }) => {
+  //     console.log("Message Received: " + msg + " " + name);
+  //    });
+  //   }, []);
+  
   return isMobile ? <MobileView /> : <DesktopView />;
 }
 

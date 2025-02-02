@@ -85,6 +85,7 @@ const UserHomePage = () => {
     }
   };
 
+
   const handleContinue = () => {
     if (!pickupLat || !pickupLng || !dropLat || !dropLng) {
       alert("Please select both source and destination.");

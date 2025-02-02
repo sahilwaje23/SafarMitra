@@ -1,4 +1,4 @@
-import React from "react";
+import React ,{useContext} from "react";
 import { Typography, Box, Card, Button } from "@mui/material";
 import {
   LocationOn,
@@ -7,6 +7,8 @@ import {
   Group,
   DirectionsCar,
 } from "@mui/icons-material";
+import { Link } from "react-router-dom";
+// import sendMessage from "../../../../backend/socket";
 
 const Room = ({ roomData = [] }) => {
   const handleJoinRoom = (roomId) => {
@@ -114,13 +116,15 @@ const Room = ({ roomData = [] }) => {
                     </Box>
                   </Box>
 
-                  <Button
-                    variant="contained"
-                    onClick={() => handleJoinRoom(room._id)}
-                    className="bg-yellow-500 hover:bg-yellow-600 text-black font-semibold px-6 min-w-[100px]"
-                  >
-                    JOIN
-                  </Button>
+                  <Link to={"/join-room"} >
+                    <Button
+                      variant="contained"
+                      onClick={() => handleJoinRoom(room._id)}
+                      className="bg-yellow-500 hover:bg-yellow-600 text-black font-semibold px-6 min-w-[100px]"
+                    >
+                      JOIN
+                    </Button>
+                  </Link>
                 </Box>
               </Box>
             </Card>

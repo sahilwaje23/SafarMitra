@@ -17,8 +17,7 @@ import theme from "./styles/theme";
 import { useMediaQuery } from "@mui/material";
 import UserProtectedWrapper from "./wrappers/UserProtectedWrapper";
 import RoomActivities from "./components/user/RoomActivities";
-import UserProtectedWrapper from "./wrappers/UserProtectedWrapper";
-import RoomActivities from "./components/user/RoomActivities";
+// import { ParticipantCard } from "./components/user/Dummy";
 
 function App() {
   const location = useLocation(); // this has location object which will give information about the current url , this also triggers a re-render if the current location changes
@@ -38,6 +37,8 @@ function App() {
         }}
       >
         <Routes>
+          {/* Driver Route */}
+
           <Route path="/" element={<Landing />} />
           <Route path="/user-signup" element={<UserSignUp />} />
           <Route path="/user-signin" element={<UserSignIn />} />
@@ -61,11 +62,23 @@ function App() {
               </UserProtectedWrapper>
             }
           />
-          <Route path="/room-activities" element={<RoomActivities />} />
-          <Route path="/create-room" element={<div>Create Room</div>} />
-          <Route path="/join-room" element={<RoomInt />} />
-          <Route path="/captain-history" element={<RoomInt />} />
-          <Route path="/captain-earnings" element={<div>Earnings</div>} />
+          <Route
+            path="/room-activities"
+            element={
+              <UserProtectedWrapper>
+                <RoomActivities />
+              </UserProtectedWrapper>
+            }
+          />
+          <Route path="/room-int" element={<RoomInt />} />
+          <Route
+            path="/join-room"
+            element={
+              <UserProtectedWrapper>
+                <RoomInt />
+              </UserProtectedWrapper>
+            }
+          />
           <Route path="/captain-profile" element={<div>Captain Profile</div>} />
           <Route
             path="/captain-nearby-rooms"

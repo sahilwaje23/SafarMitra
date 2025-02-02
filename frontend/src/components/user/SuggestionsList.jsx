@@ -23,7 +23,7 @@ export default function InputWithSuggestions({
   useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedValue(inputValue);
-    }, 500); // Wait for 2 seconds after the user stops typing
+    }, 100); // Wait for 2 seconds after the user stops typing
 
     return () => clearTimeout(handler);
   }, [inputValue]);

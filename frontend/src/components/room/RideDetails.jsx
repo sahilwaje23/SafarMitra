@@ -47,6 +47,7 @@ function RideDetails() {
           rowGap: 2,
         }}
       >
+        {/* overall it should be  */}
         <Typography variant="h6" sx={{ fontWeight: "bold", width: "100%", p: "1" }}>
           <DriverCard driver={dummyDriver} />
         </Typography>

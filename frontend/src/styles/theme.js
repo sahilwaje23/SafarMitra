@@ -9,9 +9,9 @@ const theme = createTheme({
       contrastText: "#000000",
     },
     secondaryColor: {
-      main: "#B7083C",
+      main: "#FF4B5C",
+      hover: "#E64452",
       contrastText: "#ffffff",
-      hover: "#7a0524",
     },
     txtcol: "#ffffff", // Default text color for dark mode
     tbgcolor: "rgba(0, 0, 0, 0.6)", // Transparent background color for messages

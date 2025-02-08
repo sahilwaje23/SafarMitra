@@ -175,17 +175,34 @@ function DesktopView() {
           </Box>
         ) : (
           <>
-            <Typography sx={{ mb: 1, marginLeft: "1rem" }}>
+            <Typography
+              sx={{
+                mb: 1,
+                marginLeft: "1rem",
+                '& span': {
+                  color: theme.palette.secondaryColor.main
+                }
+              }}
+            >
               Source:{" "}
-              <span style={{ color: theme.palette.primary.main }}>
+              <Box component="span">
                 {pickupText}
-              </span>
+              </Box>
             </Typography>
-            <Typography sx={{ mb: 2, marginLeft: "1rem" }}>
+
+            <Typography
+              sx={{
+                mb: 2,
+                marginLeft: "1rem",
+                '& span': {
+                  color: theme.palette.secondaryColor.main
+                }
+              }}
+            >
               Destination:{" "}
-              <span style={{ color: theme.palette.primary.main }}>
+              <Box component="span">
                 {dropText}
-              </span>
+              </Box>
             </Typography>
             <div className="overflow-y-auto ">
               <RideDetails />

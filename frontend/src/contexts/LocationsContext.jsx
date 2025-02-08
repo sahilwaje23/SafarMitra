@@ -4,10 +4,10 @@ export const LocationContext = createContext();
 
 const LocationContextProvider = ({ children }) => {
   // added some default values for now
-  const [pickupLat, setPickupLat] = useState(" ");
-  const [pickupLng, setPickupLng] = useState(" ");
-  const [dropLat, setDropLat] = useState(" ");
-  const [dropLng, setDropLng] = useState(" ");
+  const [pickupLat, setPickupLat] = useState("");
+  const [pickupLng, setPickupLng] = useState("");
+  const [dropLat, setDropLat] = useState("");
+  const [dropLng, setDropLng] = useState("");
   const [pickupText, setPickupText] = useState("");
   const [dropText, setDropText] = useState("");
   const [roomid, setRoomid] = useState("");

@@ -26,7 +26,6 @@ export const RoomContextProvider = ({children}) => {
         "mitraName"= null,
         "mitraRating" = null,
         "mitraId"
-
     ]);// array of object , each object has repective mitra data like id 
     const [driverid, setDriverid] = useState(null); // driver_id
     // participant limit 

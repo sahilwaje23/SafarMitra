@@ -16,17 +16,11 @@ router.get(
   handleGetCoordinates
 );
 
-router.get(
-  "/get-dist-time",
-  query("origin").isString().isLength({ min: 3 }),
-  query("destination").isString().isLength({ min: 3 }),
-  authUser,
-  handleGetDistTime
-);
+router.get("/get-dist-time", authUser, handleGetDistTime);
 
 router.get(
   "/get-suggestion",
-  query("input").isString().isLength({ min: 1 }),
+  query("input").isString().isLength({ min: 3 }),
   authUser,
   handleGetAutoCompleteSuggestions
 );

@@ -1,10 +1,11 @@
-import React, { useState, useEffect,memo } from 'react';
-import { OverlayView } from '@react-google-maps/api';
+import React, { useState, useEffect, memo } from 'react';
+import { OverlayView, Polyline } from '@react-google-maps/api';
 import { Paper, CircularProgress, Typography, Box, useMediaQuery } from '@mui/material';
 import { GoogleMap, useJsApiLoader, Marker, InfoWindow } from '@react-google-maps/api';
 import theme from '../../styles/theme';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
-
+import { useLocations } from "../../contexts/LocationsContext";
+// we may also need roomcontext import here , the source destination permenantly marked 
 const libraries = ['places'];
 
 const defaultCenter = {
@@ -99,15 +100,40 @@ const mapOptions = {
 };
 
 const MapComponent = () => {
-  console.log('Map rendered'); 
+  console.log('Map rendered');
   // ...existing state declarations...
   const [map, setMap] = useState(null);
 
+  const { pickupLat, setPickupLat, pickupLng, setPickupLng, dropLat, setDropLat, dropLng, setDropLng, pickupText, setPickupText, dropText, setDropText } = useLocations();
+  const [pickupData, setPickupData] = useState({
+    pickupLat,
+    pickupLng,
+    pickupText
+  });
 
+  const [dropData, setDropData] = useState({
+    dropLat,
+    dropLng,
+    dropText
+  });
   const isMobile = useMediaQuery('(max-width:1024px)');
 
   const [currentLocation, setCurrentLocation] = useState(null);
   const [showInfoWindow, setShowInfoWindow] = useState(false);
+
+  useEffect(() => {
+    if (map && pickupLat && pickupLng) {
+      const pickupPosition = { lat: pickupLat, lng: pickupLng };
+      map.panTo(pickupPosition);
+    }
+  }, [pickupLat, pickupLng, map]);
+
+  useEffect(() => {
+    if (map && dropLat && dropLng) {
+      const dropPosition = { lat: dropLat, lng: dropLng };
+      map.panTo(dropPosition);
+    }
+  }, [dropLat, dropLng, map]);
 
   const { isLoaded } = useJsApiLoader({
     id: 'google-map-script',
@@ -145,7 +171,7 @@ const MapComponent = () => {
       map.panTo(currentLocation);
       map.setZoom(20); // Maximum zoom on click
     }
- 
+
   };
 
   const CustomMarker = ({ position, onClick }) => (
@@ -158,18 +184,18 @@ const MapComponent = () => {
       })}
     >
       <div onClick={onClick} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-      <Typography 
-        variant="caption" 
-        sx={{ 
-          // color: theme.palette.txtcol,
-          padding: '2px 4px',
-          marginBottom: '0px',
-          fontFamily:theme.typography.fontFamily,
-          fontWeight: 'bold' 
-        }}
-      >
-        YOU!
-      </Typography>
+        <Typography
+          variant="caption"
+          sx={{
+            // color: theme.palette.txtcol,
+            padding: '2px 4px',
+            marginBottom: '0px',
+            fontFamily: theme.typography.fontFamily,
+            fontWeight: 'bold'
+          }}
+        >
+          YOU!
+        </Typography>
         <LocationOnIcon
           sx={{
             color: theme.palette.primaryColor.main,
@@ -188,10 +214,11 @@ const MapComponent = () => {
 
   return (
 
-    <Paper sx={{ 
+    <Paper sx={{
       //height:isMobile?'400px':'100%',
-      height:'100%',
-      width: '100%', border: '1px solid black' }}>
+      height: '100%',
+      width: '100%', border: '1px solid black'
+    }}>
       <GoogleMap
         onLoad={onLoad}
         mapContainerStyle={{
@@ -218,6 +245,41 @@ const MapComponent = () => {
             )}
           </>
         )}
+  
+  
+        {/* Pickup Marker */}
+        {pickupText && pickupLat && pickupLng && (
+          <Marker
+            position={{ lat: pickupLat, lng: pickupLng }}
+            label="P"
+            title={pickupText}
+          />
+        )}
+
+        {/* Drop Marker */}
+        {dropText && dropLat && dropLng && (
+          <Marker
+            position={{ lat: dropLat, lng: dropLng }}
+            label="D"
+            title={dropText}
+          />
+        )}
+
+        {/* Polyline between Pickup and Drop */}
+        {pickupLat && pickupLng && dropLat && dropLng && (
+          <Polyline
+            path={[
+              { lat: pickupLat, lng: pickupLng },
+              { lat: dropLat, lng: dropLng }
+            ]}
+            options={{
+              strokeColor: theme.palette.primaryColor.main,
+              strokeOpacity: 1,
+              strokeWeight: 3,
+            }}
+          />
+        )}
+
       </GoogleMap>
 
     </Paper>

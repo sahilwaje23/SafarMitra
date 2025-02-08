@@ -28,10 +28,27 @@ const handleGetDistTime = async (req, res, next) => {
     return res.status(400).json({ fieldErrors: error.array() });
   }
 
-  const { origin, destination } = req.query;
+  const { origin, destination } = req.body;
+
+  // Ensure origin and destination contain both latitude and longitude
+  if (
+    !origin?.pickupLat ||
+    !origin?.pickupLng ||
+    !destination?.dropLat ||
+    !destination?.dropLng
+  ) {
+    return res
+      .status(400)
+      .json({ message: "Invalid origin or destination coordinates" });
+  }
 
   try {
-    const result = await getDistanceTime(origin, destination);
+    const result = await getDistanceTime(
+      origin.pickupLat,
+      origin.pickupLng,
+      destination.dropLat,
+      destination.dropLng
+    );
     res.status(200).json(result);
   } catch (e) {
     console.log(e);

@@ -20,6 +20,9 @@ function RideDetails() {
           Driver Details
         </Typography>
         <Typography variant="h6" sx={{ fontWeight: "bold" }}>
+          Mitra Details
+        </Typography>
+        <Typography variant="h6" sx={{ fontWeight: "bold" }}>
           Journey Details
         </Typography>
       </Paper>

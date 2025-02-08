@@ -26,10 +26,14 @@ const UserHomePage = () => {
     dropLng,
     dropText
   });
-
+// tracks
+  useEffect(()=>{
+    console.log("Initial pickup",pickupData);
+    console.log("Initial drop",pickupData);
+  },[]);
   useEffect(() => {
-    console.log("Pickup Data", pickupData);
-    console.log("Drop Data", dropData);
+    console.log("Updated Pickup Data", pickupData);
+    console.log("Updated Drop Data", dropData);
   }, [dropData, pickupData]);
 
   useEffect(() => {
@@ -74,7 +78,6 @@ const UserHomePage = () => {
       setDropLat(value.lat);
       setDropLng(value.lng);
       setDropText(value.description);
-
       setDropData({
         dropText: value.description,
         dropLat: value.lat,
@@ -87,7 +90,7 @@ const UserHomePage = () => {
 
 
   const handleContinue = () => {
-    if (!pickupLat || !pickupLng || !dropLat || !dropLng) {
+    if (!pickupText || !dropText) {
       alert("Please select both source and destination.");
       return;
     }
@@ -162,7 +165,7 @@ const UserHomePage = () => {
           </div>
         </Box>
         <div className=" w-[100%] h-[100%] text-center flex justify-center items-center ">
-          {/* <Map pickupData={pickupData} dropData={dropData} /> */}
+          <Map/>
         </div>
       </Box>
     </>

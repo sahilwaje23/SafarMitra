@@ -4,14 +4,18 @@ import { ExpandLess, ExpandMore } from '@mui/icons-material';
 import Chat from './Chat'; // Assuming Chat is a separate component
 import RideDetails from './RideDetails'; // Assuming RideDetails is a separate component
 import theme from '../../styles/theme';
+import { useLocations } from '../../contexts/LocationsContext';
 
-const ButtonGroup = ({ activeTab, setActiveTab,isExpanded,setIsExpanded}) => {
+const ButtonGroup = ({ activeTab, setActiveTab, isExpanded, setIsExpanded }) => {
+  const { pickupLat, pickupLng, dropLat, dropLng, pickupText, dropText } = useLocations();
+  
   return (
     <Box sx={{ display: 'flex', gap: 2 }}>
-      <Button
-        onClick={() =>{
-            setIsExpanded(true)
-            setActiveTab('details')}}
+      <Button 
+        onClick={() => {
+          setIsExpanded(true);
+          setActiveTab('details');
+        }}
         sx={{
           bgcolor: activeTab === 'details' ? theme.palette.primaryColor.main : 'transparent',
           color: activeTab === 'details' ? theme.palette.txtcol : theme.palette.primaryColor.main,
@@ -20,7 +24,7 @@ const ButtonGroup = ({ activeTab, setActiveTab,isExpanded,setIsExpanded}) => {
           px: 4,
           borderRadius: '1rem',
           fontWeight: 'bold',
-          outline: 'none', // Removes the focus outline
+          outline: 'none',
           '&:hover': {
             bgcolor: activeTab === 'details' ? theme.palette.primaryColor.hover : 'rgba(254, 196, 0, 0.1)',
           },
@@ -28,10 +32,12 @@ const ButtonGroup = ({ activeTab, setActiveTab,isExpanded,setIsExpanded}) => {
       >
         Ride Details
       </Button>
+
       <Button
-         onClick={() =>{
-            setIsExpanded(true)
-            setActiveTab('chat')}}
+        onClick={() => {
+          setIsExpanded(true);
+          setActiveTab('chat');
+        }}
         sx={{
           bgcolor: activeTab === 'chat' ? theme.palette.primaryColor.main : 'transparent',
           color: activeTab === 'chat' ? theme.palette.txtcol : theme.palette.primaryColor.main,
@@ -67,31 +73,31 @@ const Popup = () => {
         display: 'flex',
         flexDirection: 'column',
         transition: 'bottom 0.3s ease',
-    //    border:'1rem solid red',
-        height:'100%',
-        gap:'1rem',
+        //    border:'1rem solid red',
+        height: '100%',
+        gap: '1rem',
       }}
     >
       <Paper
-      elevation={2}
+        elevation={2}
         sx={{
-        //   position:'relative',
+          //   position:'relative',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'space-between',
           bgcolor: theme.palette.tbgcolor,
-        //   backdropFilter: 'blur(10px)',
+          //   backdropFilter: 'blur(10px)',
           borderTopLeftRadius: 16,
           borderTopRightRadius: 16,
           boxShadow: 3,
           padding: '0.4rem 0.6rem 0rem',
-          bottom:'0',
-        //   gap:'2rem',
-        //   pb: '3rem',
-         height:'100%',
-        //   border:'2rem solid green',
-    
+          bottom: '0',
+          //   gap:'2rem',
+          //   pb: '3rem',
+          height: '100%',
+          //   border:'2rem solid green',
+
         }}
       >
         {/* Expand/Collapse Icon */}
@@ -120,16 +126,16 @@ const Popup = () => {
             flexDirection: 'column',
             alignItems: 'center',
             width: '100%',
-            height:isExpanded?'70vh':'18vh',
+            height: isExpanded ? '70vh' : '18vh',
             // height:'100%',
             maxHeight: isExpanded ? '90vh' : '18vh',
             overflowY: isExpanded ? 'auto' : 'hidden',
             transition: 'max-height 0.3s ease',
             // mb:0,
-            gap:'1rem',
+            gap: '1rem',
             boxSizing: 'border-box',
             // border:'1rem solid blue',
-             // This ensures the container fills the screen
+            // This ensures the container fills the screen
           }}
         >
           {/* Ride Info */}
@@ -141,13 +147,13 @@ const Popup = () => {
               alignItems: 'center',
               width: '100%',
               px: 2,
-              gap:'1rem',
-            //   border:'1rem solid purple',
+              gap: '1rem',
+              //   border:'1rem solid purple',
             }}
           >
             <Box>
               <Typography variant="subtitle1">
-                Pickup: <span style={{ color: theme.palette.primaryColor.main }}>DADAR</span>
+                Pickup: <span style={{ color: theme.palette.primaryColor.main }}>Dadar</span>
               </Typography>
               <Typography variant="subtitle1">
                 Destination: <span style={{ color: theme.palette.primaryColor.main }}>VJTI</span>
@@ -164,8 +170,9 @@ const Popup = () => {
           {/* Active Tab Content */}
           <Box sx={{
             //  border:'1px solid green',
-            width: '100%', px: 2 }}>
-          {activeTab === 'details' && <RideDetails />}
+            width: '100%', px: 2
+          }}>
+            {activeTab === 'details' && <RideDetails />}
             {activeTab === 'chat' && <Chat />}
           </Box>
         </Box>

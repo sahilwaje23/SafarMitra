@@ -68,6 +68,8 @@ const rideSchema = new Schema(
     status: {
       type: String,
       enum: ["open", "ongoing", "accepted", "completed", "cancelled", "closed"],
+      // open -> closed -> driver coming??? -> accepted -> ongoing -> completed 
+      //   basic lifecycle
       default: "open",
     },
     orderId: {

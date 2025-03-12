@@ -8,11 +8,22 @@ import {
   DirectionsCar,
 } from "@mui/icons-material";
 import { Link } from "react-router-dom";
+import axios from "axios";
 // import sendMessage from "../../../../backend/socket";
 
 const Room = ({ roomData = [] }) => {
-  const handleJoinRoom = (roomId) => {
-    console.log(`Joining room with ID: ${roomId}`);
+  const handleJoinRoom = async (roomId) => {
+    try{
+      const res = await axios.get(`${import.meta.env.VITE_BASE_URL}/ride/join-room?roomId=${roomId}` , {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+          withCredentials: true,
+        });
+      console.log(res);
+    }catch(e){
+      alert(e);
+    }
   };
 
   return (

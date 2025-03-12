@@ -6,6 +6,7 @@ import theme from "../../styles/theme";
 import { EntityContext } from "../../contexts/EntityContext";
 import InputWithSuggestions from "./SuggestionsList";
 import { useLocations } from "../../contexts/LocationsContext";
+import { SocketContext } from "../../contexts/Socket";
 import axios from 'axios';
 
 const UserHomePage = () => {
@@ -14,6 +15,10 @@ const UserHomePage = () => {
   const { entity } = useContext(EntityContext);
   const { pickupLat, setPickupLat, pickupLng, setPickupLng, dropLat, setDropLat, dropLng, setDropLng, pickupText, setPickupText, dropText, setDropText } = useLocations();
   const navigate = useNavigate(); // Initialize navigate
+  const { sendMessage, recieveMessage } = useContext(SocketContext);
+  const userId =
+    entity.data?._id || JSON.parse(localStorage.getItem("USER"))._id;
+  console.log(entity.data);
 
   const [pickupData, setPickupData] = useState({
     pickupLat,
@@ -31,6 +36,11 @@ const UserHomePage = () => {
     console.log("Pickup Data", pickupData);
     console.log("Drop Data", dropData);
   }, [dropData, pickupData]);
+
+  useEffect(() => {
+    sendMessage("join", { userType: "USER", userId });
+  }, []);
+
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -162,7 +172,7 @@ const UserHomePage = () => {
           </div>
         </Box>
         <div className=" w-[100%] h-[100%] text-center flex justify-center items-center ">
-          {/* <Map pickupData={pickupData} dropData={dropData} /> */}
+          <Map pickupData={pickupData} dropData={dropData} />
         </div>
       </Box>
     </>

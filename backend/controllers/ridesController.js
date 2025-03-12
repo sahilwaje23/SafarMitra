@@ -108,7 +108,9 @@ const searchRoom = async (req, res) => {
 
     // Ensure both pickup & destination are not empty before querying
     if (!pickup && !destination) {
-      return res.status(400).json({ message: "Pickup or destination is required" });
+      return res
+        .status(400)
+        .json({ message: "Pickup or destination is required" });
     }
 
     // Construct dynamic query
@@ -127,7 +129,6 @@ const searchRoom = async (req, res) => {
     res.status(400).json({ rideError: e.message });
   }
 };
-
 
 const handleGetFare = async (req, res) => {
   const errors = validationResult(req);
@@ -151,7 +152,8 @@ const handleConfirmRide = async (req, res) => {
 
   try {
     const { rideId } = req.body;
-    const ride = await confirmRide(rideId, req.driver);
+
+    let ride = await confirmRide(rideId, req.driver);
 
     if (!ride) {
       throw new Error("Ride not found");
@@ -160,15 +162,17 @@ const handleConfirmRide = async (req, res) => {
     ride.status = "ongoing";
     await ride.save();
 
-    sendMessageToSocketId("confirm-ride", ride.creatorId.socket_id, {
-      ride,
-      user: req.driver,
-    });
+    if (ride.creatorId?.socket_id) {
+      sendMessageToSocketId("confirm-ride", ride.creatorId.socket_id, {
+        ride,
+        user: req.driver,
+      });
+    }
 
-    room.mitra.forEach((m) => {
-      if (m.userId.socket_id) {
+    ride.mitra.forEach((m) => {
+      if (m.userId?.socket_id) {
         sendMessageToSocketId("confirm-ride", m.userId.socket_id, {
-          room,
+          ride,
           user: req.user,
         });
       }
@@ -209,12 +213,13 @@ const handleJoinRoom = async (req, res) => {
     room.mitra.push({ userId: req.user._id });
     await room.save();
 
-    sendMessageToSocketId(
-      "new-userJoin",
-      (await room.populate("creatorId", "-password -salt -ridesBooked"))
-        .creatorId.socket_id,
-      { room, user: req.user }
-    );
+    await room.populate("creatorId", "-password -salt -ridesBooked");
+    console.log(room);
+
+    sendMessageToSocketId("new-userJoin", room.creatorId.socket_id, {
+      room,
+      user: req.user,
+    });
 
     // Notify all mitra members
     room.mitra.forEach((m) => {

@@ -1,6 +1,32 @@
-// common to both user and driver 
-// theme toggling here 
+import React, { useState } from 'react';
+import {
+  AppBar,
+  Toolbar,
+  Button,
+  Typography,
+  useMediaQuery,
+  BottomNavigation,
+  BottomNavigationAction,
+  Box,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions
+} from '@mui/material';
+import {
+  Home,
+ // History,
+  Person,
+  Room,
+  LocationOn,
+  AttachMoney
+} from '@mui/icons-material';
+import { useNavigate, useLocation } from 'react-router-dom';
+import theme from '../../styles/theme';
+import { ArrowBack } from '@mui/icons-material';
+import { IconButton } from '@mui/material';
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 const NavBar = () => {
     return (
@@ -13,6 +39,8 @@ const NavBar = () => {
   export default NavBar;
   
 =======
+=======
+>>>>>>> 77ed55fb68c2da91b25542c1acb8ac87c1a5585e
 
 const Navbar = ({ type }) => {
   const isMobile = useMediaQuery('(max-width:1024px)');
@@ -25,16 +53,27 @@ const Navbar = ({ type }) => {
 
   const userNavItems = [
     { label: 'Home', icon: <Home />, path: '/user-homepage' },
+<<<<<<< HEAD
     { label: 'Room Actions', icon: <Room />, path: '/room-actions' },
     { label: 'History', icon: <History />, path: '/user-history' },
+=======
+    //{ label: 'Room Actions', icon: <Room />, path: '/room-actions' },
+   // { label: 'History', icon: <History />, path: '/user-history' },
+>>>>>>> 77ed55fb68c2da91b25542c1acb8ac87c1a5585e
     { label: 'Profile', icon: <Person />, path: '/user-profile' },
   ];
 
   const captainNavItems = [
     { label: 'Home', icon: <Home />, path: '/captain-homepage' },
+<<<<<<< HEAD
     { label: 'Nearby Rooms', icon: <LocationOn />, path: '/captain-nearby-rooms' },
     { label: 'History', icon: <History />, path: '/captain-history' },
     { label: 'Earnings', icon: <AttachMoney />, path: '/captain-earnings' },
+=======
+    //{ label: 'Nearby Rooms', icon: <LocationOn />, path: '/captain-nearby-rooms' },
+    //{ label: 'History', icon: <History />, path: '/captain-history' },
+    //{ label: 'Earnings', icon: <AttachMoney />, path: '/captain-earnings' },
+>>>>>>> 77ed55fb68c2da91b25542c1acb8ac87c1a5585e
     { label: 'Profile', icon: <Person />, path: '/captain-profile' },
   ];
 
@@ -246,5 +285,9 @@ const Navbar = ({ type }) => {
   );
 };
 
+<<<<<<< HEAD
 export default Navbar;
 >>>>>>> Stashed changes
+=======
+export default Navbar;
+>>>>>>> 77ed55fb68c2da91b25542c1acb8ac87c1a5585e

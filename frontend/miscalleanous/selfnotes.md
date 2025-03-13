@@ -201,8 +201,18 @@ By following these practices, you can build a seamless hybrid project without co
 - nearby rooms may be removed from navbar
 - will make `general history or profile component` `earnings` component is unique to driver and can have some medium scale statistics 
 
+<<<<<<< HEAD
 ### entry 4 - 14th jan 2025
 - 
+=======
+### entry 4 - 1st feb 2025 
+- suggested flow 
+  - frontend\src\components\user\SuggestionsList.jsx
+  - forward context values from prev page to this page
+  - filter out rooms in such a way that nearest distance are closer , and source destination are same , mark room creator locations on map simultaneously too each marker has a popup relecting its #number 
+  - join button needed for room card once clicked , that room context will be used for roomui componennt then entire lifecycle continues there 
+  - end of lifecycle displays to a common thankyou or succesful page which redirects both driver and user to their respective homepages
+>>>>>>> 77ed55fb68c2da91b25542c1acb8ac87c1a5585e
 
 ## Yogesh-Palve
 ### entry 1 - 06 jan 2025
@@ -213,5 +223,3 @@ By following these practices, you can build a seamless hybrid project without co
 - completed user signin and signup with backend integration 
 - completed user Homepage ( use images instead of map so chaitanya will add map their )
 
-## `<yogeshpalve-github-username>`
-### entry ? ? ? 2025 

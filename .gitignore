@@ -1,0 +1,7 @@
+node_modules
+build
+dist
+.prettierrc
+.prettierignore
+package.json
+package-lock.json

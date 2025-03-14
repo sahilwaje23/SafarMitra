@@ -1,10 +1,10 @@
+import { DriveFolderUploadSharp } from "@mui/icons-material";
 import { createContext, useContext, useState } from "react";
 
 export const RoomContext = createContext(null);
-
 export const RoomContextProvider = ({ children }) => {
-    const [pickup, setPickup] = useState({}); // object 
-    const [destination, setDestination] = useState({});///object
+    const [pickup, setPickup] = useState(""); // just simple text
+    const [destination, setDestination] = useState("");// just simple text 
     const [roomid, setRoomid] = useState(null);// room id
     const [creatorData, setCreatorData] = useState({
         creatorId: null,
@@ -28,11 +28,25 @@ export const RoomContextProvider = ({ children }) => {
         {
             mitraName: null,
             mitraRating: null,
-            mitraId: null
+            mitraId: null,
+            mitraEmail: null,
+            mobileNo: null,
+            gender: null,
+            rating: null,
+            createdAt: null,
+            updatedAt: null,
+            socketId: null
         }
-    ]);// array of objects contain things like mitraName , mitraRating , mitraId
-    const [driverid, setDriverid] = useState(null); // driver_id
-    // participant limit 
+    ]);// array of objects contain things like mitraName , mitraRating , mitraId and other general details 
+    const [driverData, setDriverData] = useState({
+        vehicleNo: null,
+        driverId: null,
+        fullName: null,
+        mobileNo: null,
+        rating: null,
+        socketId: null,
+    }); // driver data like name , rating , phone number , vehicle number stored as object
+    // used specifically only when room is closed 
     return (
         <RoomContext.Provider value={{
             pickup, setPickup,
@@ -45,7 +59,7 @@ export const RoomContextProvider = ({ children }) => {
             fare, setFare,
             status, setStatus,
             mitra, setMitra,
-            driverid, setDriverid,
+            driverData, setDriverData,
             pcount, setPcount
         }}>
             {children}

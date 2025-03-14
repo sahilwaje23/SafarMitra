@@ -6,7 +6,7 @@ import { useLocations } from "../../contexts/LocationsContext.jsx";
 import { Link } from "react-router-dom";
 import axios from "axios";
 // import sendMessage from "../../../../backend/socket";
-
+// this is essentially the roomcard here the joining behaviour will be defined , data should be updated and sent to the context here 
 const Room = ({ roomData = [] }) => {
   const handleJoinRoom = async (roomId) => {
     try {

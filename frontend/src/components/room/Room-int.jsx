@@ -1,4 +1,4 @@
-// - modes for room are unconfirmed,locked,accepted,running,finished
+// - the lifecycle flows as open -> closed -> accepted -> ongoing -> completed
 // - suggested to use numbers to represent statuses enables for efficient communication as in the frontend corresponding to the number we display that particular status
 // whatever time u are going to join or create room basdically all the information this interface uses is derrived from room context only 
 
@@ -77,7 +77,7 @@ const ButtonGroup = ({ activeTab, setActiveTab }) => {
   );
 };
 
-const MobileView = () => {
+const MobileView = ({ roomIntData }) => {
   const { pickupLat, pickupLng, dropLat, dropLng, pickupText, dropText } =
     useLocations();
   return (
@@ -108,7 +108,7 @@ const MobileView = () => {
   );
 };
 
-function DesktopView() {
+function DesktopView({ roomIntData }) {
   const [activeTab, setActiveTab] = useState("details");
   const [status, setStatus] = useState("unconfirmed");
   const { pickupLat, pickupLng, dropLat, dropLng, pickupText, dropText } =
@@ -224,7 +224,7 @@ function RoomInt() {
   const { entity } = useContext(EntityContext);
   const userId =
     entity.data?._id || JSON.parse(localStorage.getItem("USER"))._id;
-
+  const roomIntData = useRoom();
   console.log(userId, "userId");
 
   useEffect(() => {
@@ -249,7 +249,7 @@ function RoomInt() {
     };
   }, []);
 
-  return isMobile ? <MobileView /> : <DesktopView />;
+  return isMobile ? <MobileView roomIntData={roomIntData} /> : <DesktopView roomIntData={roomIntData} />;
 }
 
 export default RoomInt;

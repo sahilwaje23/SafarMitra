@@ -49,10 +49,10 @@ function RideDetails() {
       >
         {/* overall it should be  */}
         <Typography variant="h6" sx={{ fontWeight: "bold", width: "100%", p: "1" }}>
-          <DriverCard driver={dummyDriver} />
+          <JourneyCard journey={dummyJourney} />
         </Typography>
         <Typography variant="h6" sx={{ fontWeight: "bold", width: "100%", p: "1" }}>
-          <JourneyCard journey={dummyJourney} />
+          <DriverCard driver={dummyDriver} />
         </Typography>
         <Typography variant="h6" sx={{ fontWeight: "bold", width: "100%", p: "1" }}>
           <ParticipantCard participant={dummyParticipant} isCreator={true} />

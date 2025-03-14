@@ -1,5 +1,7 @@
 // - modes for room are unconfirmed,locked,accepted,running,finished
 // - suggested to use numbers to represent statuses enables for efficient communication as in the frontend corresponding to the number we display that particular status
+// whatever time u are going to join or create room basdically all the information this interface uses is derrived from room context only 
+
 import React, { useEffect, useState, useContext } from "react";
 import {
   Box,
@@ -18,6 +20,7 @@ import { SocketContext } from "../../contexts/Socket";
 import { EntityContext } from "../../contexts/EntityContext";
 import axios from "axios";
 import { LocationContext, useLocations } from "../../contexts/LocationsContext";
+import { useRoom } from "../../contexts/RoomContext";
 const ButtonGroup = ({ activeTab, setActiveTab }) => {
   return (
     <Box sx={{ display: "flex", gap: 2 }}>
@@ -110,6 +113,7 @@ function DesktopView() {
   const [status, setStatus] = useState("unconfirmed");
   const { pickupLat, pickupLng, dropLat, dropLng, pickupText, dropText } =
     useLocations();
+  // const { } = useRoom();
   return (
     <Box
       sx={{

@@ -6,13 +6,16 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import InputWithSuggestions from "../../components/user/SuggestionsList.jsx";
 import { useLocations } from "../../contexts/LocationsContext.jsx";
-
+import { useRoom } from "../../contexts/RoomContext.jsx";
+// link this thing so that whatever information entered here is carried forwaded to the room context 
+// basically once hitted create room herre information entered so far forwaded to roomcontext 
 const RoomActivities = () => {
   const [roomData, setRoomData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [participantsLimit, setParticipantsLimit] = useState(1);
   const navigate = useNavigate();
 
+  // useLocations context Data
   const {
     pickupLat,
     setPickupLat,
@@ -28,6 +31,19 @@ const RoomActivities = () => {
     setDropText,
   } = useLocations();
 
+  // useRoom context data
+  const {
+    pickup,
+    destination,
+    setPickup,
+    setDestination,
+    limit,
+    setLimit,
+    roomid,
+    setRoomid,
+    creatorData,
+    setCreatorData
+  } = useRoom();
   const [pickupData, setPickupData] = useState({
     pickupLat,
     pickupLng,
@@ -109,6 +125,10 @@ const RoomActivities = () => {
       console.log("Room created successfully:", res.data);
       // Handle state update if needed, e.g., updating the room list
       setRoomData((prevRooms) => [...prevRooms, res.data.newRoom]);
+      // now that room is created the corresponding roomid addded in context , also initialise room parameters , like fare  distance duration default particpant always set to 1 this will be updated soon inside join room 
+      setRoomid(res.data.newRoom._id);
+      // also initialise creator id here retrive from local storage 
+
     } catch (err) {
       console.error("Error creating room:", err);
       if (err.response && err.response.status === 401) {
@@ -127,6 +147,10 @@ const RoomActivities = () => {
       dropText: dropText,
     };
     createRoom(roomData);
+    // the above will also initialize the roomid
+    setPickup(pickupText);
+    setDestination(dropText);
+    setLimit(participantsLimit);
     navigate("/room-int");
   };
 

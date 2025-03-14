@@ -6,8 +6,19 @@ import {
   JourneyCard,
   ParticipantCard,
 } from "../user/DataForRoomInt";
+import { useRoom } from "../../contexts/RoomContext";
 // this is  essentially information for room interface data should be fetched from context and displayed here
 function RideDetails() {
+  const {
+    roomid,
+    creatorData,
+    distance,
+    duration,
+    fare,
+    mitra,
+    driverData,
+    pcount
+  } = useRoom();
   const dummyDriver = {
     name: "Rahul Sharma",
     profileImage: "https://via.placeholder.com/150",

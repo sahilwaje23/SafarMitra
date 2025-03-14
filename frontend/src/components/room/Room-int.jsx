@@ -77,9 +77,10 @@ const ButtonGroup = ({ activeTab, setActiveTab }) => {
   );
 };
 
-const MobileView = ({ roomIntData }) => {
+const MobileView = () => {
   const { pickupLat, pickupLng, dropLat, dropLng, pickupText, dropText } =
     useLocations();
+
   return (
     <>
       <GlobalStyles styles={{ body: { overflowX: "hidden" } }} />
@@ -101,6 +102,7 @@ const MobileView = ({ roomIntData }) => {
             // height:'32px',
           }}
         >
+          {/* this popup card contains all the info for particular room for mobile view hence context is directly refered there not that popup wont have all values as further values are distrubuted to RideDetails.jsx which is basically just the Room interface data like information about the drivers creator and mitras their information and other information about the ride */}
           <Popup />
         </Box>
       </Box>
@@ -249,7 +251,7 @@ function RoomInt() {
     };
   }, []);
 
-  return isMobile ? <MobileView roomIntData={roomIntData} /> : <DesktopView roomIntData={roomIntData} />;
+  return isMobile ? <MobileView /> : <DesktopView roomIntData={roomIntData} />;
 }
 
 export default RoomInt;

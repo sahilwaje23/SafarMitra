@@ -133,6 +133,10 @@ const RoomActivities = () => {
       setRoomData((prevRooms) => [...prevRooms, res.data.newRoom]);
       // now that room is created the corresponding roomid addded in context , also initialise room parameters , like fare  distance duration default particpant always set to 1 this will be updated soon inside join room 
       setRoomid(res.data.newRoom._id);
+      setFare(res.data.newRoom.fare);
+      setDuration(res.data.newRoom.duration);
+      setDistance(res.data.newRoom.distance);
+      setPcount(1); // this line is redundant since creator will always join with 1 count , now the joining side will update the other things as disscussed
       // now handle other room parameters like fare , duration , distance , pcount is always 1 since begining only the joining side will update it hence just initialise the first 3 parameters 
 
 

@@ -29,8 +29,8 @@ const Room = ({ roomData = [] }) => {
       </Typography>
 
       <Box className="space-y-4">
-        {Array.isArray(filteredRoomData) && filteredRoomData.length > 0 ? (
-          filteredRoomData.map((room, index) => (
+        {Array.isArray(roomData) && roomData.length > 0 ? (
+          roomData.map((room, index) => (
             <Card
               key={index}
               className="bg-[#2a2a2a] hover:bg-[#333333] transition-colors border-none"

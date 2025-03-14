@@ -4,42 +4,22 @@ import { LocationOn, AttachMoney, AccessTime, Group, DirectionsCar } from "@mui/
 import theme from "../../styles/theme";
 import { useLocations } from "../../contexts/LocationsContext.jsx";
 import { Link } from "react-router-dom";
+import axios from "axios";
+// import sendMessage from "../../../../backend/socket";
+
 const Room = ({ roomData = [] }) => {
-  const isMobile = useMediaQuery("(max-width:1024px)");
-  const { pickupText, dropText } = useLocations();
-  const [filteredRoomData, setFilteredRoomData] = useState(roomData);
-  useEffect(() => {
-    console.log("Updated filteredRoomData:", filteredRoomData);
-  }, [filteredRoomData]);
-
-  useEffect(() => {
-    console.log("In room.jsx", filteredRoomData);
-    console.log("pickup text", pickupText);
-    console.log("drop text", dropText);
-    for (const room of roomData) {
-      console.log("Room stuff", room);
-    }
-
-    if (Array.isArray(roomData)) {
-
-      const filteredRooms = roomData.filter((room) => {
-        console.log("Each entity", pickupText.toLowerCase().includes(room.pickup.text.toLowerCase()) && dropText.toLowerCase().includes(room.destination.text.toLowerCase()));
-        const pickupMatch = pickupText
-          ? pickupText.toLowerCase().includes(room.pickup.text.toLowerCase())
-          : true;
-        const dropMatch = dropText
-          ? dropText.toLowerCase().includes(room.destination.text.toLowerCase())
-          : true;
-        return pickupMatch && dropMatch;
+  const handleJoinRoom = async (roomId) => {
+    try {
+      const res = await axios.get(`${import.meta.env.VITE_BASE_URL}/ride/join-room?roomId=${roomId}`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        withCredentials: true,
       });
-
-      setFilteredRoomData([...filteredRooms]);
+      console.log(res);
+    } catch (e) {
+      alert(e);
     }
-
-  }, [roomData, pickupText, dropText]);
-  const handleJoinRoom = (roomId) => {
-    console.log(`Joining room with ID: ${roomId}`);
-    // Add additional join room logic here (e.g., navigation)
   };
 
   return (

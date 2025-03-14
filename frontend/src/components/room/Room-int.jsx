@@ -218,28 +218,32 @@ function RoomInt() {
   const isMobile = useMediaQuery("(max-width:1024px)");
   const { sendMessage, recieveMessage } = useContext(SocketContext);
   const { entity } = useContext(EntityContext);
-  // useEffect(() => {
-  //   sendMessage("join", { userType: "USER", userId });
+  const userId =
+    entity.data?._id || JSON.parse(localStorage.getItem("USER"))._id;
 
-  //   recieveMessage("confirm-ride", (rideData) => {
-  //     // ^ Chaitanya whatever new ride is confirmed by driver u will get data here
-  //     console.log("Ride Confirmed", rideData);
-  //   });
+  console.log(userId, "userId");
 
-  //   recieveMessage("user-joined", (rideData) => {
-  //     // ^ Chaitanya whenever a new user joins a ride u will get data here
-  //     console.log("New User Joined", rideData);
-  //   });
+  useEffect(() => {
+    sendMessage("join", { userType: "USER", userId });
 
-  //   recieveMessage("new-userJoin", (rideData) => {
-  //     // ^ Chaitanya whenever a new user joins a ride u will get data here
-  //     console.log("New User Joined", rideData);
-  //   });
+    recieveMessage("confirm-ride", (rideData) => {
+      // ^ Chaitanya whatever new ride is confirmed by driver u will get data here
+      console.log("Ride Confirmed", rideData);
+    });
 
-  //   recieveMessage("new-chat", ({ msg, name }) => {
-  //     console.log("Message Received: " + msg + " " + name);
-  //    });
-  //   }, []);
+    recieveMessage("new-userJoin", (rideData) => {
+      // ^ Chaitanya whenever a new user joins a ride u will get data here
+      console.log("New User Joined", rideData);
+    });
+
+    recieveMessage("new-chat", ({ msg, name }) => {
+      console.log("Message Received: " + msg + " " + name);
+    });
+
+    return () => {
+
+    };
+  }, []);
 
   return isMobile ? <MobileView /> : <DesktopView />;
 }

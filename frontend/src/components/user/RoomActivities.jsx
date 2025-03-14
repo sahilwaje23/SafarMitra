@@ -11,7 +11,6 @@ import { useRoom } from "../../contexts/RoomContext.jsx";
 // basically once hitted create room herre information entered so far forwaded to roomcontext 
 const RoomActivities = () => {
   const [roomData, setRoomData] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [participantsLimit, setParticipantsLimit] = useState(1);
   const navigate = useNavigate();
 

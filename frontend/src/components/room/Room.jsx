@@ -126,7 +126,14 @@ const Room = ({ roomData = [] }) => {
                   <Button
                     variant="contained"
                     onClick={() => handleJoinRoom(room._id)}
-                    className="bg-yellow-500 hover:bg-yellow-600 text-black font-semibold px-6 min-w-[100px]"
+                    className="font-semibold px-6 min-w-[100px]"
+                    sx={{
+                      bgcolor: theme.palette.primaryColor.main,
+                      color: theme.palette.txtcol,
+                      "&:hover": {
+                        bgcolor: theme.palette.primaryColor.hover,
+                      },
+                    }}
                   >
                     JOIN
                   </Button>

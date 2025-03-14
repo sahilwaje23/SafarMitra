@@ -33,21 +33,13 @@ const RoomActivities = () => {
 
   // useRoom context data
   const {
-    pickup,
-    destination,
     setPickup,
     setDestination,
-    limit,
     setLimit,
-    roomid,
     setRoomid,
-    creatorData,
     setCreatorData,
-    distance,
     setDistance,
-    duration,
     setDuration,
-    fare,
     setFare
   } = useRoom();
   const [pickupData, setPickupData] = useState({

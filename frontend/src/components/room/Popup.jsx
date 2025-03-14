@@ -4,10 +4,8 @@ import { ExpandLess, ExpandMore } from '@mui/icons-material';
 import Chat from './Chat'; // Assuming Chat is a separate component
 import RideDetails from './RideDetails'; // Assuming RideDetails is a separate component
 import theme from '../../styles/theme';
-import { useLocations } from '../../contexts/LocationsContext';
 import { useRoom } from '../../contexts/RoomContext';
 const ButtonGroup = ({ activeTab, setActiveTab, isExpanded, setIsExpanded }) => {
-  const { pickupLat, pickupLng, dropLat, dropLng, pickupText, dropText } = useLocations();
 
   return (
     <Box sx={{ display: 'flex', gap: 2 }}>
@@ -155,11 +153,34 @@ const Popup = () => {
             }}
           >
             <Box>
-              <Typography variant="subtitle1">
-                Pickup: <span style={{ color: theme.palette.primaryColor.main }}>{pickup || "CSMT"}</span>
+              <Typography
+                sx={{
+                  mb: 1,
+                  marginLeft: "1rem",
+                  '& span': {
+                    color: theme.palette.secondaryColor.main
+                  }
+                }}
+              >
+                Source:{" "}
+                <Box component="span">
+                  {pickup || "CSMT"}
+                </Box>
               </Typography>
-              <Typography variant="subtitle1">
-                Destination: <span style={{ color: theme.palette.primaryColor.main }}>{destination || "Kalyan"}</span>
+
+              <Typography
+                sx={{
+                  mb: 2,
+                  marginLeft: "1rem",
+                  '& span': {
+                    color: theme.palette.secondaryColor.main
+                  }
+                }}
+              >
+                Destination:{" "}
+                <Box component="span">
+                  {destination || "Kalyan"}
+                </Box>
               </Typography>
             </Box>
             <Typography variant="subtitle1">

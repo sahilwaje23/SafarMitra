@@ -1,6 +1,6 @@
 // - the lifecycle flows as open -> closed -> accepted -> ongoing -> completed
-// - suggested to use numbers to represent statuses enables for efficient communication as in the frontend corresponding to the number we display that particular status
 // whatever time u are going to join or create room basdically all the information this interface uses is derrived from room context only 
+// everyone puts info to context , context provides info to all via this room interface only 
 
 import React, { useEffect, useState, useContext } from "react";
 import {
@@ -18,8 +18,6 @@ import theme from "../../styles/theme";
 import RideDetails from "./RideDetails";
 import { SocketContext } from "../../contexts/Socket";
 import { EntityContext } from "../../contexts/EntityContext";
-import axios from "axios";
-import { LocationContext, useLocations } from "../../contexts/LocationsContext";
 import { useRoom } from "../../contexts/RoomContext";
 const ButtonGroup = ({ activeTab, setActiveTab }) => {
   return (
@@ -78,8 +76,6 @@ const ButtonGroup = ({ activeTab, setActiveTab }) => {
 };
 
 const MobileView = () => {
-  const { pickupLat, pickupLng, dropLat, dropLng, pickupText, dropText } =
-    useLocations();
 
   return (
     <>
@@ -112,10 +108,11 @@ const MobileView = () => {
 
 function DesktopView({ roomIntData }) {
   const [activeTab, setActiveTab] = useState("details");
-  const [status, setStatus] = useState("unconfirmed");
-  const { pickupLat, pickupLng, dropLat, dropLng, pickupText, dropText } =
-    useLocations();
-  // const { } = useRoom();
+  const {
+    pickup,
+    destination,
+    status,
+  } = useRoom();
   return (
     <Box
       sx={{
@@ -192,7 +189,7 @@ function DesktopView({ roomIntData }) {
             >
               Source:{" "}
               <Box component="span">
-                {pickupText}
+                {pickup || "CSMT"}
               </Box>
             </Typography>
 
@@ -207,7 +204,7 @@ function DesktopView({ roomIntData }) {
             >
               Destination:{" "}
               <Box component="span">
-                {dropText}
+                {destination || "Kalyan"}
               </Box>
             </Typography>
             <div className="overflow-y-auto ">

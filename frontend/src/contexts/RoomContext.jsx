@@ -18,6 +18,7 @@ export const RoomContextProvider = ({ children }) => {
         socketId: null
     });//creator data 
     const [limit, setLimit] = useState(1);
+    const [pcount, setPcount] = useState(1); //stores count of participants 
     const [distance, setDistance] = useState(null);
     const [duration, setDuration] = useState(null);
     const [fare, setFare] = useState(null);
@@ -44,7 +45,8 @@ export const RoomContextProvider = ({ children }) => {
             fare, setFare,
             status, setStatus,
             mitra, setMitra,
-            driverid, setDriverid
+            driverid, setDriverid,
+            pcount, setPcount
         }}>
             {children}
         </RoomContext.Provider>

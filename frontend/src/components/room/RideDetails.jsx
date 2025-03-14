@@ -19,31 +19,69 @@ function RideDetails() {
     driverData,
     pcount
   } = useRoom();
-  const dummyDriver = {
-    name: "Rahul Sharma",
-    profileImage: "https://via.placeholder.com/150",
-    phone: "+91 9876543210",
-    vehicleNumber: "MH 12 AB 1234",
-    rating: 4.8,
+  // const dummyDriver = {
+  //   name: "Rahul Sharma",
+  //   profileImage: "https://via.placeholder.com/150",
+  //   phone: "+91 9876543210",
+  //   vehicleNumber: "MH 12 AB 1234",
+  //   rating: 4.8,
+  // };
+
+  // const dummyParticipant = {
+  //   name: "Anjali Verma",
+  //   profileImage: "https://via.placeholder.com/150",
+  //   phone: "+91 9876543211",
+  //   email: "anjali.verma@example.com",
+  //   gender: "Female",
+  //   rating: 4.6,
+  //   id: 1,
+  // };
+
+  // const dummyJourney = {
+  //   roomId: "XJZP123",
+  //   fare: 250,
+  //   distance: 15.4,
+  //   duration: 32,
+  //   participantCount: 3,
+  // };
+
+  const driver = {
+    name: driverData?.fullName || "Rahul Sharma",
+    profileImage: driverData?.profileImage || "https://via.placeholder.com/150",
+    phone: driverData?.mobileNo || "+91 9876543210",
+    vehicleNumber: driverData?.vehicleNo || "MH 12 AB 1234",
+    rating: driverData?.rating ?? 4.8,
+    driverId: driverData?.driverId || "fbje2bjeb2jbejqb",
   };
 
-  const dummyParticipant = {
-    name: "Anjali Verma",
-    profileImage: "https://via.placeholder.com/150",
-    phone: "+91 9876543211",
-    email: "anjali.verma@example.com",
-    gender: "Female",
-    rating: 4.6,
-    id: 1,
+  const creator = {
+    name: creatorData?.fullName || "Anjali Verma",
+    profileImage: creatorData?.profileImage || "https://via.placeholder.com/150",
+    phone: creatorData?.mobileNo || "+91 9876543211",
+    email: creatorData?.email || "anjali.verma@example.com",
+    gender: creatorData?.gender || "Female",
+    rating: creatorData?.rating ?? 4.6,
+    id: creatorData?.creatorId || "fbje2bjeb2jbejqb",
   };
 
-  const dummyJourney = {
-    roomId: "XJZP123",
-    fare: 250,
-    distance: 15.4,
-    duration: 32,
-    participantCount: 3,
+  const mitras = mitra.map((m) => ({
+    name: m?.mitraName || "Ritesh",
+    profileImage: m?.profileImage || "https://via.placeholder.com/150",
+    phone: m?.mobileNo || "+91 0000000000",
+    email: m?.mitraEmail || "dushmanokarakhvala@rityaman.com",
+    gender: m?.gender || "female",
+    rating: m?.mitraRating ?? 4.5,
+    id: m?.mitraId || 'n4j2n3j2ejb2j',
+  }));
+
+  const journey = {
+    roomId: roomid || "XJZP123",
+    fare: fare ?? 250,
+    distance: distance ?? 15.4,
+    duration: duration ?? 32,
+    participantCount: pcount ?? 3,
   };
+
 
   return (
     <>

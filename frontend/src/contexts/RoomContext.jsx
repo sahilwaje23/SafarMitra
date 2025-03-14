@@ -15,7 +15,8 @@ export const RoomContextProvider = ({ children }) => {
         rating: null,
         createdAt: null,
         updatedAt: null,
-        socketId: null
+        socketId: null,
+        profileImage: null
     });//creator data 
     const [limit, setLimit] = useState(1);
     const [pcount, setPcount] = useState(1); //stores count of participants 
@@ -35,7 +36,8 @@ export const RoomContextProvider = ({ children }) => {
             rating: null,
             createdAt: null,
             updatedAt: null,
-            socketId: null
+            socketId: null,
+            profileImage: null
         }
     ]);// array of objects contain things like mitraName , mitraRating , mitraId and other general details 
     const [driverData, setDriverData] = useState({
@@ -45,6 +47,7 @@ export const RoomContextProvider = ({ children }) => {
         mobileNo: null,
         rating: null,
         socketId: null,
+        profileImage: null
     }); // driver data like name , rating , phone number , vehicle number stored as object
     // used specifically only when room is closed 
     return (

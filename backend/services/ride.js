@@ -61,7 +61,7 @@ const confirmRide = async (rideId, driver) => {
   const ride = await Ride.findById(rideId)
     .populate("creatorId", "-password -salt -ridesBooked")
     .populate("driver", "-password -salt -ridesAcceptedUrl")
-    .populate("mitra.userId", "-password -salt -ridesBooked"); // ✅ Populate mitra.userId here
+    .populate("mitra.userId", "-password -salt -ridesBooked");
 
   if (!ride) {
     throw new Error("Ride not found");

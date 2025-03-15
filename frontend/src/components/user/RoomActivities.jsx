@@ -7,8 +7,8 @@ import axios from "axios";
 import InputWithSuggestions from "../../components/user/SuggestionsList.jsx";
 import { useLocations } from "../../contexts/LocationsContext.jsx";
 import { useRoom } from "../../contexts/RoomContext.jsx";
-// link this thing so that whatever information entered here is carried forwaded to the room context 
-// basically once hitted create room herre information entered so far forwaded to roomcontext 
+// link this thing so that whatever information entered here is carried forwaded to the room context
+// basically once hitted create room herre information entered so far forwaded to roomcontext
 const RoomActivities = () => {
   const [roomData, setRoomData] = useState([]);
 
@@ -28,7 +28,7 @@ const RoomActivities = () => {
     pickupText,
     setPickupText,
     dropText,
-    setDropText
+    setDropText,
   } = useLocations();
 
   // useRoom context data
@@ -43,7 +43,7 @@ const RoomActivities = () => {
     setFare,
     roomid,
     creatorData,
-    setPcount
+    setPcount,
   } = useRoom();
   const [pickupData, setPickupData] = useState({
     pickupLat,
@@ -87,7 +87,6 @@ const RoomActivities = () => {
     try {
       const res = await axios.get(
         `${import.meta.env.VITE_BASE_URL}/ride/get-all-open-rooms`,
-
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -124,23 +123,25 @@ const RoomActivities = () => {
         }
       );
       console.log("Room created successfully:", res.data);
+
+      localStorage.setItem("roomid", res.data.newRoom._id);
+
       // Handle state update if needed, e.g., updating the room list
       setRoomData((prevRooms) => [...prevRooms, res.data.newRoom]);
-      // now that room is created the corresponding roomid addded in context , also initialise room parameters , like fare  distance duration default particpant always set to 1 this will be updated soon inside join room 
+      // now that room is created the corresponding roomid addded in context , also initialise room parameters , like fare  distance duration default particpant always set to 1 this will be updated soon inside join room
       setRoomid(res.data.newRoom._id);
       setFare(res.data.newRoom.fare);
       setDuration(res.data.newRoom.duration);
       setDistance(res.data.newRoom.distance);
       setPcount(1); // this line is redundant since creator will always join with 1 count , now the joining side will update the other things as disscussed
-      // now handle other room parameters like fare , duration , distance , pcount is always 1 since begining only the joining side will update it hence just initialise the first 3 parameters 
+      // now handle other room parameters like fare , duration , distance , pcount is always 1 since begining only the joining side will update it hence just initialise the first 3 parameters
 
-
-      // also initialise creator id here retrive from local storage 
+      // also initialise creator id here retrive from local storage
       const userData = JSON.parse(localStorage.getItem("USER"));
-      // so basically what happens is when u create the room with that post req the room is created and the creatorId for that room object is initialised u need to somehow use that creator id to match creator data 
+      // so basically what happens is when u create the room with that post req the room is created and the creatorId for that room object is initialised u need to somehow use that creator id to match creator data
       console.log("The user data for the room activity is : ", userData);
       if (userData) {
-        setCreatorData(prev => {
+        setCreatorData((prev) => {
           const newCreatorData = {
             creatorId: userData._id,
             fullName: userData.fullName,
@@ -160,17 +161,18 @@ const RoomActivities = () => {
 
       // the above initialises the creator data object but sadly doesnt add it to the room data
 
+      navigate(`/room-int?roomid=${res.data.newRoom._id}`);
     } catch (err) {
       console.error("Error creating room:", err);
       if (err.response && err.response.status === 401) {
-        alert("Something wrong occured , YOGESH!!!!")
+        alert("Something wrong occured , YOGESH!!!!");
         // navigate("/signin");
         // user-signin???
       }
     }
   };
 
-  // MAJOR CHANGE AND LEARNING : USED ASYNC ABOVE BECAUSE  OF HOW REACT STATES ARE ASYNC IN NATURE , HAD THERE BEEN A NORMAL FUNCTION THE STATE UPDATES WOULD BE LOST , CAUSING THE CREATOR DATA TO BE NOT PROPERLY PROPOGATED IN CONTEXT , FOR MAKING SO MANY UPDATES MAKE SURE ALL UPDATES ARE APPLIED TO CONTEXT VALUES ONLY THEN NAVIGATE , HENCE USE AWAIT TO WAIT TILL ALL VALUES ARE SET 
+  // MAJOR CHANGE AND LEARNING : USED ASYNC ABOVE BECAUSE  OF HOW REACT STATES ARE ASYNC IN NATURE , HAD THERE BEEN A NORMAL FUNCTION THE STATE UPDATES WOULD BE LOST , CAUSING THE CREATOR DATA TO BE NOT PROPERLY PROPOGATED IN CONTEXT , FOR MAKING SO MANY UPDATES MAKE SURE ALL UPDATES ARE APPLIED TO CONTEXT VALUES ONLY THEN NAVIGATE , HENCE USE AWAIT TO WAIT TILL ALL VALUES ARE SET
 
   const handleCreateRoom = async () => {
     const roomData = {
@@ -191,17 +193,13 @@ const RoomActivities = () => {
     setLimit(participantsLimit);
 
     // Finally, navigate only when everything is set
-    navigate(`/room-int?roomid=${roomid}`);
+
     // navigate("/room-int");
-
-
   };
-
 
   useEffect(() => {
     fetchRooms();
   }, [dropText]);
-
 
   const handlePickupSelect = (value) => {
     if (value && value.lat && value.lng && value.description) {

@@ -255,6 +255,25 @@ const getAllWaitingClosedRooms = async (req, res) => {
   }
 };
 
+const getRideDetails = async (req, res) => {
+  try {
+    const { rideId } = req.query;
+
+    const ride = await Ride.findById(rideId)
+      .populate("creatorId", "-password -salt -ridesBooked")
+      .populate("driver", "-password -salt -ridesAcceptedUrl")
+      .populate("mitra.userId", "-password -salt -ridesBooked");
+
+    if (ride?.status == "closed") {
+      return res.status(400).json({ rideError: "Ride is closed" });
+    }
+
+    return res.status(200).json(ride);
+  } catch (e) {
+    return res.status(500).json({ rideError: e.message });
+  }
+};
+
 module.exports = {
   handleCreateRoom,
   handleGetFare,
@@ -264,4 +283,5 @@ module.exports = {
   handleCloseRoom,
   getAllOpenRooms,
   getAllWaitingClosedRooms,
+  getRideDetails,
 };

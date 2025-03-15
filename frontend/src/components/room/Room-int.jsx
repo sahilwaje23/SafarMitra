@@ -1,6 +1,6 @@
 // - the lifecycle flows as open -> closed -> accepted -> ongoing -> completed
-// whatever time u are going to join or create room basdically all the information this interface uses is derrived from room context only 
-// everyone puts info to context , context provides info to all via this room interface only 
+// whatever time u are going to join or create room basdically all the information this interface uses is derrived from room context only
+// everyone puts info to context , context provides info to all via this room interface only
 
 import React, { useEffect, useState, useContext } from "react";
 import {
@@ -19,18 +19,21 @@ import RideDetails from "./RideDetails";
 import { SocketContext } from "../../contexts/Socket";
 import { EntityContext } from "../../contexts/EntityContext";
 import { useRoom } from "../../contexts/RoomContext";
+import axios from "axios";
 const ButtonGroup = ({ activeTab, setActiveTab }) => {
   return (
     <Box sx={{ display: "flex", gap: 2 }}>
       <Button
         onClick={() => setActiveTab("details")}
         sx={{
-          bgcolor: activeTab === "details"
-            ? theme.palette.primaryColor.main
-            : "transparent",
-          color: activeTab === "details"
-            ? theme.palette.txtcol
-            : theme.palette.primaryColor.main,
+          bgcolor:
+            activeTab === "details"
+              ? theme.palette.primaryColor.main
+              : "transparent",
+          color:
+            activeTab === "details"
+              ? theme.palette.txtcol
+              : theme.palette.primaryColor.main,
           border: `1px solid ${theme.palette.primaryColor.main}`,
           py: 1.5,
           px: 4,
@@ -38,9 +41,10 @@ const ButtonGroup = ({ activeTab, setActiveTab }) => {
           fontWeight: "bold",
           outline: "none",
           "&:hover": {
-            bgcolor: activeTab === "details"
-              ? theme.palette.primaryColor.hover
-              : "rgba(254, 196, 0, 0.1)",
+            bgcolor:
+              activeTab === "details"
+                ? theme.palette.primaryColor.hover
+                : "rgba(254, 196, 0, 0.1)",
           },
         }}
       >
@@ -50,12 +54,14 @@ const ButtonGroup = ({ activeTab, setActiveTab }) => {
       <Button
         onClick={() => setActiveTab("chat")}
         sx={{
-          bgcolor: activeTab === "chat"
-            ? theme.palette.primaryColor.main
-            : "transparent",
-          color: activeTab === "chat"
-            ? theme.palette.txtcol
-            : theme.palette.primaryColor.main,
+          bgcolor:
+            activeTab === "chat"
+              ? theme.palette.primaryColor.main
+              : "transparent",
+          color:
+            activeTab === "chat"
+              ? theme.palette.txtcol
+              : theme.palette.primaryColor.main,
           border: `1px solid ${theme.palette.primaryColor.main}`,
           py: 1.5,
           px: 4,
@@ -63,9 +69,10 @@ const ButtonGroup = ({ activeTab, setActiveTab }) => {
           outline: "none",
           fontWeight: "bold",
           "&:hover": {
-            bgcolor: activeTab === "chat"
-              ? theme.palette.primaryColor.hover
-              : "rgba(254, 196, 0, 0.1)",
+            bgcolor:
+              activeTab === "chat"
+                ? theme.palette.primaryColor.hover
+                : "rgba(254, 196, 0, 0.1)",
           },
         }}
       >
@@ -108,11 +115,7 @@ const MobileView = () => {
 
 function DesktopView({ roomIntData }) {
   const [activeTab, setActiveTab] = useState("details");
-  const {
-    pickup,
-    destination,
-    status,
-  } = useRoom();
+  const { pickup, destination, status } = useRoom();
   return (
     <Box
       sx={{
@@ -182,30 +185,24 @@ function DesktopView({ roomIntData }) {
               sx={{
                 mb: 1,
                 marginLeft: "1rem",
-                '& span': {
-                  color: theme.palette.secondaryColor.main
-                }
+                "& span": {
+                  color: theme.palette.secondaryColor.main,
+                },
               }}
             >
-              Source:{" "}
-              <Box component="span">
-                {pickup || "CSMT"}
-              </Box>
+              Source: <Box component="span">{pickup || "CSMT"}</Box>
             </Typography>
 
             <Typography
               sx={{
                 mb: 2,
                 marginLeft: "1rem",
-                '& span': {
-                  color: theme.palette.secondaryColor.main
-                }
+                "& span": {
+                  color: theme.palette.secondaryColor.main,
+                },
               }}
             >
-              Destination:{" "}
-              <Box component="span">
-                {destination || "Kalyan"}
-              </Box>
+              Destination: <Box component="span">{destination || "Kalyan"}</Box>
             </Typography>
             <div className="overflow-y-auto ">
               <RideDetails />
@@ -227,18 +224,54 @@ function RoomInt() {
   const roomIntData = useRoom();
   console.log(userId, "userId");
 
+  const { pickup, destination, updateEverything, setMitra } = useRoom();
+
+  // ^ 15-03-25 : Ye refresh handle karne ka logic hai , isse dont touch
+
+  const fetchRideDetails = async () => {
+    const rideId = localStorage.getItem("roomid");
+    const token = localStorage.getItem("token");
+
+    if (!rideId || !token) {
+      alert("roomid ID or Token not found");
+      return;
+    }
+
+    try {
+      const response = await axios.get(
+        `${
+          import.meta.env.VITE_BASE_URL
+        }/ride/get-ride-details?rideId=${rideId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          withCredentials: true,
+        }
+      );
+
+      //^ Chaitanya here is the rideData object
+      const rideData = response.data;
+      // alert("Ride Data: " + JSON.stringify(rideData));
+      console.log("Ride Data: ", rideData);
+      updateEverything(rideData);
+    } catch (err) {
+      alert("Error: " + err.message);
+    }
+  };
 
   // console.log("creator data : ", creatorData);
   useEffect(() => {
     console.log("The creator  data is : ", creatorData);
-    const storedUser = localStorage.getItem("USER");
-    console.log("Raw USER data from localStorage:", storedUser);
 
+    // ^ commenting below lines 15-03-25
+    // const storedUser = localStorage.getItem("USER");
+    // console.log("Raw USER data from localStorage:", storedUser);
   }, [creatorData]);
 
   useEffect(() => {
     // make object here rideData dependency of this useeffect
-    // whenever ride data updates u will not only do these socket updates but also reflect them in ui 
+    // whenever ride data updates u will not only do these socket updates but also reflect them in ui
     sendMessage("join", { userType: "USER", userId });
 
     recieveMessage("confirm-ride", (rideData) => {
@@ -247,18 +280,43 @@ function RoomInt() {
     });
 
     recieveMessage("new-userJoin", (rideData) => {
-      alert("new user has joined", rideData.user.fullName);
-      // ^ Chaitanya whenever a new user joins a ride u will get data here
-      console.log("New User Joined", rideData);
+      // ^ Chaitanya whatever new USER JOINS u will get data here
+
+      alert("New User Joined", rideData.user.fullName);
+      // console.log(rideData.user.fullName);
+      
+      setMitra((prev) => [
+        ...prev,
+        {
+          fullName: rideData.user.fullName || "CAKALALA",
+          rating: rideData.user.rating || null,
+          gender: rideData.user.gender || null,
+          mobileNo: rideData.user.mobileNo || null,
+          email: rideData.user.email || null,
+          socketId: rideData.user.socket_id || null,
+          docs: {
+            profileImage: rideData.user.docs?.profileImageUrl || null,
+          },
+        },
+      ]);
     });
 
     recieveMessage("new-chat", ({ msg, name }) => {
       console.log("Message Received: " + msg + " " + name);
     });
 
-    return () => {
+    return () => {};
+  }, []);
 
-    };
+  useEffect(() => {
+    // ^ 15-03-25 : Ye refresh handle karne ka logic hai , isse dont touch
+
+    // ^ IMP : wanted to discuss about it :
+    // if (!pickup) {
+    //   fetchRideDetails();
+    // }
+
+    fetchRideDetails();
   }, []);
 
   return isMobile ? <MobileView /> : <DesktopView roomIntData={roomIntData} />;

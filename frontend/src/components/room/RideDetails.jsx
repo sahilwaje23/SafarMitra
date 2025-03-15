@@ -9,10 +9,8 @@ import {
 import { useRoom } from "../../contexts/RoomContext";
 // this is  essentially information for room interface data should be fetched from context and displayed here
 // some things  are delibarately commented out and left there to verify the existing behaviour
-// conditional rendering ensures if driver doesnt , mitras dont exist yet they wont be showcased 
+// conditional rendering ensures if driver doesnt , mitras dont exist yet they wont be showcased
 function RideDetails() {
-
-
   const {
     roomid,
     creatorData,
@@ -21,7 +19,7 @@ function RideDetails() {
     fare,
     mitra,
     driverData,
-    pcount
+    pcount,
   } = useRoom();
   // const dummyDriver = {
   //   name: "Rahul Sharma",
@@ -68,12 +66,15 @@ function RideDetails() {
   };
 
   // Check if driver has at least one valid property
-  const hasValidDriver = Object.values(driver).some((value) => value !== null && value !== undefined);
+  const hasValidDriver = Object.values(driver).some(
+    (value) => value !== null && value !== undefined
+  );
 
-  // need to initialize this properly 
+  // need to initialize this properly
   const creator = {
     name: creatorData?.fullName || "Anjali Verma",
-    profileImage: creatorData?.profileImage || "https://via.placeholder.com/150",
+    profileImage:
+      creatorData?.profileImage || "https://via.placeholder.com/150",
     phone: creatorData?.mobileNo || "+91 9876543211",
     email: creatorData?.email || "anjali.verma@example.com",
     gender: creatorData?.gender || "Female",
@@ -95,18 +96,20 @@ function RideDetails() {
 
   const mitras = mitra
     .map((m) => ({
-      name: m?.mitraName || null,
-      profileImage: m?.profileImage || null,
+      name: m?.fullName || null,
+      profileImage: m?.docs?.profileImage || null,
       phone: m?.mobileNo || null,
-      email: m?.mitraEmail || null,
+      email: m?.email || null,
       gender: m?.gender || null,
-      rating: m?.mitraRating ?? null,
-      id: m?.mitraId || null,
+      rating: m?.rating,
+      id: m?.socketId || null,
     }))
-    .filter((m) => Object.values(m).some((value) => value !== null && value !== undefined));
+    .filter((m) =>
+      Object.values(m).some((value) => value !== null && value !== undefined)
+    );
 
   const journey = {
-    roomId: (roomid?.slice(0, 7) || "XJZP123"),
+    roomId: roomid?.slice(0, 7) || "XJZP123",
     fare: fare ?? 250,
     distance: distance ?? 15.4,
     duration: duration ?? 32,
@@ -116,14 +119,14 @@ function RideDetails() {
 
   useEffect(() => {
     console.log("The creator data in ride details is ", creatorData);
-  }, [creatorData])
+  }, [creatorData]);
   return (
     <>
       <Paper
         elevation={2}
         sx={{
           bgcolor: "background.paper",
-          // paddingY: 2, 
+          // paddingY: 2,
           borderRadius: 2,
           display: "flex",
           flexDirection: "column",
@@ -141,26 +144,36 @@ function RideDetails() {
         <Typography variant="h6" sx={{ fontWeight: "bold", width: "100%", p: "1" }}>
           <ParticipantCard participant={dummyParticipant} isCreator={true} />
         </Typography> */}
-        <Typography variant="h6" sx={{ fontWeight: "bold", width: "100%", p: "1" }}>
+        <Typography
+          variant="h6"
+          sx={{ fontWeight: "bold", width: "100%", p: "1" }}
+        >
           <JourneyCard journey={journey} />
         </Typography>
         {hasValidDriver && (
-          <Typography variant="h6" sx={{ fontWeight: "bold", width: "100%", p: "1" }}>
+          <Typography
+            variant="h6"
+            sx={{ fontWeight: "bold", width: "100%", p: "1" }}
+          >
             <DriverCard driver={driver} />
           </Typography>
         )}
         {mitras.length > 0 &&
           mitras.map((mitra, index) => (
-            <Typography key={index} variant="h6" sx={{ fontWeight: "bold", width: "100%", p: "1" }}>
+            <Typography
+              key={index}
+              variant="h6"
+              sx={{ fontWeight: "bold", width: "100%", p: "1" }}
+            >
               <ParticipantCard participant={mitra} isCreator={false} />
             </Typography>
-          ))
-        }
-        <Typography variant="h6" sx={{ fontWeight: "bold", width: "100%", p: "1" }}>
+          ))}
+        <Typography
+          variant="h6"
+          sx={{ fontWeight: "bold", width: "100%", p: "1" }}
+        >
           <ParticipantCard participant={creator} isCreator={true} />
         </Typography>
-
-
       </Paper>
     </>
   );

@@ -240,6 +240,7 @@ function RoomInt() {
 
   useEffect(() => {
     // make object here rideData dependency of this useeffect
+    // whenever ride data updates u will not only do these socket updates but also reflect them in ui 
     sendMessage("join", { userType: "USER", userId });
 
     recieveMessage("confirm-ride", (rideData) => {

@@ -227,6 +227,7 @@ function RoomInt() {
   console.log(userId, "userId");
 
   useEffect(() => {
+    // make object here rideData dependency of this useeffect
     sendMessage("join", { userType: "USER", userId });
 
     recieveMessage("confirm-ride", (rideData) => {

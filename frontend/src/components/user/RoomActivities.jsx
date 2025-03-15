@@ -146,13 +146,16 @@ const RoomActivities = () => {
           createdAt: userData.createdAt,
           updatedAt: userData.updatedAt,
           socketId: localStorage.getItem("socket_id") || userData.socket_id
+          // prevent usage 
         });
       }
 
     } catch (err) {
       console.error("Error creating room:", err);
       if (err.response && err.response.status === 401) {
-        navigate("/signin");
+        alert("Something wrong occured , YOGESH!!!!")
+        // navigate("/signin");
+        // user-signin???
       }
     }
   };

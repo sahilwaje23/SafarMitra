@@ -31,7 +31,7 @@ function RideDetails() {
 
   // const dummyParticipant = {
   //   name: "Anjali Verma",
-  //   profileImage: "https://via.placeholder.com/150",
+  //   profileImage: "https://via`.placeholder.com/150",
   //   phone: "+91 9876543211",
   //   email: "anjali.verma@example.com",
   //   gender: "Female",

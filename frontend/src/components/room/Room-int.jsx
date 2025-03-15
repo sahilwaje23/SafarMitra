@@ -236,8 +236,6 @@ function RoomInt() {
 
   }, [creatorData]);
 
-
-
   useEffect(() => {
     // make object here rideData dependency of this useeffect
     // whenever ride data updates u will not only do these socket updates but also reflect them in ui 
@@ -249,6 +247,7 @@ function RoomInt() {
     });
 
     recieveMessage("new-userJoin", (rideData) => {
+      alert("new user has joined", rideData.user.fullName);
       // ^ Chaitanya whenever a new user joins a ride u will get data here
       console.log("New User Joined", rideData);
     });

@@ -28,6 +28,7 @@ const RoomActivities = () => {
     setPickupText,
     dropText,
     setDropText,
+    creatorData
   } = useLocations();
 
   // useRoom context data
@@ -131,24 +132,30 @@ const RoomActivities = () => {
       // now handle other room parameters like fare , duration , distance , pcount is always 1 since begining only the joining side will update it hence just initialise the first 3 parameters 
 
 
-
       // also initialise creator id here retrive from local storage 
-      const userData = JSON.parse(localStorage.getItem("USER"))?.user;
-
+      const userData = JSON.parse(localStorage.getItem("USER"));
+      // so basically what happens is when u create the room with that post req the room is created and the creatorId for that room object is initialised u need to somehow use that creator id to match creator data 
+      console.log("The user data for the room activity is : ", userData);
       if (userData) {
-        setCreatorData({
-          creatorId: userData._id,
-          fullName: userData.fullName,
-          email: userData.email,
-          mobileNo: userData.mobileNo,
-          gender: userData.gender,
-          rating: userData.rating,
-          createdAt: userData.createdAt,
-          updatedAt: userData.updatedAt,
-          socketId: localStorage.getItem("socket_id") || userData.socket_id
-          // prevent usage 
+        setCreatorData(prev => {
+          const newCreatorData = {
+            creatorId: userData._id,
+            fullName: userData.fullName,
+            email: userData.email,
+            mobileNo: userData.mobileNo,
+            gender: userData.gender,
+            rating: userData.rating,
+            createdAt: userData.createdAt,
+            updatedAt: userData.updatedAt,
+            socketId: localStorage.getItem("socket_id") || userData.socket_id,
+          };
+          console.log("Updated creator data:", newCreatorData);
+          return newCreatorData;
         });
       }
+      console.log("The creator data is:", creatorData);
+
+      // the above initialises the creator data object but sadly doesnt add it to the room data
 
     } catch (err) {
       console.error("Error creating room:", err);
@@ -160,7 +167,9 @@ const RoomActivities = () => {
     }
   };
 
-  const handleCreateRoom = () => {
+  // MAJOR CHANGE AND LEARNING : USED ASYNC ABOVE BECAUSE  OF HOW REACT STATES ARE ASYNC IN NATURE , HAD THERE BEEN A NORMAL FUNCTION THE STATE UPDATES WOULD BE LOST , CAUSING THE CREATOR DATA TO BE NOT PROPERLY PROPOGATED IN CONTEXT , FOR MAKING SO MANY UPDATES MAKE SURE ALL UPDATES ARE APPLIED TO CONTEXT VALUES ONLY THEN NAVIGATE , HENCE USE AWAIT TO WAIT TILL ALL VALUES ARE SET 
+
+  const handleCreateRoom = async () => {
     const roomData = {
       pickupLat: pickupLat,
       pickupLng: pickupLng,
@@ -169,13 +178,16 @@ const RoomActivities = () => {
       pickupText: pickupText,
       dropText: dropText,
     };
-    createRoom(roomData);
-    // the above will also initialize the roomid
+
+    // Wait for room creation to finish
+    await createRoom(roomData);
+
+    // Now update the state
     setPickup(pickupText);
     setDestination(dropText);
     setLimit(participantsLimit);
-    // the joining part will update the partiticpants count their information 
-    // driver details and mitra details also updated 
+
+    // Finally, navigate only when everything is set
     navigate("/room-int");
   };
 

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Typography, Paper } from "@mui/material";
 import theme from "../../styles/theme";
 import {
@@ -11,6 +11,8 @@ import { useRoom } from "../../contexts/RoomContext";
 // some things  are delibarately commented out and left there to verify the existing behaviour
 // conditional rendering ensures if driver doesnt , mitras dont exist yet they wont be showcased 
 function RideDetails() {
+
+
   const {
     roomid,
     creatorData,
@@ -68,7 +70,7 @@ function RideDetails() {
   // Check if driver has at least one valid property
   const hasValidDriver = Object.values(driver).some((value) => value !== null && value !== undefined);
 
-
+  // need to initialize this properly 
   const creator = {
     name: creatorData?.fullName || "Anjali Verma",
     profileImage: creatorData?.profileImage || "https://via.placeholder.com/150",
@@ -108,10 +110,13 @@ function RideDetails() {
     fare: fare ?? 250,
     distance: distance ?? 15.4,
     duration: duration ?? 32,
+    // above not initialised correctly
     participantCount: pcount ?? 3,
   };
 
-
+  useEffect(() => {
+    console.log("The creator data in ride details is ", creatorData);
+  }, [creatorData])
   return (
     <>
       <Paper

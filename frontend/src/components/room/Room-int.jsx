@@ -76,7 +76,7 @@ const ButtonGroup = ({ activeTab, setActiveTab }) => {
 };
 
 const MobileView = () => {
-
+  const { creatorData } = useRoom();
   return (
     <>
       <GlobalStyles styles={{ body: { overflowX: "hidden" } }} />
@@ -218,6 +218,7 @@ function DesktopView({ roomIntData }) {
 }
 
 function RoomInt() {
+  const { creatorData } = useRoom();
   const isMobile = useMediaQuery("(max-width:1024px)");
   const { sendMessage, recieveMessage } = useContext(SocketContext);
   const { entity } = useContext(EntityContext);
@@ -225,6 +226,17 @@ function RoomInt() {
     entity.data?._id || JSON.parse(localStorage.getItem("USER"))._id;
   const roomIntData = useRoom();
   console.log(userId, "userId");
+
+
+  // console.log("creator data : ", creatorData);
+  useEffect(() => {
+    console.log("The creator  data is : ", creatorData);
+    const storedUser = localStorage.getItem("USER");
+    console.log("Raw USER data from localStorage:", storedUser);
+
+  }, [creatorData]);
+
+
 
   useEffect(() => {
     // make object here rideData dependency of this useeffect

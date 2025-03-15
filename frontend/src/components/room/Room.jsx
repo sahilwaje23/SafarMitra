@@ -75,7 +75,9 @@ const Room = ({ roomData = [] }) => {
       );
 
       // Navigate to room-int only after state updates
-      navigate("/room-int");
+      // navigate("/room-int");
+      navigate(`/room-int?roomid=${roomData._id}`);
+
     } catch (e) {
       alert("Failed to join room: " + e.message);
     }

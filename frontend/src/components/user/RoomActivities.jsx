@@ -11,6 +11,7 @@ import { useRoom } from "../../contexts/RoomContext.jsx";
 // basically once hitted create room herre information entered so far forwaded to roomcontext 
 const RoomActivities = () => {
   const [roomData, setRoomData] = useState([]);
+
   const [participantsLimit, setParticipantsLimit] = useState(1);
   const navigate = useNavigate();
 
@@ -27,8 +28,7 @@ const RoomActivities = () => {
     pickupText,
     setPickupText,
     dropText,
-    setDropText,
-    creatorData
+    setDropText
   } = useLocations();
 
   // useRoom context data
@@ -40,7 +40,10 @@ const RoomActivities = () => {
     setCreatorData,
     setDistance,
     setDuration,
-    setFare
+    setFare,
+    roomid,
+    creatorData,
+    setPcount
   } = useRoom();
   const [pickupData, setPickupData] = useState({
     pickupLat,
@@ -188,12 +191,17 @@ const RoomActivities = () => {
     setLimit(participantsLimit);
 
     // Finally, navigate only when everything is set
-    navigate("/room-int");
+    navigate(`/room-int?roomid=${roomid}`);
+    // navigate("/room-int");
+
+
   };
+
 
   useEffect(() => {
     fetchRooms();
   }, [dropText]);
+
 
   const handlePickupSelect = (value) => {
     if (value && value.lat && value.lng && value.description) {

@@ -4,6 +4,7 @@ const {
   handleDriverSignin,
   handleDriverLogOut,
   handleGetDriverProfile,
+  handleGetAllClosedRooms
 } = require("../controllers/driverController");
 const router = Router();
 const { authDriver } = require("../middlewares/auth");
@@ -21,7 +22,7 @@ router.post(
       name: "profileImage",
       maxCount: 1,
     },
-    {
+    { 
       name: "aadharImage",
       maxCount: 1,
     },
@@ -43,5 +44,7 @@ router.post("/login", validateDriverSignIn, handleDriverSignin);
 router.get("/logout", authDriver, handleDriverLogOut);
 
 router.get("/my-profile", authDriver, handleGetDriverProfile);
+
+router.get("/get-all-closed-rooms",authDriver,handleGetAllClosedRooms);
 
 module.exports = router;

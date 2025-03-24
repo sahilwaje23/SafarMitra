@@ -58,7 +58,7 @@ const UserHomePage = () => {
         });
       } catch (err) {
         console.error(err);
-        navigate("/user/signin");
+        navigate("/user-signin");
       } finally {
         setLoading(false);
       }

@@ -48,6 +48,10 @@ export const RoomContextProvider = ({ children }) => {
   }); // driver data like name , rating , phone number , vehicle number stored as object
   // used specifically only when room is closed
 
+
+  // all closed rooms 
+  const [closedRooms,setClosedRooms] = useState([]);
+  
   // ~ Ritesh Made this : (took help of GPT)
   const updateEverything = (data) => {
     setPickup(data.pickup.text);
@@ -59,7 +63,7 @@ export const RoomContextProvider = ({ children }) => {
       email: data.creatorId.email,
       mobileNo: data.creatorId.mobileNo,
       gender: data.creatorId.gender,
-      rating: data.creatorId.rating,
+      rating: data.creatorId.rating || "NA",
       createdAt: data.creatorId.createdAt,
       updatedAt: data.creatorId.updatedAt,
       socketId: data.creatorId.socketId,
@@ -74,7 +78,7 @@ export const RoomContextProvider = ({ children }) => {
     setMitra(
       (data.mitra || []).map((m) => ({
         fullName: m?.userId?.fullName || null,
-        rating: m?.userId?.rating ?? null,
+        rating: m?.userId?.rating || "NA" ,
         gender: m?.userId?.gender || null,
         mobileNo: m?.userId?.mobileNo || null,
         email: m?.userId?.email || null,
@@ -85,13 +89,20 @@ export const RoomContextProvider = ({ children }) => {
       }))
     );
     setDriverData({
-      vehicleNo: data.driver?.vehicleNo || null,
-      driverId: data.driver?._id || null,
-      fullName: data.driver?.fullName || null,
-      mobileNo: data.driver?.mobileNo || null,
-      rating: data.driver?.rating || null,
-      socketId: data.driver?.socketId || null,
-      profileImage: data.driver?.profileImage || null,
+      // vehicleNo: data.driver?.vehicleNo || null,
+      // driverId: data.driver?._id || null,
+      // fullName: data.driver?.fullName || null,
+      // mobileNo: data.driver?.mobileNo || null,
+      // rating: data.driver?.rating || null,
+      // socketId: data.driver?.socketId || null,
+      // profileImage: data.driver?.profileImage || null,
+          vehicleNo: data.driver.details?.vehicleNo || "N/A",
+          driverId: data.driver._id || null,
+          fullName: data.driver.fullName || "Unknown",
+          mobileNo: data.driver.mobileNo || "Not Available",
+          rating: data.driver.rating || "0",
+          socketId: data.driver.socket_id || null,
+          profileImage: data.driver.docs?.profileImageUrl || "",
     });
   };
 

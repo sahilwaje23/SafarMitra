@@ -71,9 +71,12 @@ function App() {
                 </UserProtectedWrapper>
               }
             />
-            <Route path="/room-int" element={<UserProtectedWrapper>
+            <Route path="/room-int" element={
+              <RoomInt />}
+            />
+            {/* <Route path="/room-int" element={<UserProtectedWrapper>
               <RoomInt />
-            </UserProtectedWrapper>} />
+            </UserProtectedWrapper>} /> */}
             <Route
               path="/join-room"
               element={

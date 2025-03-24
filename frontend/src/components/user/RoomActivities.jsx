@@ -81,7 +81,7 @@ const RoomActivities = () => {
     const token = localStorage.getItem("token");
     if (!token) {
       console.error("No token found, cannot fetch rooms");
-      navigate("/user/signin");
+      navigate("/user-signin");
       return;
     }
     try {

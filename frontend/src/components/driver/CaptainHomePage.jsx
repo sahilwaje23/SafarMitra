@@ -8,6 +8,8 @@ import theme from "../../styles/theme.js"; // Correct relative path for styles f
 import { EntityContext } from "../../contexts/EntityContext";
 import { SocketContext } from "../../contexts/Socket";
 import { Socket } from "socket.io-client";
+import RoomPopup from "./RoomPopup.jsx";
+import ExistingRoom from "./ExistingRoom.jsx";
 
 const CaptainHomePage = () => {
   const { entity } = useContext(EntityContext);
@@ -18,10 +20,11 @@ const CaptainHomePage = () => {
   // ^ Chaitanya ithe status online asel tr pratyek 10 sec la update hoil location
   const [status, setStatus] = useState("online");
 
-  useEffect(() => {
+  useEffect(() => { 
     sendMessage("join", { userType: "DRIVER", userId: driverId });
   }, []);
 
+  // online offline status
   useEffect(() => {
     if (status === "online") {
       const updateLocation = () => {
@@ -40,6 +43,7 @@ const CaptainHomePage = () => {
 
       recieveMessage("new-ride", (rideData) => {
         // ^ Chaitanya whatever new ride Data comes u will recieve it here {roomDetail , creatorDetail}
+        
         console.log("New ride received:", rideData);
       });
 
@@ -59,8 +63,8 @@ const CaptainHomePage = () => {
         flexDirection: "column",
         gap: 2,
         p: 2,
-        height: "90vh",
-        minHeight: "100vh",
+        // height: "400px",
+        minHeight: "100vh",  
         pb: "64px", // Account for bottom navigation
         bgcolor:
           theme.palette.mode === "dark"
@@ -71,8 +75,9 @@ const CaptainHomePage = () => {
     >
       <QuickActions />
       <Dashboard />
-      <Map />
-      <Room />
+      <div className="h-[400px]"><Map /></div>
+      {/* <RoomPopup/> */}
+      <ExistingRoom />
     </Box>
   );
 
@@ -102,14 +107,14 @@ const CaptainHomePage = () => {
       >
         <Map
           sx={{
-            // position: 'absolute', // Add this
-            // top: 0,
-            // left: 0,
-            // right: 0,
-            // bottom: 0,
-            // border: '0.5rem outset green',
-            height: "auto",
-            width: "100%",
+            position: 'absolute', // Add this
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            border: '0.5rem outset green',
+            height: "100vh",
+            width: "100vw",
           }}
         />
       </Box>
@@ -126,7 +131,7 @@ const CaptainHomePage = () => {
       >
         <QuickActions />
         <Dashboard />
-        <Room sx={{ flex: 1 }} />
+        <ExistingRoom sx={{ flex: 1 }} />
       </Box>
     </Box>
   );

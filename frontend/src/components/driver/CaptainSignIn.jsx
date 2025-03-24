@@ -51,8 +51,9 @@ const CaptainSignIn = () => {
         setTimeout(() => {
           setIsLoading(false);
         }, 500);
-        // console.log(res);
+        console.log(res);
         setEntity({ type: "DRIVER", data: res.data.driver });
+        localStorage.setItem("token", res.data.token )
         localStorage.setItem("DRIVER", JSON.stringify(res.data.driver));
         navigate("/captain-homepage");
       })

@@ -85,6 +85,7 @@ const CaptainSignUp = () => {
         // console.log(res);
         if (res.status === 201) {
           setEntity({ type: "DRIVER", data: res.data.newDriver });
+          localStorage.setItem("token", res .data.token);
           localStorage.setItem("DRIVER", JSON.stringify(res.data.newDriver));
           alert("signed up successfully");
           navigate("/captain-homepage");

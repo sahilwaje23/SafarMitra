@@ -69,7 +69,6 @@ router.get("/join-room", authUser, query("roomId").isString(), handleJoinRoom);
 
 router.get(
   "/get-ride-details",
-  authUser,
   query("rideId").isString(),
   getRideDetails
 );

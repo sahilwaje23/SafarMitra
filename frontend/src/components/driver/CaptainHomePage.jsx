@@ -13,7 +13,7 @@ import ExistingRoom from "./ExistingRoom.jsx";
 import { useRoom } from "../../contexts/RoomContext.jsx";
 
 const CaptainHomePage = () => {
-  // const {dummy,setdummy } = useRoom();
+  // const {closedRooms } = useRoom();
   const { entity } = useContext(EntityContext);
   const driverId =
     entity.data?._id || JSON.parse(localStorage.getItem("DRIVER"))?._id;

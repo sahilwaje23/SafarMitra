@@ -31,8 +31,6 @@ const ExistingRoom = () => {
     updateEverything,
     closedRooms,
     setClosedRooms,
-    refresh,
-    setRefresh,
   } = useRoom();
 
   

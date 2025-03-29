@@ -10,11 +10,13 @@ import { SocketContext } from "../../contexts/Socket";
 import { Socket } from "socket.io-client";
 import RoomPopup from "./RoomPopup.jsx";
 import ExistingRoom from "./ExistingRoom.jsx";
+import { useRoom } from "../../contexts/RoomContext.jsx";
 
 const CaptainHomePage = () => {
+  // const {dummy,setdummy } = useRoom();
   const { entity } = useContext(EntityContext);
   const driverId =
-    entity.data?._id || JSON.parse(localStorage.getItem("DRIVER"))._id;
+    entity.data?._id || JSON.parse(localStorage.getItem("DRIVER"))?._id;
   const { sendMessage, recieveMessage } = useContext(SocketContext);
 
   // ^ Chaitanya ithe status online asel tr pratyek 10 sec la update hoil location
@@ -43,7 +45,7 @@ const CaptainHomePage = () => {
 
       recieveMessage("new-ride", (rideData) => {
         // ^ Chaitanya whatever new ride Data comes u will recieve it here {roomDetail , creatorDetail}
-        
+        // setRefresh( (prev) => !prev);
         console.log("New ride received:", rideData);
       });
 

@@ -28,10 +28,13 @@ const ExistingRoom = () => {
     setPcount,
     setCreatorData,
     setMitra,
-    updateEverything
+    updateEverything,
+    closedRooms,
+    setClosedRooms,
+    refresh,
+    setRefresh,
   } = useRoom();
 
-  const [closedRooms, setClosedRooms] = useRoom();
   
   // fetching all closed rooms
   useEffect( () => {
@@ -40,7 +43,7 @@ const ExistingRoom = () => {
         const token = localStorage.getItem("token");
         if (!token) {
         console.error("No token found, cannot fetch rooms");
-        navigate("/user-signin");
+        navigate("/captain-signin");
         return;
         }
         try {   
@@ -63,7 +66,7 @@ const ExistingRoom = () => {
     fetchRooms() ;
   } 
   ,
-   [closedRooms]) // dependency factors
+   []) // dependency factors
 
 
     const handleAcceptRoom = async (roomId) => {
@@ -142,6 +145,7 @@ const ExistingRoom = () => {
     }
   };
 
+  // const roomData = closedRooms;
   return (
     <Box className="p-4 bg-[#1a1a1a] min-h-screen">
       <Typography variant="h5" className="text-white mb-4 px-2">
@@ -149,8 +153,8 @@ const ExistingRoom = () => {
       </Typography>
 
       <Box className="space-y-4">
-        {Array.isArray(roomData) && roomData.length > 0 ? (
-          roomData.map((room, index) => (
+        {Array.isArray(closedRooms) && closedRooms.length > 0 ? (
+          closedRooms.map((room, index) => (
             <Card
               key={index}
               className="bg-[#2a2a2a] hover:bg-[#333333] transition-colors border-none"
@@ -265,7 +269,6 @@ const ExistingRoom = () => {
           <Card className="bg-[#2a2a2a] p-6">
             <Typography className="text-white text-center">
               No rooms available. 
-              // yogesh here
             </Typography>
           </Card>
         )}

@@ -12,6 +12,7 @@ import {
   Navbar,
   RoomInt,
   UserProfile,
+  CaptainProfile,
 } from "./components";
 import theme from "./styles/theme";
 import { useMediaQuery } from "@mui/material";
@@ -85,7 +86,7 @@ function App() {
                 </UserProtectedWrapper>
               }
             />
-            <Route path="/captain-profile" element={<div>Captain Profile</div>} />
+            <Route path="/captain-profile" element={<CaptainProfile/>} />
             <Route
               path="/captain-nearby-rooms"
               element={<div>Nearby Rooms</div>}

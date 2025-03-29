@@ -52,6 +52,7 @@ export const RoomContextProvider = ({ children }) => {
   // all closed rooms 
   const [closedRooms,setClosedRooms] = useState([]);
   
+  
   // ~ Ritesh Made this : (took help of GPT)
   const updateEverything = (data) => {
     setPickup(data.pickup.text);
@@ -134,6 +135,8 @@ export const RoomContextProvider = ({ children }) => {
         pcount,
         setPcount,
         updateEverything,
+        closedRooms,
+        setClosedRooms
       }}
     >
       {children}

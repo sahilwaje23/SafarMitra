@@ -8,8 +8,10 @@ import InputWithSuggestions from "./SuggestionsList";
 import { useLocations } from "../../contexts/LocationsContext";
 import { SocketContext } from "../../contexts/Socket";
 import axios from 'axios';
+import { useRoom } from "../../contexts/RoomContext";
 
 const UserHomePage = () => {
+ 
   const [loading, setLoading] = useState(true);
   const yellowTheme = theme.palette.primaryColor.main;
   const { entity } = useContext(EntityContext);

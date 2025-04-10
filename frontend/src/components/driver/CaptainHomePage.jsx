@@ -13,7 +13,7 @@ import ExistingRoom from "./ExistingRoom.jsx";
 import { useRoom } from "../../contexts/RoomContext.jsx";
 
 const CaptainHomePage = () => {
-  // const {closedRooms } = useRoom();
+  const {yogesh} = useRoom();
   const { entity } = useContext(EntityContext);
   const driverId =
     entity.data?._id || JSON.parse(localStorage.getItem("DRIVER"))?._id;
@@ -133,7 +133,7 @@ const CaptainHomePage = () => {
       >
         <QuickActions />
         <Dashboard />
-        <ExistingRoom sx={{ flex: 1 }} />
+        { <ExistingRoom sx={{ flex: 1 }} />}
       </Box>
     </Box>
   );

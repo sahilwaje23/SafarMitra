@@ -37,7 +37,7 @@ function App() {
           paddingTop: isMobileView ? "0px" : "64px", // Add top padding for desktop navbar
         }}
       >
-        <RoomContextProvider>
+        
           <Routes>
             {/* Driver Route */}
 
@@ -92,7 +92,6 @@ function App() {
               element={<div>Nearby Rooms</div>}
             />
           </Routes>
-        </RoomContextProvider>
       </div>
       <Navbar type={type} />
     </ThemeProvider>

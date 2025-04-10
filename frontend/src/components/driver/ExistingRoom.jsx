@@ -29,11 +29,14 @@ const ExistingRoom = () => {
     setCreatorData,
     setMitra,
     updateEverything,
-    closedRooms,
-    setClosedRooms,
+    // closedRooms,
+    // setClosedRooms,
   } = useRoom();
 
   
+
+  // dbug 
+  const [closedRooms,setClosedRooms] = useState([]);
   // fetching all closed rooms
   useEffect( () => {
     const fetchRooms = async () => {
@@ -55,7 +58,11 @@ const ExistingRoom = () => {
             }
         );
         console.log("All rooms from API ", res.data); // Check what the API returns
-        setClosedRooms(res.data);
+        if (JSON.stringify(closedRooms) !== JSON.stringify(res.data)) {
+          setClosedRooms(res.data);
+        }
+        
+        // setClosedRooms(res.data);
         } catch (err) {
         console.error("Error fetching rooms:", err);
         alert(err);

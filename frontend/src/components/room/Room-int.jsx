@@ -256,6 +256,7 @@ function RoomInt() {
       console.log("Ride Data: ", rideData);
       updateEverything(rideData);
     } catch (err) {
+      console.log(err);
       alert("Error: " + err.message);
     }
   };

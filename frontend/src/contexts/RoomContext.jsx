@@ -89,29 +89,33 @@ export const RoomContextProvider = ({ children }) => {
         },
       }))
     );
-    setDriverData({
-      // vehicleNo: data.driver?.vehicleNo || null,
-      // driverId: data.driver?._id || null,
-      // fullName: data.driver?.fullName || null,
-      // mobileNo: data.driver?.mobileNo || null,
-      // rating: data.driver?.rating || null,
-      // socketId: data.driver?.socketId || null,
-      // profileImage: data.driver?.profileImage || null,
+    if(data.driver) {
+      setDriverData({
+        // vehicleNo: data.driver?.vehicleNo || null,
+        // driverId: data.driver?._id || null,
+        // fullName: data.driver?.fullName || null,
+        // mobileNo: data.driver?.mobileNo || null,
+        // rating: data.driver?.rating || null,
+        // socketId: data.driver?.socketId || null,
+        // profileImage: data.driver?.profileImage || null,
+
           vehicleNo: data.driver.details?.vehicleNo || "N/A",
-          driverId: data.driver._id || null,
-          fullName: data.driver.fullName || "Unknown",
-          mobileNo: data.driver.mobileNo || "Not Available",
-          rating: data.driver.rating || "0",
-          socketId: data.driver.socket_id || null,
-          profileImage: data.driver.docs?.profileImageUrl || "",
-    });
+            driverId: data.driver._id || null,
+            fullName: data.driver.fullName || "Unknown",
+            mobileNo: data.driver.mobileNo || "Not Available",
+            rating: data.driver.rating || "0",
+            socketId: data.driver.socket_id || null,
+            profileImage: data.driver.docs?.profileImageUrl || "",
+            
+      });
+    }
   };
   const [amit,setAmit] = useState(false)
 
   return (
     <RoomContext.Provider
       value={{
-        pickup,
+          pickup,
         setPickup,
         destination,
         setDestination,
@@ -136,8 +140,8 @@ export const RoomContextProvider = ({ children }) => {
         pcount,
         setPcount,
         updateEverything,
-        closedRooms,
-        setClosedRooms,
+        // closedRooms,
+        // setClosedRooms,
         amit,
         setAmit
       }}

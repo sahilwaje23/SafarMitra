@@ -62,7 +62,7 @@ const driverSchema = new Schema(
       type: Number,
       default: 0,
     },
-    location : {
+    location: {
       ltd: {
         type: Number,
       },
@@ -72,6 +72,10 @@ const driverSchema = new Schema(
     },
     salt: {
       type: String,
+    },
+    currAcceptedRide: {
+      type: Schema.Types.ObjectId,
+      ref: "ride",
     },
   },
   { timestamps: true }

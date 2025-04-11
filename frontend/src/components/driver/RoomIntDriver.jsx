@@ -12,17 +12,71 @@ import {
   GlobalStyles,
 } from "@mui/material";
 import Map from "../map/Map";
-import Chat from "./Chat";
-import Popup from "./Popup";
+import Chat from "../room/Chat";
+import Popup from "../room/Popup";
 import theme from "../../styles/theme";
-import RideDetails from "./RideDetails";
+import RideDetails from "../room/RideDetails";
 import { SocketContext } from "../../contexts/Socket";
 import { EntityContext } from "../../contexts/EntityContext";
 import { useRoom } from "../../contexts/RoomContext";
 import axios from "axios";
+
+const handleEndRide = async () => {
+  const rideId = localStorage.getItem("roomid");
+  const token = localStorage.getItem("token");
+
+  if (!rideId || !token) {
+    alert("roomid ID or Token not found");
+    return;
+  }
+  try {
+    const response = await axios.post(
+      `${import.meta.env.VITE_BASE_URL}/ride/end-ride`,
+      { rideId: rideId },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        withCredentials: true,
+      }
+    );
+    console.log("Ride ended successfully:", response.data);
+  } catch (error) {
+    console.error("Error ending ride:", error);
+    alert("Error ending ride: " + error.message);
+  }
+};
+
 const ButtonGroup = ({ activeTab, setActiveTab }) => {
   return (
     <Box sx={{ display: "flex", gap: 2 }}>
+      <Button
+        onClick={() => handleEndRide()}
+        sx={{
+          bgcolor:
+            activeTab === "details"
+              ? theme.palette.primaryColor.main
+              : "transparent",
+          color:
+            activeTab === "details"
+              ? theme.palette.txtcol
+              : theme.palette.primaryColor.main,
+          border: `1px solid ${theme.palette.primaryColor.main}`,
+          py: 1.5,
+          px: 4,
+          borderRadius: "1rem",
+          fontWeight: "bold",
+          outline: "none",
+          "&:hover": {
+            bgcolor:
+              activeTab === "details"
+                ? theme.palette.primaryColor.hover
+                : "rgba(254, 196, 0, 0.1)",
+          },
+        }}
+      >
+        Cancel Ride
+      </Button>
       <Button
         onClick={() => setActiveTab("details")}
         sx={{
@@ -50,7 +104,6 @@ const ButtonGroup = ({ activeTab, setActiveTab }) => {
       >
         Ride Details
       </Button>
-
       <Button
         onClick={() => setActiveTab("chat")}
         sx={{
@@ -214,7 +267,7 @@ function DesktopView({ roomIntData }) {
   );
 }
 
-function RoomInt() {
+function RoomIntDriver() {
   const { creatorData } = useRoom();
   const isMobile = useMediaQuery("(max-width:1024px)");
   const { sendMessage, recieveMessage } = useContext(SocketContext);
@@ -222,9 +275,9 @@ function RoomInt() {
   const userId = entity._id || JSON.parse(localStorage.getItem("USER"))._id;
   const roomIntData = useRoom();
 
-  const { pickup, destination, updateEverything, setMitra } = useRoom();
+  /* const { pickup, destination, updateEverything, setMitra } = useRoom(); */
 
-  const [mitraCopy, setMitraCopy] = useState([]);
+  const { updateEverything } = useRoom();
 
   // ^ 15-03-25 : Ye refresh handle karne ka logic hai , isse dont touch
 
@@ -256,8 +309,6 @@ function RoomInt() {
       // alert("Ride Data: " + JSON.stringify(rideData));
       console.log("Ride Data: ", rideData);
       updateEverything(rideData);
-      setMitraCopy(rideData.mitra.map((m) => ({ ...m })));
-      console.log("Mitra Copy: ", mitraCopy);
     } catch (err) {
       console.log(err);
       alert("Error: " + err.message);
@@ -265,6 +316,7 @@ function RoomInt() {
   };
 
   // console.log("creator data : ", creatorData);
+  /*
   useEffect(() => {
     console.log("The creator  data is : ", creatorData);
 
@@ -272,7 +324,9 @@ function RoomInt() {
     // const storedUser = localStorage.getItem("USER");
     // console.log("Raw USER data from localStorage:", storedUser);
   }, [creatorData]);
+  */
 
+  /*
   useEffect(() => {
     // make object here rideData dependency of this useeffect
     // whenever ride data updates u will not only do these socket updates but also reflect them in ui
@@ -289,7 +343,7 @@ function RoomInt() {
       alert("New User Joined", rideData.user.fullName);
       // console.log(rideData.user.fullName);
 
-      setMitraCopy((prev) => [
+      setMitra((prev) => [
         ...prev,
         {
           fullName: rideData.user.fullName || "CAKALALA",
@@ -305,18 +359,13 @@ function RoomInt() {
       ]);
     });
 
-    recieveMessage("ride-ended", (rideData) => {
-      // ^ Chaitanya whatever a ride ends u will get data here
-      console.log("Ride Ended", rideData);
-      alert("Ride Ended", rideData.fare);
-    });
-
     recieveMessage("new-chat", ({ msg, name }) => {
       console.log("Message Received: " + msg + " " + name);
     });
 
     return () => {};
   }, []);
+  */
 
   useEffect(() => {
     // ^ 15-03-25 : Ye refresh handle karne ka logic hai , isse dont touch
@@ -332,4 +381,4 @@ function RoomInt() {
   return isMobile ? <MobileView /> : <DesktopView roomIntData={roomIntData} />;
 }
 
-export default RoomInt;
+export default RoomIntDriver;

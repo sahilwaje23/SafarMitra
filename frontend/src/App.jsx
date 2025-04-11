@@ -14,9 +14,11 @@ import {
   UserProfile,
   CaptainProfile,
 } from "./components";
+import RoomIntDriver from "./components/driver/RoomIntDriver";
 import theme from "./styles/theme";
 import { useMediaQuery } from "@mui/material";
 import UserProtectedWrapper from "./wrappers/UserProtectedWrapper";
+import DriverProtectedWrapper from "./wrappers/DriverProtectedWrapper";
 import RoomActivities from "./components/user/RoomActivities";
 // import { ParticipantCard } from "./components/user/Dummy";
 import { RoomContextProvider } from "./contexts/RoomContext";
@@ -37,61 +39,72 @@ function App() {
           paddingTop: isMobileView ? "0px" : "64px", // Add top padding for desktop navbar
         }}
       >
-        
-          <Routes>
-            {/* Driver Route */}
+        <Routes>
+          <Route path="/" element={<Landing />} />
+          <Route path="/user-signup" element={<UserSignUp />} />
+          <Route path="/user-signin" element={<UserSignIn />} />
+          <Route path="/captain-signup" element={<CaptainSignUp />} />
+          <Route path="/captain-signin" element={<CaptainSignIn />} />
+          <Route path="/captain-room-int" element={<RoomIntDriver />} />
+          <Route
+            path="/user-homepage"
+            element={
+              <UserProtectedWrapper>
+                <UserHomePage />
+              </UserProtectedWrapper>
+            }
+          />
+          <Route
+            path="/captain-homepage"
+            element={
+              <DriverProtectedWrapper>
+                <CaptainHomePage />
+              </DriverProtectedWrapper>
+            }
+          />
 
-            <Route path="/" element={<Landing />} />
-            <Route path="/user-signup" element={<UserSignUp />} />
-            <Route path="/user-signin" element={<UserSignIn />} />
-            <Route path="/captain-signup" element={<CaptainSignUp />} />
-            <Route path="/captain-signin" element={<CaptainSignIn />} />
-            <Route path="/user-homepage" element={<UserHomePage />} />
-            <Route path="/captain-homepage" element={<CaptainHomePage />} />
-            <Route
-              path="/user-history"
-              element={
-                <UserProtectedWrapper>
-                  <div>history </div>
-                </UserProtectedWrapper>
-              }
-            />
-            <Route
-              path="/user-profile"
-              element={
-                <UserProtectedWrapper>
-                  <UserProfile />
-                </UserProtectedWrapper>
-              }
-            />
-            <Route
-              path="/room-activities"
-              element={
-                <UserProtectedWrapper>
-                  <RoomActivities />
-                </UserProtectedWrapper>
-              }
-            />
-            <Route path="/room-int" element={
-              <RoomInt />}
-            />
-            {/* <Route path="/room-int" element={<UserProtectedWrapper>
+          <Route
+            path="/user-history"
+            element={
+              <UserProtectedWrapper>
+                <div>history </div>
+              </UserProtectedWrapper>
+            }
+          />
+          <Route
+            path="/user-profile"
+            element={
+              <UserProtectedWrapper>
+                <UserProfile />
+              </UserProtectedWrapper>
+            }
+          />
+          <Route
+            path="/room-activities"
+            element={
+              <UserProtectedWrapper>
+                <RoomActivities />
+              </UserProtectedWrapper>
+            }
+          />
+          <Route path="/room-int" element={<RoomInt />} />
+          {/* <Route path="/room-int" element={<UserProtectedWrapper>
               <RoomInt />
             </UserProtectedWrapper>} /> */}
-            <Route
-              path="/join-room"
-              element={
-                <UserProtectedWrapper>
-                  <RoomInt />
-                </UserProtectedWrapper>
-              }
-            />
-            <Route path="/captain-profile" element={<CaptainProfile/>} />
-            <Route
-              path="/captain-nearby-rooms"
-              element={<div>Nearby Rooms</div>}
-            />
-          </Routes>
+          <Route
+            path="/join-room"
+            element={
+              <UserProtectedWrapper>
+                <RoomInt />
+              </UserProtectedWrapper>
+            }
+          />
+          <Route path="/captain-profile" element={<CaptainProfile />} />
+          <Route
+            path="/captain-nearby-rooms"
+            element={<div>Nearby Rooms</div>}
+          />
+        </Routes>
       </div>
       <Navbar type={type} />
     </ThemeProvider>

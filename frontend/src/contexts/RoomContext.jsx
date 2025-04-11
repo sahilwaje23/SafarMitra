@@ -48,21 +48,19 @@ export const RoomContextProvider = ({ children }) => {
   }); // driver data like name , rating , phone number , vehicle number stored as object
   // used specifically only when room is closed
 
+  // all closed rooms
+  const [closedRooms, setClosedRooms] = useState([]);
 
-  // all closed rooms 
-  const [closedRooms,setClosedRooms] = useState([]);
-  
-  
   // ~ Ritesh Made this : (took help of GPT)
   const updateEverything = (data) => {
     setPickup(data.pickup.text);
     setDestination(data.destination.text);
     setRoomid(data._id);
     setCreatorData({
-      creatorId: data.creatorId._id,
-      fullName: data.creatorId.fullName,
-      email: data.creatorId.email,
-      mobileNo: data.creatorId.mobileNo,
+      creatorId: data.creatorId?._id,
+      fullName: data.creatorId?.fullName,
+      email: data.creatorId?.email,
+      mobileNo: data.creatorId?.mobileNo,
       gender: data.creatorId.gender,
       rating: data.creatorId.rating || "NA",
       createdAt: data.creatorId.createdAt,
@@ -70,8 +68,8 @@ export const RoomContextProvider = ({ children }) => {
       socketId: data.creatorId.socketId,
       profileImage: data.creatorId.profileImage,
     });
-    setLimit(data.limit || 1);
-    setPcount(data.pcount || 1);
+    // setLimit(data.limit || 1);
+    // setPcount(data.pcount || 1);
     setDistance(data.distance);
     setDuration(data.duration);
     setFare(data.fare);
@@ -79,7 +77,7 @@ export const RoomContextProvider = ({ children }) => {
     setMitra(
       (data.mitra || []).map((m) => ({
         fullName: m?.userId?.fullName || null,
-        rating: m?.userId?.rating || "NA" ,
+        rating: m?.userId?.rating || "NA",
         gender: m?.userId?.gender || null,
         mobileNo: m?.userId?.mobileNo || null,
         email: m?.userId?.email || null,
@@ -89,33 +87,30 @@ export const RoomContextProvider = ({ children }) => {
         },
       }))
     );
-    if(data.driver) {
-      setDriverData({
-        // vehicleNo: data.driver?.vehicleNo || null,
-        // driverId: data.driver?._id || null,
-        // fullName: data.driver?.fullName || null,
-        // mobileNo: data.driver?.mobileNo || null,
-        // rating: data.driver?.rating || null,
-        // socketId: data.driver?.socketId || null,
-        // profileImage: data.driver?.profileImage || null,
+    setDriverData({
+      // vehicleNo: data.driver?.vehicleNo || null,
+      // driverId: data.driver?._id || null,
+      // fullName: data.driver?.fullName || null,
+      // mobileNo: data.driver?.mobileNo || null,
+      // rating: data.driver?.rating || null,
+      // socketId: data.driver?.socketId || null,
+      // profileImage: data.driver?.profileImage || null,
 
-          vehicleNo: data.driver.details?.vehicleNo || "N/A",
-            driverId: data.driver._id || null,
-            fullName: data.driver.fullName || "Unknown",
-            mobileNo: data.driver.mobileNo || "Not Available",
-            rating: data.driver.rating || "0",
-            socketId: data.driver.socket_id || null,
-            profileImage: data.driver.docs?.profileImageUrl || "",
-            
-      });
-    }
+      vehicleNo: data.driver?.details?.vehicleNo || null,
+      driverId: data.driver?._id || null,
+      fullName: data.driver?.fullName || null,
+      mobileNo: data.driver?.mobileNo || null,
+      rating: data.driver?.rating || null,
+      socketId: data.driver?.socket_id || null,
+      profileImage: data.driver?.docs?.profileImageUrl || null,
+    });
   };
-  const [amit,setAmit] = useState(false)
+  const [amit, setAmit] = useState(false);
 
   return (
     <RoomContext.Provider
       value={{
-          pickup,
+        pickup,
         setPickup,
         destination,
         setDestination,
@@ -143,7 +138,7 @@ export const RoomContextProvider = ({ children }) => {
         // closedRooms,
         // setClosedRooms,
         amit,
-        setAmit
+        setAmit,
       }}
     >
       {children}

@@ -69,7 +69,10 @@ const handleDriverLogOut = async (req, res) => {
 };
 
 const handleGetDriverProfile = async (req, res) => {
-  const driver = req.driver;
+  const driver = await req.driver.populate({
+    path: "ridesAcceptedUrl",
+    model: "ride",
+  });
   return res.status(200).json(driver);
 };
 

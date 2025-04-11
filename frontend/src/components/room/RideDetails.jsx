@@ -150,24 +150,33 @@ function RideDetails() {
         >
           <JourneyCard journey={journey} />
         </Typography>
-        {hasValidDriver && (
+        {hasValidDriver ? (
           <Typography
             variant="h6"
             sx={{ fontWeight: "bold", width: "100%", p: "1" }}
           >
             <DriverCard driver={driver} />
           </Typography>
+        ) : (
+          "No Driver assigned yet"
         )}
-        {mitras.length > 0 &&
-          mitras.map((mitra, index) => (
-            <Typography
-              key={index}
-              variant="h6"
-              sx={{ fontWeight: "bold", width: "100%", p: "1" }}
-            >
-              <ParticipantCard participant={mitra} isCreator={false} />
-            </Typography>
-          ))}
+
+        <Typography
+          variant="h6"
+          sx={{ fontWeight: "bold", width: "100%", p: "1" }}
+        />
+
+        {mitras.length > 0
+          ? mitras.map((mitra, index) => (
+              <Typography
+                key={index}
+                variant="h6"
+                sx={{ fontWeight: "bold", width: "100%", p: "1" }}
+              >
+                <ParticipantCard participant={mitra} isCreator={false} />
+              </Typography>
+            ))
+          : "No Mitras assigned yet"}
         <Typography
           variant="h6"
           sx={{ fontWeight: "bold", width: "100%", p: "1" }}

@@ -44,6 +44,7 @@ const handleCreateRoom = async (req, res) => {
 
     const user = await User.findByIdAndUpdate(req.user._id, {
       $push: { ridesBooked: newRoom._id },
+      currActiveRide: newRoom._id,
     }).select("-password -salt -ridesBooked");
 
     res.status(200).json({ newRoom });
@@ -210,6 +211,11 @@ const handleJoinRoom = async (req, res) => {
         .json({ rideError: "User already joined the room" });
     }
 
+    await User.findByIdAndUpdate(req.user._id, {
+      $push: { ridesBooked: roomId },
+      currActiveRide: roomId,
+    });
+
     room.mitra.push({ userId: req.user._id });
     await room.save();
 
@@ -274,6 +280,58 @@ const getRideDetails = async (req, res) => {
   }
 };
 
+const endRide = async (req, res) => {
+  const errors = validationResult(req);
+
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ fieldErrors: errors.array() });
+  }
+
+  try {
+    const { rideId } = req.body;
+
+    const ride = await Ride.findById(rideId)
+      .populate("creatorId", "-password -salt -ridesBooked")
+      .populate("driver", "-password -salt -ridesAcceptedUrl")
+      .populate("mitra.userId", "-password -salt -ridesBooked");
+
+    if (!ride) {
+      throw new Error("Ride not found");
+    }
+
+    ride.status = "completed";
+
+    if (ride.creatorId?.socket_id) {
+      sendMessageToSocketId("ride-ended", ride.creatorId.socket_id, {
+        ride,
+      });
+
+      ride.creatorId.currActiveRide = null;
+      await ride.creatorId.save();
+    }
+
+    ride.driver.currAcceptedRide = null;
+    await ride.driver.save();
+
+    ride.mitra.forEach((m) => {
+      if (m.userId?.socket_id) {
+        sendMessageToSocketId("ride-ended", m.userId.socket_id, {
+          ride,
+        });
+
+        m.userId.currActiveRide = null;
+        m.userId.save();
+      }
+    });
+
+    await ride.save();
+
+    return res.status(200).json(ride);
+  } catch (e) {
+    res.status(400).send({ rideError: e.message });
+  }
+};
+
 module.exports = {
   handleCreateRoom,
   handleGetFare,
@@ -284,4 +342,5 @@ module.exports = {
   getAllOpenRooms,
   getAllWaitingClosedRooms,
   getRideDetails,
+  endRide,
 };

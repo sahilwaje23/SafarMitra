@@ -33,53 +33,48 @@ const ExistingRoom = () => {
     // setClosedRooms,
   } = useRoom();
 
-  
-
-  // dbug 
-  const [closedRooms,setClosedRooms] = useState([]);
+  // dbug
+  const [closedRooms, setClosedRooms] = useState([]);
   // fetching all closed rooms
-  useEffect( () => {
+  useEffect(() => {
     const fetchRooms = async () => {
-        console.log("here")
-        const token = localStorage.getItem("token");
-        if (!token) {
+      console.log("here");
+      const token = localStorage.getItem("token");
+      if (!token) {
         console.error("No token found, cannot fetch rooms");
         navigate("/captain-signin");
         return;
-        }
-        try {   
+      }
+      try {
         const res = await axios.get(
-            `${import.meta.env.VITE_BASE_URL}/driver/get-all-closed-rooms`,
-            {
+          `${import.meta.env.VITE_BASE_URL}/driver/get-all-closed-rooms`,
+          {
             headers: {
-                Authorization: `Bearer ${token}`,
+              Authorization: `Bearer ${token}`,
             },
             withCredentials: true,
-            }
+          }
         );
         console.log("All rooms from API ", res.data); // Check what the API returns
         if (JSON.stringify(closedRooms) !== JSON.stringify(res.data)) {
           setClosedRooms(res.data);
         }
-        
+
         // setClosedRooms(res.data);
-        } catch (err) {
+      } catch (err) {
         console.error("Error fetching rooms:", err);
         alert(err);
-        }
+      }
     };
-    fetchRooms() ;
-  } 
-  ,
-   []) // dependency factors
+    fetchRooms();
+  }, []); // dependency factors
 
-
-    const handleAcceptRoom = async (roomId) => {
+  const handleAcceptRoom = async (roomId) => {
     try {
       const res = await axios.post(
         `${import.meta.env.VITE_BASE_URL}/ride/confirm-ride`,
         {
-            rideId: roomId
+          rideId: roomId,
         },
         {
           headers: {
@@ -88,63 +83,59 @@ const ExistingRoom = () => {
           withCredentials: true,
         }
       );
-
-      const roomData = res.data;
-
       localStorage.setItem("roomid", roomId); // to get data after refresh
-      console.log(roomData)
-      
-    //   // Add driver details to RoomContext
-    //   if (roomData.driver) {
-    //     // setDriverData({
-    //     //   vehicleNo: roomData.driver.details?.vehicleNo || "N/A",
-    //     //   driverId: roomData.driver._id || null,
-    //     //   fullName: roomData.driver.fullName || "Unknown",
-    //     //   mobileNo: roomData.driver.mobileNo || "Not Available",
-    //     //   rating: roomData.driver.rating || "No Rating",
-    //     //   socketId: roomData.driver.socket_id || null,
-    //     //   profileImage: roomData.driver.docs?.profileImageUrl || "",
-    //     // });
+      console.log(res.data); // Check what the API returns
 
-    // }
-    updateEverything(roomData);
-      
+      //   // Add driver details to RoomContext
+      //   if (roomData.driver) {
+      //     // setDriverData({
+      //     //   vehicleNo: roomData.driver.details?.vehicleNo || "N/A",
+      //     //   driverId: roomData.driver._id || null,
+      //     //   fullName: roomData.driver.fullName || "Unknown",
+      //     //   mobileNo: roomData.driver.mobileNo || "Not Available",
+      //     //   rating: roomData.driver.rating || "No Rating",
+      //     //   socketId: roomData.driver.socket_id || null,
+      //     //   profileImage: roomData.driver.docs?.profileImageUrl || "",
+      //     // });
 
-    //   // Update RoomContext state
-    //   setPickup(roomData.pickup.text);
-    //   setDestination(roomData.destination.text);
-    //   setRoomid(roomData._id);
-    //   setDistance(roomData.distance);
-    //   setDuration(roomData.duration);
-    //   setFare(roomData.fare);
-    //   setStatus(roomData.status);
-    //   setPcount(roomData.mitra.length);
+      // }
+      updateEverything(res.data);
 
-    //   // Update creator details
-    //   setCreatorData({
-    //     creatorId: roomData.creatorId._id,
-    //     fullName: roomData.creatorId.fullName,
-    //     email: roomData.creatorId.email,
-    //     mobileNo: roomData.creatorId.mobileNo,
-    //     gender: roomData.creatorId.gender,
-    //     rating: roomData.creatorId.rating,
-    //     createdAt: roomData.creatorId.createdAt,
-    //     updatedAt: roomData.creatorId.updatedAt,
-    //     socketId: roomData.creatorId.socket_id,
-    //     profileImage: roomData.creatorId.docs.profileImageUrl,
-    //   });
+      //   // Update RoomContext state
+      //   setPickup(roomData.pickup.text);
+      //   setDestination(roomData.destination.text);
+      //   setRoomid(roomData._id);
+      //   setDistance(roomData.distance);
+      //   setDuration(roomData.duration);
+      //   setFare(roomData.fare);
+      //   setStatus(roomData.status);
+      //   setPcount(roomData.mitra.length);
 
-    //   // Update mitra list
-    //   setMitra(
-    //     roomData.mitra.map((mitraObj) => ({
-    //       mitraId: mitraObj.userId._id,
-    //       socketId: mitraObj.userId.socket_id,
-    //     }))
-    //   );
+      //   // Update creator details
+      //   setCreatorData({
+      //     creatorId: roomData.creatorId._id,
+      //     fullName: roomData.creatorId.fullName,
+      //     email: roomData.creatorId.email,
+      //     mobileNo: roomData.creatorId.mobileNo,
+      //     gender: roomData.creatorId.gender,
+      //     rating: roomData.creatorId.rating,
+      //     createdAt: roomData.creatorId.createdAt,
+      //     updatedAt: roomData.creatorId.updatedAt,
+      //     socketId: roomData.creatorId.socket_id,
+      //     profileImage: roomData.creatorId.docs.profileImageUrl,
+      //   });
+
+      //   // Update mitra list
+      //   setMitra(
+      //     roomData.mitra.map((mitraObj) => ({
+      //       mitraId: mitraObj.userId._id,
+      //       socketId: mitraObj.userId.socket_id,
+      //     }))
+      //   );
 
       // Navigate to room-int only after state updates
       // navigate("/room-int");
-      navigate(`/room-int?roomid=${roomData._id}`);
+      navigate(`/captain-room-int`);
     } catch (e) {
       console.log("Failed to accept room: " + e);
     }
@@ -273,7 +264,7 @@ const ExistingRoom = () => {
         ) : (
           <Card className="bg-[#2a2a2a] p-6">
             <Typography className="text-white text-center">
-              No rooms available. 
+              No rooms available.
             </Typography>
           </Card>
         )}

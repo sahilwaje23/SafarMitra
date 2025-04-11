@@ -11,20 +11,27 @@ import React, { useContext, useEffect, useState } from "react";
 import theme from "../../styles/theme";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import Dashboard from "./Dashboard";
 
 const CaptainProfile = () => {
   const yellowTheme = theme.palette.primaryColor.main;
   const [profile, setProfile] = useState(null);
-  const token = localStorage.getItem("token") ;
+  const token = localStorage.getItem("token");
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchProfile = async () => {
+      if (!token) {
+        navigate("/captain-signin", {
+          state: { msgForUser: "You Must SignIn to access the page" },
+        });
+      }
+
       try {
         setIsLoading(true); // Show loader
         const res = await axios.get(
-          `${import.meta.env.VITE_BASE_URL}/my-profile`,
+          `${import.meta.env.VITE_BASE_URL}/driver/my-profile`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -33,6 +40,7 @@ const CaptainProfile = () => {
           }
         );
         setProfile(res.data); // Update profile state
+        console.log(res.data);
       } catch (error) {
         console.error("Error fetching profile:", error);
       } finally {
@@ -59,7 +67,9 @@ const CaptainProfile = () => {
     } finally {
       setIsLoading(false);
     }
-    navigate("/captain-signin", { state: { msgForUser: "Log Out Successful" } });
+    navigate("/captain-signin", {
+      state: { msgForUser: "Log Out Successful" },
+    });
   };
 
   if (isLoading) return <LinearProgress />;
@@ -140,13 +150,16 @@ const CaptainProfile = () => {
           <TextField label="Gender" variant="standard" value={profile.gender} />
         </div>
 
+        <Dashboard info={profile.ridesAcceptedUrl} />
+
         {/* Rides Section */}
         <div className="px-4">
           <Typography variant="h5" className="font-semibold mb-4">
-            Recent Rides
+            Accepted Rides
           </Typography>
 
-          {!profile.ridesBooked || profile.ridesBooked.length === 0 ? (
+          {!profile.ridesAcceptedUrl ||
+          profile.ridesAcceptedUrl.length === 0 ? (
             <Card className="bg-white/95 shadow-md">
               <CardContent>
                 <Typography
@@ -159,7 +172,7 @@ const CaptainProfile = () => {
             </Card>
           ) : (
             <div className="space-y-4">
-              {profile.ridesBooked.map((ride) => (
+              {profile.ridesAcceptedUrl.map((ride) => (
                 <Card key={ride._id} className="bg-white/95 shadow-md">
                   <CardContent>
                     <div className="space-y-3">

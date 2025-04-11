@@ -70,6 +70,7 @@ const confirmRide = async (rideId, driver) => {
   // Update the driver's accepted rides
   await Drivers.findByIdAndUpdate(driver._id, {
     $push: { ridesAcceptedUrl: ride._id },
+    currAcceptedRide: ride._id,
   });
 
   return ride;

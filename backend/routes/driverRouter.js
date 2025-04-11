@@ -52,5 +52,4 @@ router.get("/check", authDriver, (req, res) => {
   res.status(200).json(req.driver);
 });
 
-
 module.exports = router;

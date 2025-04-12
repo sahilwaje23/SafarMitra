@@ -105,7 +105,7 @@ export const RoomContextProvider = ({ children }) => {
       profileImage: data.driver?.docs?.profileImageUrl || null,
     });
   };
-  const [amit, setAmit] = useState(false);
+
 
   return (
     <RoomContext.Provider
@@ -135,10 +135,8 @@ export const RoomContextProvider = ({ children }) => {
         pcount,
         setPcount,
         updateEverything,
-        // closedRooms,
-        // setClosedRooms,
-        amit,
-        setAmit,
+        closedRooms,
+        setClosedRooms,
       }}
     >
       {children}

@@ -18,23 +18,11 @@ import { useNavigate } from "react-router-dom";
 const ExistingRoom = () => {
   const navigate = useNavigate();
   const {
-    setPickup,
-    setDestination,
-    setRoomid,
-    setDistance,
-    setDuration,
-    setFare,
-    setStatus,
-    setPcount,
-    setCreatorData,
-    setMitra,
     updateEverything,
-    // closedRooms,
-    // setClosedRooms,
+    closedRooms,
+    setClosedRooms,  
   } = useRoom();
 
-  // dbug
-  const [closedRooms, setClosedRooms] = useState([]);
   // fetching all closed rooms
   useEffect(() => {
     const fetchRooms = async () => {
@@ -55,19 +43,23 @@ const ExistingRoom = () => {
             withCredentials: true,
           }
         );
-        console.log("All rooms from API ", res.data); // Check what the API returns
-        if (JSON.stringify(closedRooms) !== JSON.stringify(res.data)) {
-          setClosedRooms(res.data);
-        }
+        console.log("All rooms from API:", res.data);
 
-        // setClosedRooms(res.data);
+        // Only update state if the data has changed
+        setClosedRooms((prevRooms) => {
+          if (JSON.stringify(prevRooms) !== JSON.stringify(res.data)) {
+            return res.data;
+          }
+          return prevRooms; // No update if data is the same
+        }); 
       } catch (err) {
         console.error("Error fetching rooms:", err);
         alert(err);
       }
     };
     fetchRooms();
-  }, []); // dependency factors
+  }, []); // Removed closedRooms from the dependency array
+
 
   const handleAcceptRoom = async (roomId) => {
     try {

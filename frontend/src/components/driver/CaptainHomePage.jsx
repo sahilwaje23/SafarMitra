@@ -15,7 +15,7 @@ import ActiveRideComponent from "../user/ActiveRideComponent.jsx";
 import axios from "axios";
 
 const CaptainHomePage = () => {
-  const { yogesh } = useRoom();
+  const { setClosedRooms } = useRoom();
   const { entity } = useContext(EntityContext);
   const driverId =
     entity._id || JSON.parse(localStorage.getItem("DRIVER"))?._id;

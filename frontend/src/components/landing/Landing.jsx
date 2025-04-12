@@ -8,16 +8,17 @@ const Landing = () => {
   const yellowTheme = theme.palette.primaryColor.main;
   const redTheme = theme.palette.secondaryColor.main;
 
-  useEffect(() => {
-    const user = localStorage.getItem("USER");
-    const driver = localStorage.getItem("DRIVER");
+  // comment this down always
+  // useEffect(() => {
+  //   const user = localStorage.getItem("USER");
+  //   const driver = localStorage.getItem("DRIVER");
 
-    if (user) {
-      window.location.href = "/user-homepage";
-    } else if (driver) {
-      window.location.href = "/captain-homepage";
-    }
-  }, []);
+  //   if (user) {
+  //     window.location.href = "/user-homepage";
+  //   } else if (driver) {
+  //     window.location.href = "/captain-homepage";
+  //   }
+  // }, []);
 
   return (
     <Box

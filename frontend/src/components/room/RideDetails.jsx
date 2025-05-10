@@ -1,3 +1,20 @@
+<<<<<<< HEAD
+import React from 'react'
+import { Typography,Paper } from '@mui/material'
+import theme from '../../styles/theme'
+function RideDetails() {
+  return (
+ <>
+ <Paper elevation={2} sx={{ bgcolor: 'background.paper', p: 3, borderRadius: 2 ,display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2}}>
+ <Typography variant="h6" sx={{ fontWeight: 'bold' }}>Driver Details</Typography>
+ <Typography variant="h6" sx={{ fontWeight: 'bold' }}>Journey Details</Typography>
+ </Paper>
+ </> 
+  )
+}
+
+export default RideDetails
+=======
 import React from "react";
 import { Typography, Paper } from "@mui/material";
 import theme from "../../styles/theme";
@@ -63,3 +80,4 @@ function RideDetails() {
 }
 
 export default RideDetails;
+>>>>>>> 77ed55fb68c2da91b25542c1acb8ac87c1a5585e

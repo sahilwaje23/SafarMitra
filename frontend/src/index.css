@@ -8,9 +8,17 @@
     box-sizing: border-box;
     /* overflow-x: hidden;  */
     /* overflow changed review */
+<<<<<<< HEAD
+    transition:all 2s ease-in;
 }
 
 
+
+=======
+}
+
+
+>>>>>>> 77ed55fb68c2da91b25542c1acb8ac87c1a5585e
 html {
   overflow-x: hidden; 
 }
@@ -40,4 +48,8 @@ html {
     background-color: #f1f1f1; /* Background of the track */
     border-radius: 2px;
   }
+<<<<<<< HEAD
   
+=======
+  
+>>>>>>> 77ed55fb68c2da91b25542c1acb8ac87c1a5585e

@@ -10,5 +10,7 @@ import Navbar from './navbar/Navbar';
 import RoomInt from './room/Room-int';
 import UserProfile from './user/UserProfile';
 import { DriverCard , ParticipantCard , JourneyCard} from './user/DataForRoomInt'
+import ExistingRoom from './driver/ExistingRoom'
+import CaptainProfile from './driver/CaptainProfile'
 
-export {Landing,CaptainSignUp,CaptainSignIn,UserSignIn,UserSignUp,UserHomePage,CaptainHomePage,Navbar,RoomInt,UserProfile,DriverCard,ParticipantCard,JourneyCard}; 
+export {Landing,CaptainSignUp,CaptainSignIn,UserSignIn,UserSignUp,UserHomePage,CaptainHomePage,Navbar,RoomInt,UserProfile,DriverCard,ParticipantCard,JourneyCard,CaptainProfile,ExistingRoom}; 

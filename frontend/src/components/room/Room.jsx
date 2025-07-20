@@ -1,45 +1,102 @@
 import React, { useState, useEffect } from "react";
 import { Typography, Box, Card, Button, useMediaQuery } from "@mui/material";
-import { LocationOn, AttachMoney, AccessTime, Group, DirectionsCar } from "@mui/icons-material";
+import {
+  LocationOn,
+  AttachMoney,
+  AccessTime,
+  Group,
+  DirectionsCar,
+} from "@mui/icons-material";
 import theme from "../../styles/theme";
 import { useLocations } from "../../contexts/LocationsContext.jsx";
 import { Link } from "react-router-dom";
+import axios from "axios";
+import { useRoom } from "../../contexts/RoomContext.jsx";
+import { useNavigate } from "react-router-dom";
+// import sendMessage from "../../../../backend/socket";
+// this is essentially the roomcard in the room list here the joining behaviour will be defined , data should be updated and sent to the context here
 const Room = ({ roomData = [] }) => {
-  const isMobile = useMediaQuery("(max-width:1024px)");
-  const { pickupText, dropText } = useLocations();
-  const [filteredRoomData, setFilteredRoomData] = useState(roomData);
-  useEffect(() => {
-    console.log("Updated filteredRoomData:", filteredRoomData);
-  }, [filteredRoomData]);
+  const navigate = useNavigate();
+  const {
+    setPickup,
+    setDestination,
+    setRoomid,
+    setDistance,
+    setDuration,
+    setFare,
+    setStatus,
+    setPcount,
+    setCreatorData,
+    setMitra,
+  } = useRoom();
 
-  useEffect(() => {
-    console.log("In room.jsx", filteredRoomData);
-    console.log("pickup text", pickupText);
-    console.log("drop text", dropText);
-    for (const room of roomData) {
-      console.log("Room stuff", room);
-    }
+  // const handleJoinRoom = async (roomId) => {
+  //   try {
+  //     const res = await axios.get(`${import.meta.env.VITE_BASE_URL}/ride/join-room?roomId=${roomId}`, {
+  //       headers: {
+  //         Authorization: `Bearer ${localStorage.getItem("token")}`,
+  //       },
+  //       withCredentials: true,
+  //     });
+  //     console.log(res);
+  //   } catch (e) {
+  //     alert(e);
+  //   }
+  // };
 
-    if (Array.isArray(roomData)) {
+  const handleJoinRoom = async (roomId) => {
+    try {
+      const res = await axios.get(
+        `${import.meta.env.VITE_BASE_URL}/ride/join-room?roomId=${roomId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+          withCredentials: true,
+        }
+      );
 
-      const filteredRooms = roomData.filter((room) => {
-        console.log("Each entity", pickupText.toLowerCase().includes(room.pickup.text.toLowerCase()) && dropText.toLowerCase().includes(room.destination.text.toLowerCase()));
-        const pickupMatch = pickupText
-          ? pickupText.toLowerCase().includes(room.pickup.text.toLowerCase())
-          : true;
-        const dropMatch = dropText
-          ? dropText.toLowerCase().includes(room.destination.text.toLowerCase())
-          : true;
-        return pickupMatch && dropMatch;
+      localStorage.setItem("roomid", roomId);
+      const roomData = res.data;
+
+      // Update RoomContext state
+      setPickup(roomData.pickup.text);
+      setDestination(roomData.destination.text);
+      setRoomid(roomData._id);
+      setDistance(roomData.distance);
+      setDuration(roomData.duration);
+      setFare(roomData.fare);
+      setStatus(roomData.status);
+      setPcount(roomData.mitra.length);
+
+      // Update creator details
+      setCreatorData({
+        creatorId: roomData.creatorId._id,
+        fullName: roomData.creatorId.fullName,
+        email: roomData.creatorId.email,
+        mobileNo: roomData.creatorId.mobileNo,
+        gender: roomData.creatorId.gender,
+        rating: roomData.creatorId.rating,
+        createdAt: roomData.creatorId.createdAt,
+        updatedAt: roomData.creatorId.updatedAt,
+        socketId: roomData.creatorId.socket_id,
+        profileImage: roomData.creatorId.docs.profileImageUrl,
       });
 
-      setFilteredRoomData([...filteredRooms]);
-    }
+      // Update mitra list
+      setMitra(
+        roomData.mitra.map((mitraObj) => ({
+          mitraId: mitraObj.userId._id,
+          socketId: mitraObj.userId.socket_id,
+        }))
+      );
 
-  }, [roomData, pickupText, dropText]);
-  const handleJoinRoom = (roomId) => {
-    console.log(`Joining room with ID: ${roomId}`);
-    // Add additional join room logic here (e.g., navigation)
+      // Navigate to room-int only after state updates
+      // navigate("/room-int");
+      navigate(`/room-int?roomid=${roomData._id}`);
+    } catch (e) {
+      alert("Failed to join room: " + e.message);
+    }
   };
 
   return (
@@ -49,8 +106,8 @@ const Room = ({ roomData = [] }) => {
       </Typography>
 
       <Box className="space-y-4">
-        {Array.isArray(filteredRoomData) && filteredRoomData.length > 0 ? (
-          filteredRoomData.map((room, index) => (
+        {Array.isArray(roomData) && roomData.length > 0 ? (
+          roomData.map((room, index) => (
             <Card
               key={index}
               className="bg-[#2a2a2a] hover:bg-[#333333] transition-colors border-none"
@@ -146,7 +203,14 @@ const Room = ({ roomData = [] }) => {
                   <Button
                     variant="contained"
                     onClick={() => handleJoinRoom(room._id)}
-                    className="bg-yellow-500 hover:bg-yellow-600 text-black font-semibold px-6 min-w-[100px]"
+                    className="font-semibold px-6 min-w-[100px]"
+                    sx={{
+                      bgcolor: theme.palette.primaryColor.main,
+                      color: theme.palette.txtcol,
+                      "&:hover": {
+                        bgcolor: theme.palette.primaryColor.hover,
+                      },
+                    }}
                   >
                     JOIN
                   </Button>

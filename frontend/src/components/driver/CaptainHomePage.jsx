@@ -8,12 +8,50 @@ import theme from "../../styles/theme.js"; // Correct relative path for styles f
 import { EntityContext } from "../../contexts/EntityContext";
 import { SocketContext } from "../../contexts/Socket";
 import { Socket } from "socket.io-client";
+import RoomPopup from "./RoomPopup.jsx";
+import ExistingRoom from "./ExistingRoom.jsx";
+import { useRoom } from "../../contexts/RoomContext.jsx";
+import ActiveRideComponent from "../user/ActiveRideComponent.jsx";
+import axios from "axios";
 
 const CaptainHomePage = () => {
+  const { setClosedRooms } = useRoom();
   const { entity } = useContext(EntityContext);
   const driverId =
-    entity.data?._id || JSON.parse(localStorage.getItem("DRIVER"))._id;
+    entity._id || JSON.parse(localStorage.getItem("DRIVER"))?._id;
   const { sendMessage, recieveMessage } = useContext(SocketContext);
+
+  console.log(entity);
+
+  const activeAcceptedRide = entity.currAcceptedRide;
+
+  const [currActRide, setCurrActRide] = useState(null);
+
+  useEffect(() => {
+    if (activeAcceptedRide) {
+      const fetchRideDetails = async () => {
+        try {
+          const response = await axios.get(
+            `${import.meta.env.VITE_BASE_URL}/ride/get-ride-details?rideId=${
+              entity.currAcceptedRide
+            }`,
+            {
+              headers: {
+                Authorization: `Bearer ${localStorage.getItem("token")}`,
+              },
+              withCredentials: true,
+            }
+          );
+          console.log("Ride details:", response.data);
+          localStorage.setItem("roomid", activeAcceptedRide);
+          setCurrActRide(response.data);
+        } catch (error) {
+          console.error("Error fetching ride details:", error);
+        }
+      };
+      fetchRideDetails();
+    }
+  }, []);
 
   // ^ Chaitanya ithe status online asel tr pratyek 10 sec la update hoil location
   const [status, setStatus] = useState("online");
@@ -22,6 +60,7 @@ const CaptainHomePage = () => {
     sendMessage("join", { userType: "DRIVER", userId: driverId });
   }, []);
 
+  // online offline status
   useEffect(() => {
     if (status === "online") {
       const updateLocation = () => {
@@ -40,6 +79,7 @@ const CaptainHomePage = () => {
 
       recieveMessage("new-ride", (rideData) => {
         // ^ Chaitanya whatever new ride Data comes u will recieve it here {roomDetail , creatorDetail}
+        // setRefresh( (prev) => !prev);
         console.log("New ride received:", rideData);
       });
 
@@ -59,7 +99,7 @@ const CaptainHomePage = () => {
         flexDirection: "column",
         gap: 2,
         p: 2,
-        height: "90vh",
+        // height: "400px",
         minHeight: "100vh",
         pb: "64px", // Account for bottom navigation
         bgcolor:
@@ -71,8 +111,11 @@ const CaptainHomePage = () => {
     >
       <QuickActions />
       <Dashboard />
-      <Map />
-      <Room />
+      <div className="h-[400px]">
+        <Map />
+      </div>
+      {/* <RoomPopup/> */}
+      <ExistingRoom />
     </Box>
   );
 
@@ -102,14 +145,14 @@ const CaptainHomePage = () => {
       >
         <Map
           sx={{
-            // position: 'absolute', // Add this
-            // top: 0,
-            // left: 0,
-            // right: 0,
-            // bottom: 0,
-            // border: '0.5rem outset green',
-            height: "auto",
-            width: "100%",
+            position: "absolute", // Add this
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            border: "0.5rem outset green",
+            height: "100vh",
+            width: "100vw",
           }}
         />
       </Box>
@@ -126,12 +169,20 @@ const CaptainHomePage = () => {
       >
         <QuickActions />
         <Dashboard />
-        <Room sx={{ flex: 1 }} />
+        {<ExistingRoom sx={{ flex: 1 }} />}
       </Box>
     </Box>
   );
+  console.log("activeAcceptedRide", activeAcceptedRide);
+  return (
+    <>
+      <div className="absolute z-10">
+        {activeAcceptedRide && <ActiveRideComponent info={currActRide} />}
+      </div>
 
-  return <>{isMobile ? <MobileView /> : <DesktopView />}</>;
+      {isMobile ? <MobileView /> : <DesktopView />}
+    </>
+  );
 };
 
 export default CaptainHomePage;

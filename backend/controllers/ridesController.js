@@ -44,6 +44,7 @@ const handleCreateRoom = async (req, res) => {
 
     const user = await User.findByIdAndUpdate(req.user._id, {
       $push: { ridesBooked: newRoom._id },
+      currActiveRide: newRoom._id,
     }).select("-password -salt -ridesBooked");
 
     res.status(200).json({ newRoom });
@@ -108,7 +109,9 @@ const searchRoom = async (req, res) => {
 
     // Ensure both pickup & destination are not empty before querying
     if (!pickup && !destination) {
-      return res.status(400).json({ message: "Pickup or destination is required" });
+      return res
+        .status(400)
+        .json({ message: "Pickup or destination is required" });
     }
 
     // Construct dynamic query
@@ -127,7 +130,6 @@ const searchRoom = async (req, res) => {
     res.status(400).json({ rideError: e.message });
   }
 };
-
 
 const handleGetFare = async (req, res) => {
   const errors = validationResult(req);
@@ -151,7 +153,8 @@ const handleConfirmRide = async (req, res) => {
 
   try {
     const { rideId } = req.body;
-    const ride = await confirmRide(rideId, req.driver);
+
+    let ride = await confirmRide(rideId, req.driver);
 
     if (!ride) {
       throw new Error("Ride not found");
@@ -160,15 +163,17 @@ const handleConfirmRide = async (req, res) => {
     ride.status = "ongoing";
     await ride.save();
 
-    sendMessageToSocketId("confirm-ride", ride.creatorId.socket_id, {
-      ride,
-      user: req.driver,
-    });
+    if (ride.creatorId?.socket_id) {
+      sendMessageToSocketId("confirm-ride", ride.creatorId.socket_id, {
+        ride,
+        user: req.driver,
+      });
+    }
 
-    room.mitra.forEach((m) => {
-      if (m.userId.socket_id) {
+    ride.mitra.forEach((m) => {
+      if (m.userId?.socket_id) {
         sendMessageToSocketId("confirm-ride", m.userId.socket_id, {
-          room,
+          ride,
           user: req.user,
         });
       }
@@ -206,15 +211,21 @@ const handleJoinRoom = async (req, res) => {
         .json({ rideError: "User already joined the room" });
     }
 
+    await User.findByIdAndUpdate(req.user._id, {
+      $push: { ridesBooked: roomId },
+      currActiveRide: roomId,
+    });
+
     room.mitra.push({ userId: req.user._id });
     await room.save();
 
-    sendMessageToSocketId(
-      "new-userJoin",
-      (await room.populate("creatorId", "-password -salt -ridesBooked"))
-        .creatorId.socket_id,
-      { room, user: req.user }
-    );
+    await room.populate("creatorId", "-password -salt -ridesBooked");
+    console.log(room);
+
+    sendMessageToSocketId("new-userJoin", room.creatorId.socket_id, {
+      room,
+      user: req.user,
+    });
 
     // Notify all mitra members
     room.mitra.forEach((m) => {
@@ -250,6 +261,77 @@ const getAllWaitingClosedRooms = async (req, res) => {
   }
 };
 
+const getRideDetails = async (req, res) => {
+  try {
+    const { rideId } = req.query;
+
+    const ride = await Ride.findById(rideId)
+      .populate("creatorId", "-password -salt -ridesBooked")
+      .populate("driver", "-password -salt -ridesAcceptedUrl")
+      .populate("mitra.userId", "-password -salt -ridesBooked");
+
+    if (ride?.status == "closed") {
+      return res.status(400).json({ rideError: "Ride is closed" });
+    }
+
+    return res.status(200).json(ride);
+  } catch (e) {
+    return res.status(500).json({ rideError: e.message });
+  }
+};
+
+const endRide = async (req, res) => {
+  const errors = validationResult(req);
+
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ fieldErrors: errors.array() });
+  }
+
+  try {
+    const { rideId } = req.body;
+
+    const ride = await Ride.findById(rideId)
+      .populate("creatorId", "-password -salt -ridesBooked")
+      .populate("driver", "-password -salt -ridesAcceptedUrl")
+      .populate("mitra.userId", "-password -salt -ridesBooked");
+
+    if (!ride) {
+      throw new Error("Ride not found");
+    }
+
+    ride.status = "completed";
+
+    if (ride.creatorId?.socket_id) {
+      sendMessageToSocketId("ride-ended", ride.creatorId.socket_id, {
+        ride,
+      });
+
+      ride.creatorId.currActiveRide = null;
+      await ride.creatorId.save();
+    }
+
+    ride.driver.currAcceptedRide = null;
+    await ride.driver.save();
+
+    ride.mitra.forEach((m) => {
+      if (m.userId?.socket_id) {
+        sendMessageToSocketId("ride-ended", m.userId.socket_id, {
+          ride,
+        });
+
+        m.userId.currActiveRide = null;
+        m.userId.save();
+      }
+    });
+
+    await ride.save();
+
+    return res.status(200).json(ride);
+  } catch (e) {
+    res.status(400).send({ rideError: e.message });
+  }
+};
+
 module.exports = {
   handleCreateRoom,
   handleGetFare,
@@ -259,4 +341,6 @@ module.exports = {
   handleCloseRoom,
   getAllOpenRooms,
   getAllWaitingClosedRooms,
+  getRideDetails,
+  endRide,
 };

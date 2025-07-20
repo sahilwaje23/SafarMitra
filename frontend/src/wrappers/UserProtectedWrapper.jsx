@@ -26,6 +26,7 @@ const UserProtectedWrapper = ({ children }) => {
           },
           withCredentials: true,
         });
+        // console.log(res.data);
         setEntity(res.data);
       } catch (err) {
         console.error(err);

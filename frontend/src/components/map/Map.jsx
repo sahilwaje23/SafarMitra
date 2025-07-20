@@ -215,7 +215,7 @@ const MapComponent = () => {
   return (
 
     <Paper sx={{
-      //height:isMobile?'400px':'100%',
+      
       height: '100%',
       width: '100%', border: '1px solid black'
     }}>
@@ -224,6 +224,7 @@ const MapComponent = () => {
         mapContainerStyle={{
           width: '100%',
           height: '100%'
+          // height:isMobile?'400px':'100%',
         }}
         center={currentLocation || defaultCenter}
         zoom={15}

@@ -1,4 +1,5 @@
 const Driver = require("../models/driver");
+const Ride = require("../models/ride");
 const { validationResult } = require("express-validator");
 const BlackList = require("../models/blacklistToken");
 
@@ -68,12 +69,26 @@ const handleDriverLogOut = async (req, res) => {
 };
 
 const handleGetDriverProfile = async (req, res) => {
-  const driver = req.driver;
+  const driver = await req.driver.populate({
+    path: "ridesAcceptedUrl",
+    model: "ride",
+  });
   return res.status(200).json(driver);
 };
+
+const handleGetAllClosedRooms = async (req, res) => {
+  try {
+    const rooms = await Ride.find({ status: "closed" });
+    return res.status(200).json(rooms);
+  } catch (e) {
+    return res.status(500).json({ rideError: e.message });
+  }
+};
+
 module.exports = {
   handleDriverSignup,
   handleDriverSignin,
   handleDriverLogOut,
   handleGetDriverProfile,
+  handleGetAllClosedRooms,
 };

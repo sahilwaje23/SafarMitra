@@ -36,6 +36,10 @@ const userSchema = new Schema(
         type: String,
       },
     },
+    currActiveRide: {
+      type: Schema.Types.ObjectId,
+      ref: "ride",
+    },
     socket_id: {
       type: String,
     },

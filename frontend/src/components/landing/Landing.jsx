@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import theme from "../../styles/theme";
 import { Box, Button, Typography } from "@mui/material";
 import { Link } from "react-router-dom";
@@ -7,6 +7,19 @@ const Landing = () => {
   const isDarkMode = theme.palette.mode === "dark";
   const yellowTheme = theme.palette.primaryColor.main;
   const redTheme = theme.palette.secondaryColor.main;
+
+  // comment this down always
+  // useEffect(() => {
+  //   const user = localStorage.getItem("USER");
+  //   const driver = localStorage.getItem("DRIVER");
+
+  //   if (user) {
+  //     window.location.href = "/user-homepage";
+  //   } else if (driver) {
+  //     window.location.href = "/captain-homepage";
+  //   }
+  // }, []);
+
   return (
     <Box
       sx={{
@@ -24,7 +37,6 @@ const Landing = () => {
         textAlign: "center",
       }}
     >
-
       <Box sx={{ width: "50%", margin: "0.4rem" }}>
         <img
           draggable="false"
@@ -66,7 +78,7 @@ const Landing = () => {
             User
           </Button>
         </Link>
-        
+
         <Link to="/captain-signup">
           <Button
             variant="contained"

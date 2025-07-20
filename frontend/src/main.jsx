@@ -8,15 +8,17 @@ import { BrowserRouter } from "react-router-dom";
 import EntityContextProvider from "./contexts/EntityContext.jsx";
 import SocketContextProvider from "./contexts/Socket.jsx";
 import LocationContextProvider from "./contexts/LocationsContext.jsx";
-
+import { RoomContextProvider } from "./contexts/RoomContext.jsx";
 createRoot(document.getElementById("root")).render(
-  <SocketContextProvider>
-    <EntityContextProvider>
-      <LocationContextProvider>
-        <BrowserRouter>
-          <App />
-        </BrowserRouter>
-      </LocationContextProvider>
-    </EntityContextProvider>
-  </SocketContextProvider>
+  <RoomContextProvider>
+    <SocketContextProvider>
+      <EntityContextProvider>
+        <LocationContextProvider>
+          <BrowserRouter>
+            <App />
+          </BrowserRouter>
+        </LocationContextProvider>
+      </EntityContextProvider>
+    </SocketContextProvider>
+  </RoomContextProvider>
 );

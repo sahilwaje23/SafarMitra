@@ -12,13 +12,16 @@ import {
   Navbar,
   RoomInt,
   UserProfile,
+  CaptainProfile,
 } from "./components";
+import RoomIntDriver from "./components/driver/RoomIntDriver";
 import theme from "./styles/theme";
 import { useMediaQuery } from "@mui/material";
 import UserProtectedWrapper from "./wrappers/UserProtectedWrapper";
+import DriverProtectedWrapper from "./wrappers/DriverProtectedWrapper";
 import RoomActivities from "./components/user/RoomActivities";
 // import { ParticipantCard } from "./components/user/Dummy";
-
+import { RoomContextProvider } from "./contexts/RoomContext";
 function App() {
   const location = useLocation(); // this has location object which will give information about the current url , this also triggers a re-render if the current location changes
   const type = location.pathname.startsWith("/captain-") ? "captain" : "user";
@@ -37,15 +40,29 @@ function App() {
         }}
       >
         <Routes>
-          {/* Driver Route */}
-
           <Route path="/" element={<Landing />} />
           <Route path="/user-signup" element={<UserSignUp />} />
           <Route path="/user-signin" element={<UserSignIn />} />
           <Route path="/captain-signup" element={<CaptainSignUp />} />
           <Route path="/captain-signin" element={<CaptainSignIn />} />
-          <Route path="/user-homepage" element={<UserHomePage />} />
-          <Route path="/captain-homepage" element={<CaptainHomePage />} />
+          <Route path="/captain-room-int" element={<RoomIntDriver />} />
+          <Route
+            path="/user-homepage"
+            element={
+              <UserProtectedWrapper>
+                <UserHomePage />
+              </UserProtectedWrapper>
+            }
+          />
+          <Route
+            path="/captain-homepage"
+            element={
+              <DriverProtectedWrapper>
+                <CaptainHomePage />
+              </DriverProtectedWrapper>
+            }
+          />
+
           <Route
             path="/user-history"
             element={
@@ -71,6 +88,9 @@ function App() {
             }
           />
           <Route path="/room-int" element={<RoomInt />} />
+          {/* <Route path="/room-int" element={<UserProtectedWrapper>
+              <RoomInt />
+            </UserProtectedWrapper>} /> */}
           <Route
             path="/join-room"
             element={
@@ -79,7 +99,7 @@ function App() {
               </UserProtectedWrapper>
             }
           />
-          <Route path="/captain-profile" element={<div>Captain Profile</div>} />
+          <Route path="/captain-profile" element={<CaptainProfile />} />
           <Route
             path="/captain-nearby-rooms"
             element={<div>Nearby Rooms</div>}

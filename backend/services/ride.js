@@ -51,20 +51,27 @@ const getCaptainsInTheRadius = async (lat, lng, radius) => {
 };
 
 const confirmRide = async (rideId, driver) => {
-  const ride = await Ride.findOneAndUpdate(
+  // Update ride status and assign driver
+  await Ride.findOneAndUpdate(
     { _id: rideId },
     { driver: driver._id, status: "ongoing" }
-  )
-    .populate("creatorId", "-password -salt -ridesBooked")
-    .populate("driver", "-password -salt -ridesAcceptedUrl");
+  );
 
-  await Drivers.findByIdAndUpdate(driver._id, {
-    $push: { ridesAcceptedUrl: ride._id },
-  });
+  // Fetch updated ride using findById to get a Mongoose document
+  const ride = await Ride.findById(rideId)
+    .populate("creatorId", "-password -salt -ridesBooked")
+    .populate("driver", "-password -salt -ridesAcceptedUrl")
+    .populate("mitra.userId", "-password -salt -ridesBooked");
 
   if (!ride) {
     throw new Error("Ride not found");
   }
+
+  // Update the driver's accepted rides
+  await Drivers.findByIdAndUpdate(driver._id, {
+    $push: { ridesAcceptedUrl: ride._id },
+    currAcceptedRide: ride._id,
+  });
 
   return ride;
 };

@@ -1,5 +1,5 @@
 import React from "react";
-import { useRef, useState, useContext } from "react";
+import { useRef, useState, useContext, useEffect } from "react";
 import {
   Box,
   Typography,
@@ -10,7 +10,7 @@ import {
   Alert,
   LinearProgress,
 } from "@mui/material";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import theme from "../../styles/theme";
 import { EntityContext } from "../../contexts/EntityContext";
@@ -22,6 +22,9 @@ const CaptainSignIn = () => {
   const passwordRef = useRef();
   const [isLoading, setIsLoading] = useState(false);
   const { setEntity } = useContext(EntityContext);
+  const location = useLocation();
+
+  const { msgForUser } = location.state || {};
 
   // error snackbar
   const [state, setState] = React.useState({
@@ -30,10 +33,18 @@ const CaptainSignIn = () => {
     horizontal: "center",
     message: "sign in failed",
   });
+
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    vertical: "top",
+    horizontal: "center",
+  });
+
   const { vertical, horizontal, open, message } = state;
   // snackbar(alert) close function
-  const handleClose = () => {
-    setState({ ...state, open: false });
+  const handleCloseSnackbar = () => {
+    setSnackbar((prev) => ({ ...prev, open: false }));
   };
 
   const handleSubmit = (e) => {
@@ -51,8 +62,9 @@ const CaptainSignIn = () => {
         setTimeout(() => {
           setIsLoading(false);
         }, 500);
-        // console.log(res);
+        console.log(res);
         setEntity({ type: "DRIVER", data: res.data.driver });
+        localStorage.setItem("token", res.data.token);
         localStorage.setItem("DRIVER", JSON.stringify(res.data.driver));
         navigate("/captain-homepage");
       })
@@ -66,6 +78,17 @@ const CaptainSignIn = () => {
         setState({ ...state, open: true, message: e.response.data });
       });
   };
+
+  useEffect(() => {
+    if (msgForUser) {
+      setSnackbar({
+        open: true,
+        message: msgForUser,
+        vertical: "top",
+        horizontal: "center",
+      });
+    }
+  }, [msgForUser]);
 
   return (
     <>
@@ -86,11 +109,13 @@ const CaptainSignIn = () => {
       >
         {/* sign in errors snackbar */}
         <Snackbar
-          message={message}
-          anchorOrigin={{ vertical, horizontal }}
-          open={open}
-          onClose={handleClose}
-          key={vertical + horizontal}
+          open={snackbar.open}
+          message={snackbar.message}
+          anchorOrigin={{
+            vertical: snackbar.vertical,
+            horizontal: snackbar.horizontal,
+          }}
+          onClose={handleCloseSnackbar}
           autoHideDuration={5000}
         />
 

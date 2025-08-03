@@ -145,18 +145,18 @@ Video demonstrating how a Mitra gets added to an existing room:
 ### 📱 Mobile View Screenshots
 
 **1. Signup Page**  
-![Signup page](images/mob03.png)
+![Signup page](images/mob03.PNG)
 
 **2. User Profile Page**  
-![User Profile](images/mob04.png)
+![User Profile](images/mob04.PNG)
 
 **3. Driver Homepage After Accepting Ride**  
-![Driver Homepage](images/mob05.png)
+![Driver Homepage](images/mob05.PNG)
 
 **4. Driver Room Interface**  
-![Driver Room](images/mob01.png)
+![Driver Room](images/mob01.PNG)
 
 **5. Room Interior Chat Page**  
-![Room Chat](images/mob02.png)
+![Room Chat](images/mob02.PNG)
 
 Thankyou.

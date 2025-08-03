@@ -1,10 +1,10 @@
 # SafarMitra
 
-SafarMitra is a taxi pooling app designed to make travel more affordable and convenient for college students. It allows users to create and join rooms based on a shared start location and destination, helping them find fellow passengers to split taxi fares efficiently. By connecting students heading in the same direction, SafarMitra promotes cost-effective and hassle-free travel.
+SafarMitra is a taxi pooling app designed to make travel more affordable and convenient for daily commuters. It allows users to create and join rooms based on a shared start location and destination, helping them find fellow passengers to split taxi fares efficiently. By connecting commuters heading in the same direction, SafarMitra promotes cost-effective and hassle-free travel.
 
 ## 🎯 Who is it for?
 
-SafarMitra is exclusively designed for college students who want to share taxis for daily commutes, reducing travel costs while ensuring a comfortable and secure ride.
+SafarMitra is designed for commuters who want to share taxis for daily commutes, reducing travel costs while ensuring a comfortable and secure ride.
 
 <details>
 <summary>Table of Contents</summary>
@@ -42,7 +42,6 @@ You can use icons too - find them [here](https://github.com/get-icon/geticon)
 - Socket IO
 - Google maps API
 - JWT
--
 
 #### Database
 

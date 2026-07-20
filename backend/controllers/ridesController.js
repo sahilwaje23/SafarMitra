@@ -4,6 +4,7 @@ const Ride = require("../models/ride");
 const User = require("../models/user");
 const { getCaptainsInTheRadius } = require("../services/ride");
 const { sendMessageToSocketId } = require("../socket");
+const { getIO } = require("../socket");
 
 const handleCreateRoom = async (req, res) => {
   const errors = validationResult(req);
@@ -19,7 +20,7 @@ const handleCreateRoom = async (req, res) => {
     pickupLat,
     pickupLng,
     dropLat,
-    dropLng
+    dropLng,
   );
 
   try {
@@ -71,7 +72,7 @@ const handleCloseRoom = async (req, res) => {
       const captians = await getCaptainsInTheRadius(
         roomData.pickup.lat,
         roomData.pickup.lng,
-        300
+        300,
       );
       // console.log(captians);
 
@@ -197,7 +198,7 @@ const handleJoinRoom = async (req, res) => {
 
     const room = await Ride.findById(roomId).populate(
       "mitra.userId",
-      "socket_id"
+      "socket_id",
     );
     if (!room) {
       return res.status(404).json({ rideError: "Room not found" });
@@ -222,20 +223,20 @@ const handleJoinRoom = async (req, res) => {
     await room.populate("creatorId", "-password -salt -ridesBooked");
     console.log(room);
 
-    sendMessageToSocketId("new-userJoin", room.creatorId.socket_id, {
+    getIO().to(`ride:${roomId}`).emit("new-userJoin", {
       room,
       user: req.user,
     });
 
     // Notify all mitra members
-    room.mitra.forEach((m) => {
-      if (m.userId.socket_id) {
-        sendMessageToSocketId("new-userJoin", m.userId.socket_id, {
-          room,
-          user: req.user,
-        });
-      }
-    });
+    // room.mitra.forEach((m) => {
+    //   if (m.userId.socket_id) {
+    //     sendMessageToSocketId("new-userJoin", m.userId.socket_id, {
+    //       room,
+    //       user: req.user,
+    //     });
+    //   }
+    // });
 
     return res.status(200).json(room);
   } catch (e) {

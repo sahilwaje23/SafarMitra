@@ -163,7 +163,7 @@ const UserHomePage = () => {
         >
           <div className="flex flex-col justify-center items-center w-[100%] gap-y-5 sm:items-center md:ml-[5rem]">
             <div className="text-5xl font-semibold w-full text-center mx-auto">
-              Hello user
+              Hello {entity.fullName.split(" ")[0]}
             </div>
 
             {entity.currActiveRide ? (

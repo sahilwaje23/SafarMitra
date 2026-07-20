@@ -47,8 +47,11 @@ const handleGetDistTime = async (req, res, next) => {
       origin.pickupLat,
       origin.pickupLng,
       destination.dropLat,
-      destination.dropLng
+      destination.dropLng,
     );
+
+    console.log(result);
+
     res.status(200).json(result);
   } catch (e) {
     console.log(e);
@@ -69,6 +72,7 @@ const handleGetAutoCompleteSuggestions = async (req, res, next) => {
     const result = await getAutoCompleteSuggestions(input);
     return res.status(200).json(result);
   } catch (e) {
+    console.log("maperror", e);
     return res.status(400).send({ maperror: e.message });
   }
 };

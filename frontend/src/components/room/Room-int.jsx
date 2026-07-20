@@ -20,6 +20,8 @@ import { SocketContext } from "../../contexts/Socket";
 import { EntityContext } from "../../contexts/EntityContext";
 import { useRoom } from "../../contexts/RoomContext";
 import axios from "axios";
+import { useSearchParams } from "react-router-dom";
+
 const ButtonGroup = ({ activeTab, setActiveTab }) => {
   return (
     <Box sx={{ display: "flex", gap: 2 }}>
@@ -217,7 +219,7 @@ function DesktopView({ roomIntData }) {
 function RoomInt() {
   const { creatorData } = useRoom();
   const isMobile = useMediaQuery("(max-width:1024px)");
-  const { sendMessage, recieveMessage } = useContext(SocketContext);
+  const { sendMessage, recieveMessage, stopRecieveMessage } = useContext(SocketContext);
   const { entity } = useContext(EntityContext);
   const userId = entity._id || JSON.parse(localStorage.getItem("USER"))._id;
   const roomIntData = useRoom();
@@ -225,6 +227,7 @@ function RoomInt() {
   const { pickup, destination, updateEverything, setMitra } = useRoom();
 
   const [mitraCopy, setMitraCopy] = useState([]);
+  const [searchParams] = useSearchParams();
 
   // ^ 15-03-25 : Ye refresh handle karne ka logic hai , isse dont touch
 
@@ -248,7 +251,7 @@ function RoomInt() {
             Authorization: `Bearer ${token}`,
           },
           withCredentials: true,
-        }
+        },
       );
 
       //^ Chaitanya here is the rideData object
@@ -278,18 +281,21 @@ function RoomInt() {
     // whenever ride data updates u will not only do these socket updates but also reflect them in ui
     sendMessage("join", { userType: "USER", userId });
 
-    recieveMessage("confirm-ride", (rideData) => {
-      // ^ Chaitanya whatever new ride is confirmed by driver u will get data here
-      console.log("Ride Confirmed", rideData);
+    const rideId = searchParams.get("roomid");
+    sendMessage("ride:join", {
+      rideId,
     });
 
-    recieveMessage("new-userJoin", (rideData) => {
+    const handleConfirmRide = (rideData) => {
+      // ^ Chaitanya whatever new ride is confirmed by driver u will get data here
+      console.log("Ride Confirmed", rideData);
+    };
+
+    const handleNewUserJoin = (rideData) => {
       // ^ Chaitanya whatever new USER JOINS u will get data here
+      alert("New User Joined: " + rideData.user.fullName);
 
-      alert("New User Joined", rideData.user.fullName);
-      // console.log(rideData.user.fullName);
-
-      setMitraCopy((prev) => [
+      setMitra((prev) => [
         ...prev,
         {
           fullName: rideData.user.fullName || "CAKALALA",
@@ -303,19 +309,31 @@ function RoomInt() {
           },
         },
       ]);
-    });
+    };
 
-    recieveMessage("ride-ended", (rideData) => {
+    const handleRideEnded = (rideData) => {
       // ^ Chaitanya whatever a ride ends u will get data here
       console.log("Ride Ended", rideData);
-      alert("Ride Ended", rideData.fare);
-    });
+      alert("Ride Ended: " + rideData.fare);
+    };
 
-    recieveMessage("new-chat", ({ msg, name }) => {
+    const handleNewChat = ({ msg, name }) => {
       console.log("Message Received: " + msg + " " + name);
-    });
+    };
 
-    return () => {};
+    recieveMessage("confirm-ride", handleConfirmRide);
+    recieveMessage("new-userJoin", handleNewUserJoin);
+    recieveMessage("ride-ended", handleRideEnded);
+    recieveMessage("new-chat", handleNewChat);
+
+    return () => {
+      if (stopRecieveMessage) {
+        stopRecieveMessage("confirm-ride", handleConfirmRide);
+        stopRecieveMessage("new-userJoin", handleNewUserJoin);
+        stopRecieveMessage("ride-ended", handleRideEnded);
+        stopRecieveMessage("new-chat", handleNewChat);
+      }
+    };
   }, []);
 
   useEffect(() => {

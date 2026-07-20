@@ -100,7 +100,7 @@ const mapOptions = {
 };
 
 const MapComponent = () => {
-  console.log('Map rendered');
+  // console.log('Map rendered');
   // ...existing state declarations...
   const [map, setMap] = useState(null);
 

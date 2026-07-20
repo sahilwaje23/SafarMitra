@@ -3,7 +3,7 @@ import React, { createContext, useEffect } from "react";
 
 export const SocketContext = createContext();
 
-const socket = io("http://localhost:8000");
+const socket = io("http://localhost:8001");
 
 const SocketContextProvider = ({ children }) => {
   useEffect(() => {
@@ -20,13 +20,15 @@ const SocketContextProvider = ({ children }) => {
   };
 
   const recieveMessage = (eventName, callback) => {
-    socket.on(eventName, (message) => {
-      callback(message);
-    });
+    socket.on(eventName, callback);
+  };
+
+  const stopRecieveMessage = (eventName, callback) => {
+    socket.off(eventName, callback);
   };
 
   return (
-    <SocketContext.Provider value={{ sendMessage, recieveMessage }}>
+    <SocketContext.Provider value={{ sendMessage, recieveMessage, stopRecieveMessage }}>
       {children}
     </SocketContext.Provider>
   );

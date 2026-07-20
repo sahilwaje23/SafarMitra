@@ -5,7 +5,7 @@ const getCoordinates = async (address) => {
 
   // Construct the URL to make the API request
   const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(
-    address
+    address,
   )}&key=${apiKey}`;
 
   try {
@@ -26,32 +26,64 @@ const getCoordinates = async (address) => {
 };
 
 const getDistanceTime = async (pickupLat, pickupLng, dropLat, dropLng) => {
-  if (!pickupLat || !pickupLng || !dropLat || !dropLng) {
+  if (
+    pickupLat == null ||
+    pickupLng == null ||
+    dropLat == null ||
+    dropLng == null
+  ) {
     throw new Error("Pickup and drop coordinates are required");
   }
 
   const apiKey = process.env.GOOGLE_MAPS_API;
 
-  // Construct the URL using latitude and longitude values
-  const url = `https://maps.googleapis.com/maps/api/distancematrix/json?origins=${pickupLat},${pickupLng}&destinations=${dropLat},${dropLng}&key=${apiKey}`;
-
   try {
-    const response = await axios.get(url);
-    if (response.data.status === "OK") {
-      const element = response.data.rows[0].elements[0];
+    const response = await axios.post(
+      "https://routes.googleapis.com/directions/v2:computeRoutes",
+      {
+        origin: {
+          location: {
+            latLng: {
+              latitude: pickupLat,
+              longitude: pickupLng,
+            },
+          },
+        },
+        destination: {
+          location: {
+            latLng: {
+              latitude: dropLat,
+              longitude: dropLng,
+            },
+          },
+        },
+        travelMode: "DRIVE",
+      },
+      {
+        headers: {
+          "Content-Type": "application/json",
+          "X-Goog-Api-Key": apiKey,
+          // IMP :
+          "X-Goog-FieldMask":
+            "routes.distanceMeters,routes.duration,routes.polyline.encodedPolyline",
+        },
+      },
+    );
 
-      if (element.status === "ZERO_RESULTS") {
-        throw new Error("No routes found between the given coordinates");
-      }
-
-      return {
-        distance: element.distance.value,
-        duration: element.duration.value,
-      };
-    } else {
-      throw new Error("Unable to fetch distance and time");
+    if (!response.data.routes || response.data.routes.length === 0) {
+      throw new Error("No route found");
     }
+
+    const route = response.data.routes[0];
+    console.log(route);
+
+    return {
+      distance: route.distanceMeters,
+      duration: parseInt(route.duration), // "1023s" -> 1023
+      polyline: route.polyline.encodedPolyline,
+    };
   } catch (err) {
+    console.error(err.response?.data || err.message);
     throw err;
   }
 };
@@ -63,12 +95,14 @@ const getAutoCompleteSuggestions = async (input) => {
 
   const apiKey = process.env.GOOGLE_MAPS_API;
   const autocompleteUrl = `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodeURIComponent(
-    input
+    input,
   )}&key=${apiKey}`;
 
   try {
     const response = await axios.get(autocompleteUrl);
     const predictions = response.data.predictions;
+
+    // console.log(response);
 
     if (predictions.length === 0) {
       throw new Error("No suggestions found");
@@ -91,6 +125,7 @@ const getAutoCompleteSuggestions = async (input) => {
     const results = await Promise.all(detailsPromises);
     return results;
   } catch (e) {
+    console.error("Error fetching suggestions:", e);
     throw e;
   }
 };

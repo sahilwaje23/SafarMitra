@@ -20,25 +20,40 @@ function initialiseSocket(server) {
     socket.on("join", async (data) => {
       const { userType, userId } = data;
       // console.log("Connted user");
+      socket.data.userId = userId;
+      socket.data.userType = userType;
+      socket.data.currentRideId = null;
+
       if (userType === "USER") {
         try {
+          socket.join(`user:${userId}`);
           await User.findByIdAndUpdate(userId, { socket_id: socket.id });
         } catch (e) {
           console.log(e);
         }
       } else if (userType === "DRIVER") {
+        socket.join(`driver:${userId}`);
         await Driver.findByIdAndUpdate(userId, { socket_id: socket.id });
       }
     });
 
     // driver online hone pe uski location update hogi
     socket.on("update-location-driver", async (data) => {
-      const { driverId, location } = data;
-      // console.log(location);
-      // console.log(driverId)
+      const { location } = data;
+      const driverId = socket.data.userId;
+
+      if (socket.data.userType !== "DRIVER") {
+        return;
+      }
 
       if (!location || !location.ltd || !location.lng)
         return socket.emit("error", { message: "Location not found" });
+
+      if (socket.data.currentRideId) {
+        socket
+          .to(`ride:${socket.data.currentRideId}`)
+          .emit("driver-location", location);
+      }
 
       await Driver.findByIdAndUpdate(driverId, {
         location: {
@@ -46,6 +61,11 @@ function initialiseSocket(server) {
           lng: location.lng,
         },
       });
+    });
+
+    socket.on("ride:join", ({ rideId }) => {
+      socket.join(`ride:${rideId}`);
+      socket.data.currentRideId = rideId;
     });
 
     socket.on("disconnect", () => {
@@ -63,4 +83,8 @@ const sendMessageToSocketId = (event, socketId, data) => {
   }
 };
 
-module.exports = { initialiseSocket, sendMessageToSocketId };
+function getIO() {
+  return io;
+}
+
+module.exports = { initialiseSocket, sendMessageToSocketId, getIO };

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, memo } from 'react';
 import { OverlayView, Polyline } from '@react-google-maps/api';
 import { Paper, CircularProgress, Typography, Box, useMediaQuery } from '@mui/material';
-import { GoogleMap, useJsApiLoader, Marker, InfoWindow } from '@react-google-maps/api';
+import { GoogleMap, useJsApiLoader, Marker, InfoWindow, DirectionsService, DirectionsRenderer } from '@react-google-maps/api';
 import theme from '../../styles/theme';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import { useLocations } from "../../contexts/LocationsContext";
@@ -104,7 +104,18 @@ const MapComponent = () => {
   // ...existing state declarations...
   const [map, setMap] = useState(null);
 
-  const { pickupLat, setPickupLat, pickupLng, setPickupLng, dropLat, setDropLat, dropLng, setDropLng, pickupText, setPickupText, dropText, setDropText } = useLocations();
+  const { 
+    pickupLat, setPickupLat, 
+    pickupLng, setPickupLng, 
+    dropLat, setDropLat, 
+    dropLng, setDropLng, 
+    pickupText, setPickupText, 
+    dropText, setDropText,
+    driverLocation,
+    directionsResponse, 
+    setDirectionsResponse
+  } = useLocations();
+
   const [pickupData, setPickupData] = useState({
     pickupLat,
     pickupLng,
@@ -120,6 +131,15 @@ const MapComponent = () => {
 
   const [currentLocation, setCurrentLocation] = useState(null);
   const [showInfoWindow, setShowInfoWindow] = useState(false);
+
+  const [driverToPickupDirections, setDriverToPickupDirections] = useState(null);
+  const [initialDriverLoc, setInitialDriverLoc] = useState(null);
+
+  useEffect(() => {
+    if (driverLocation?.lat && driverLocation?.lng && !initialDriverLoc) {
+      setInitialDriverLoc({ lat: driverLocation.lat, lng: driverLocation.lng });
+    }
+  }, [driverLocation, initialDriverLoc]);
 
   useEffect(() => {
     if (map && pickupLat && pickupLng) {
@@ -159,6 +179,38 @@ const MapComponent = () => {
     }
   }, []);
 
+  const directionsCallback = React.useCallback((response) => {
+    if (response !== null) {
+      if (response.status === 'OK') {
+        setDirectionsResponse(response);
+      } else {
+        console.error('DirectionsService response: ', response);
+      }
+    }
+  }, [setDirectionsResponse]);
+
+  const driverPickupDirectionsCallback = React.useCallback((response) => {
+    if (response !== null) {
+      if (response.status === 'OK') {
+        setDriverToPickupDirections(response);
+      } else {
+        console.error('Driver to Pickup Directions response: ', response);
+      }
+    }
+  }, [setDriverToPickupDirections]);
+
+  useEffect(() => {
+    // If pickup or drop changes, we clear directions to fetch a new route
+    if (pickupLat && pickupLng && dropLat && dropLng) {
+      setDirectionsResponse(null);
+    }
+  }, [pickupLat, pickupLng, dropLat, dropLng, setDirectionsResponse]);
+
+  const pLat = parseFloat(pickupLat);
+  const pLng = parseFloat(pickupLng);
+  const dLat = parseFloat(dropLat);
+  const dLng = parseFloat(dropLng);
+
   if (!isLoaded) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '400px' }}>
@@ -171,7 +223,20 @@ const MapComponent = () => {
       map.panTo(currentLocation);
       map.setZoom(20); // Maximum zoom on click
     }
+  };
 
+  const calculateETA = (lat1, lon1, lat2, lon2) => {
+    if (!lat1 || !lon1 || !lat2 || !lon2) return 0;
+    const R = 6371;
+    const dLat = (lat2 - lat1) * (Math.PI / 180);
+    const dLon = (lon2 - lon1) * (Math.PI / 180);
+    const a = 
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) * 
+      Math.sin(dLon / 2) * Math.sin(dLon / 2); 
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)); 
+    const distance = R * c; 
+    return Math.ceil(distance / 0.5); // 30 km/h average speed
   };
 
   const CustomMarker = ({ position, onClick }) => (
@@ -266,17 +331,80 @@ const MapComponent = () => {
           />
         )}
 
-        {/* Polyline between Pickup and Drop */}
-        {pickupLat && pickupLng && dropLat && dropLng && (
-          <Polyline
-            path={[
-              { lat: pickupLat, lng: pickupLng },
-              { lat: dropLat, lng: dropLng }
-            ]}
+        {/* Driver Marker & ETA */}
+        {driverLocation && driverLocation.lat && driverLocation.lng && (
+          <>
+            <Marker
+              position={{ lat: driverLocation.lat, lng: driverLocation.lng }}
+              icon={{
+                url: '/car_topview.png',
+                scaledSize: new window.google.maps.Size(40, 40),
+                anchor: new window.google.maps.Point(20, 20)
+              }}
+              title="Driver"
+            />
+            {!isNaN(pLat) && !isNaN(pLng) && (
+              <InfoWindow
+                position={{ lat: driverLocation.lat, lng: driverLocation.lng }}
+                options={{ disableAutoPan: true }}
+              >
+                <Typography variant="body2" sx={{ fontWeight: 'bold', color: 'black' }}>
+                  Pickup in {calculateETA(driverLocation.lat, driverLocation.lng, pLat, pLng)} min
+                </Typography>
+              </InfoWindow>
+            )}
+            {/* Directions Service for Driver to Pickup */}
+            {!isNaN(pLat) && !isNaN(pLng) && initialDriverLoc && !driverToPickupDirections && (
+              <DirectionsService
+                options={{
+                  origin: initialDriverLoc,
+                  destination: { lat: pLat, lng: pLng },
+                  travelMode: 'DRIVING'
+                }}
+                callback={driverPickupDirectionsCallback}
+              />
+            )}
+
+            {/* Directions Renderer for Driver to Pickup */}
+            {driverToPickupDirections && (
+              <DirectionsRenderer
+                options={{
+                  directions: driverToPickupDirections,
+                  suppressMarkers: true,
+                  polylineOptions: {
+                    strokeColor: '#D93025', // Red for driver-to-pickup
+                    strokeOpacity: 0.9,
+                    strokeWeight: 6,
+                  }
+                }}
+              />
+            )}
+          </>
+        )}
+
+        {/* Directions Service - Only runs when directionsResponse is null */}
+        {!isNaN(pLat) && !isNaN(pLng) && !isNaN(dLat) && !isNaN(dLng) && !directionsResponse && (
+          <DirectionsService
             options={{
-              strokeColor: theme.palette.primaryColor.main,
-              strokeOpacity: 1,
-              strokeWeight: 3,
+              origin: { lat: pLat, lng: pLng },
+              destination: { lat: dLat, lng: dLng },
+              travelMode: 'DRIVING'
+            }}
+            callback={directionsCallback}
+          />
+        )}
+
+        {/* Directions Renderer */}
+        {directionsResponse && (
+          <DirectionsRenderer
+            options={{
+              directions: directionsResponse,
+              suppressMarkers: true,
+              polylineOptions: {
+                strokeColor: '#1A73E8', // Google Blue for pickup-to-drop
+                strokeOpacity: 0.9,
+                strokeWeight: 6,
+              }
             }}
           />
         )}

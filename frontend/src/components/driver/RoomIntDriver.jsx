@@ -19,6 +19,7 @@ import RideDetails from "../room/RideDetails";
 import { SocketContext } from "../../contexts/Socket";
 import { EntityContext } from "../../contexts/EntityContext";
 import { useRoom } from "../../contexts/RoomContext";
+import { useLocations } from "../../contexts/LocationsContext";
 import axios from "axios";
 import { useSearchParams } from "react-router-dom";
 
@@ -278,6 +279,7 @@ function RoomIntDriver() {
   const roomIntData = useRoom();
   const [searchParams] = useSearchParams();
   const { updateEverything } = useRoom();
+  const { setPickupLat, setPickupLng, setPickupText, setDropLat, setDropLng, setDropText } = useLocations();
   const rideId = searchParams.get("roomid");
 
   const fetchRideDetails = async () => {
@@ -304,6 +306,18 @@ function RoomIntDriver() {
       const rideData = response.data;
       console.log("Ride Data: ", rideData);
       updateEverything(rideData);
+
+      // Also update LocationsContext so the Map knows where to draw the route/ETA
+      if (rideData?.pickup?.lat) {
+        setPickupLat(rideData.pickup.lat);
+        setPickupLng(rideData.pickup.lng);
+        setPickupText(rideData.pickup.text);
+      }
+      if (rideData?.destination?.lat) {
+        setDropLat(rideData.destination.lat);
+        setDropLng(rideData.destination.lng);
+        setDropText(rideData.destination.text);
+      }
     } catch (err) {
       console.log(err);
       alert("Error: " + err.message);

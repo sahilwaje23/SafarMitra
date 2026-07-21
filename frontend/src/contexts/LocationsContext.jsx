@@ -11,6 +11,8 @@ const LocationContextProvider = ({ children }) => {
   const [pickupText, setPickupText] = useState("");
   const [dropText, setDropText] = useState("");
   const [roomid, setRoomid] = useState("");
+  const [driverLocation, setDriverLocation] = useState(null);
+  const [directionsResponse, setDirectionsResponse] = useState(null);
 
   return (
     <LocationContext.Provider
@@ -29,6 +31,10 @@ const LocationContextProvider = ({ children }) => {
         setDropText,
         roomid,
         setRoomid,
+        driverLocation,
+        setDriverLocation,
+        directionsResponse,
+        setDirectionsResponse,
       }}
     >
       {children}

@@ -4,14 +4,15 @@ import { SocketContext } from "../contexts/Socket";
 import { useNavigate, Outlet } from "react-router-dom";
 import axios from "axios";
 import { LinearProgress } from "@mui/material";
+import { useLocations } from "../contexts/LocationsContext";
 
 const DriverProtectedWrapper = ({ children }) => {
   const token = localStorage.getItem("token");
   const navigate = useNavigate();
   const { entity, setEntity } = useContext(EntityContext);
   const { sendMessage } = useContext(SocketContext);
+  const { setDriverLocation } = useLocations();
   const [loading, setLoading] = useState(true);
-  
 
   useEffect(() => {
     if (!token) {
@@ -55,11 +56,16 @@ const DriverProtectedWrapper = ({ children }) => {
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition((position) => {
           console.log("Global driver location updated:", position.coords);
+          const locationData = {
+            lat: position.coords.latitude,
+            lng: position.coords.longitude,
+          };
+          setDriverLocation(locationData);
           sendMessage("update-location-driver", {
             driverId,
             location: {
-              ltd: position.coords.latitude,
-              lng: position.coords.longitude,
+              ltd: locationData.lat,
+              lng: locationData.lng,
             },
           });
         });

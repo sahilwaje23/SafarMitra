@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from "react";
-import { Box, useMediaQuery } from "@mui/material";
+import { Box, useMediaQuery, Snackbar, Alert, Typography } from "@mui/material";
 import QuickActions from "./QuickActions"; // Assuming the component is renamed without 'Captain'
 import Dashboard from "./Dashboard"; // Assuming the component is renamed without 'Captain'
 import Map from "../map/Map";
@@ -55,8 +55,14 @@ const CaptainHomePage = () => {
 
   // ^ Chaitanya ithe status online asel tr pratyek 10 sec la update hoil location
   const [status, setStatus] = useState("online");
+  const [newRidePopup, setNewRidePopup] = useState(null);
 
-
+  const handleCloseNewRidePopup = (event, reason) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+    setNewRidePopup(null);
+  };
 
   // online offline status
   useEffect(() => {
@@ -65,6 +71,7 @@ const CaptainHomePage = () => {
         // ^ Chaitanya whatever new ride Data comes u will recieve it here {roomDetail , creatorDetail}
         // setRefresh( (prev) => !prev);
         console.log("New ride received:", rideData);
+        setNewRidePopup(rideData);
       });
     }
   }, [status]);
@@ -158,8 +165,33 @@ const CaptainHomePage = () => {
       <div className="absolute z-10">
         {activeAcceptedRide && <ActiveRideComponent info={currActRide} />}
       </div>
-
       {isMobile ? <MobileView /> : <DesktopView />}
+      
+      {/* New Ride Popup */}
+      <Snackbar
+        open={Boolean(newRidePopup)}
+        autoHideDuration={30000}
+        onClose={handleCloseNewRidePopup}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+        sx={{ mt: 2 }}
+      >
+        <Alert
+          onClose={handleCloseNewRidePopup}
+          severity="success"
+          variant="filled"
+          sx={{ width: '100%', alignItems: 'center', boxShadow: 3 }}
+        >
+          <Box>
+            <Typography variant="subtitle1" fontWeight="bold">
+              New Ride Request Available!
+            </Typography>
+            <Typography variant="body2">
+              From: {newRidePopup?.roomData?.pickup?.text || 'Unknown'} <br/>
+              To: {newRidePopup?.roomData?.destination?.text || 'Unknown'}
+            </Typography>
+          </Box>
+        </Alert>
+      </Snackbar>
     </>
   );
 };

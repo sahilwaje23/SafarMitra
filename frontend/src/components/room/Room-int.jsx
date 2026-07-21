@@ -22,6 +22,7 @@ import { EntityContext } from "../../contexts/EntityContext";
 import { useRoom } from "../../contexts/RoomContext";
 import axios from "axios";
 import { useSearchParams } from "react-router-dom";
+import { useLocations } from "../../contexts/LocationsContext";
 
 const ButtonGroup = ({ activeTab, setActiveTab }) => {
   return (
@@ -307,6 +308,7 @@ function RoomInt() {
   const { entity } = useContext(EntityContext);
   const userId = entity._id || JSON.parse(localStorage.getItem("USER"))._id;
   const roomIntData = useRoom();
+  const { setDriverLocation, setPickupLat, setPickupLng, setPickupText, setDropLat, setDropLng, setDropText } = useLocations();
 
   const { pickup, destination, updateEverything, setMitra, setStatus } =
     useRoom();
@@ -346,6 +348,19 @@ function RoomInt() {
       updateEverything(rideData);
       setMitraCopy(rideData.mitra.map((m) => ({ ...m })));
       console.log("Mitra Copy: ", mitraCopy);
+
+      // Also update LocationsContext so the Map knows where to draw the route/ETA
+      if (rideData?.pickup?.lat) {
+        setPickupLat(rideData.pickup.lat);
+        setPickupLng(rideData.pickup.lng);
+        setPickupText(rideData.pickup.text);
+      }
+      if (rideData?.destination?.lat) {
+        setDropLat(rideData.destination.lat);
+        setDropLng(rideData.destination.lng);
+        setDropText(rideData.destination.text);
+      }
+
     } catch (err) {
       console.log(err);
       alert("Error: " + err.message);
@@ -414,7 +429,13 @@ function RoomInt() {
     };
 
     const handleDriverLocation = (driverLocation) => {
-      console.log("Driver Location: ", driverLocation);
+      console.log("Driver Location received: ", driverLocation);
+      if (driverLocation?.ltd && driverLocation?.lng) {
+        setDriverLocation({
+          lat: driverLocation.ltd,
+          lng: driverLocation.lng
+        });
+      }
     };
 
     recieveMessage("confirm-ride", handleConfirmRide);

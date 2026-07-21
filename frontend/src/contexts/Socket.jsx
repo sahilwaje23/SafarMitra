@@ -16,6 +16,7 @@ const SocketContextProvider = ({ children }) => {
   }, []);
 
   const sendMessage = (eventName, message) => {
+    console.trace("EMITTING", eventName, message);
     socket.emit(eventName, message);
   };
 

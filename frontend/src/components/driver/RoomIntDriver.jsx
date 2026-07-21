@@ -20,10 +20,12 @@ import { SocketContext } from "../../contexts/Socket";
 import { EntityContext } from "../../contexts/EntityContext";
 import { useRoom } from "../../contexts/RoomContext";
 import axios from "axios";
+import { useSearchParams } from "react-router-dom";
 
 const handleEndRide = async () => {
-  const rideId = localStorage.getItem("roomid");
+  const [searchParams] = useSearchParams();
   const token = localStorage.getItem("token");
+  const rideId = searchParams.get("roomid");
 
   if (!rideId || !token) {
     alert("roomid ID or Token not found");
@@ -38,7 +40,7 @@ const handleEndRide = async () => {
           Authorization: `Bearer ${token}`,
         },
         withCredentials: true,
-      }
+      },
     );
     console.log("Ride ended successfully:", response.data);
   } catch (error) {
@@ -272,18 +274,13 @@ function RoomIntDriver() {
   const isMobile = useMediaQuery("(max-width:1024px)");
   const { sendMessage, recieveMessage } = useContext(SocketContext);
   const { entity } = useContext(EntityContext);
-  const userId = entity._id || JSON.parse(localStorage.getItem("USER"))._id;
+  const driverId = entity._id || JSON.parse(localStorage.getItem("DRIVER"))?._id || JSON.parse(localStorage.getItem("USER"))?._id;
   const roomIntData = useRoom();
-
-  /* const { pickup, destination, updateEverything, setMitra } = useRoom(); */
-
+  const [searchParams] = useSearchParams();
   const { updateEverything } = useRoom();
-
-  // ^ 15-03-25 : Ye refresh handle karne ka logic hai , isse dont touch
+  const rideId = searchParams.get("roomid");
 
   const fetchRideDetails = async () => {
-    const rideId = localStorage.getItem("roomid");
-    // alert(rideId);
     const token = localStorage.getItem("token");
 
     if (!rideId || !token) {
@@ -301,12 +298,10 @@ function RoomIntDriver() {
             Authorization: `Bearer ${token}`,
           },
           withCredentials: true,
-        }
+        },
       );
 
-      //^ Chaitanya here is the rideData object
       const rideData = response.data;
-      // alert("Ride Data: " + JSON.stringify(rideData));
       console.log("Ride Data: ", rideData);
       updateEverything(rideData);
     } catch (err) {
@@ -314,17 +309,6 @@ function RoomIntDriver() {
       alert("Error: " + err.message);
     }
   };
-
-  // console.log("creator data : ", creatorData);
-  /*
-  useEffect(() => {
-    console.log("The creator  data is : ", creatorData);
-
-    // ^ commenting below lines 15-03-25
-    // const storedUser = localStorage.getItem("USER");
-    // console.log("Raw USER data from localStorage:", storedUser);
-  }, [creatorData]);
-  */
 
   /*
   useEffect(() => {
@@ -366,6 +350,13 @@ function RoomIntDriver() {
     return () => {};
   }, []);
   */
+
+  useEffect(() => {
+    sendMessage("ride:join", {
+      rideId,
+    });
+    console.log("should run only once...")
+  }, []);
 
   useEffect(() => {
     // ^ 15-03-25 : Ye refresh handle karne ka logic hai , isse dont touch

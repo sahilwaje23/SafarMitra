@@ -3,12 +3,15 @@ import { EntityContext } from "../contexts/EntityContext";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { LinearProgress } from "@mui/material";
+import { SocketContext } from "../contexts/Socket";
 
 const UserProtectedWrapper = ({ children }) => {
   const token = localStorage.getItem("token");
   const navigate = useNavigate();
   const { setEntity } = useContext(EntityContext);
   const [loading, setLoading] = useState(true);
+  const { sendMessage, recieveMessage, stopRecieveMessage } =
+      useContext(SocketContext);
 
   useEffect(() => {
     if (!token) {
@@ -26,8 +29,12 @@ const UserProtectedWrapper = ({ children }) => {
           },
           withCredentials: true,
         });
-        // console.log(res.data);
+        console.log("we are only getting",res.data);
         setEntity(res.data);
+      
+        
+        sendMessage("join", { userType: "USER", userId : res.data.userId});
+
       } catch (err) {
         console.error(err);
         navigate("/user-signin", {

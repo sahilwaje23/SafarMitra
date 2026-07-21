@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Box, IconButton, Paper, Typography, Button } from '@mui/material';
+import { Box, IconButton, Paper, Typography, Button, CircularProgress } from '@mui/material';
 import { ExpandLess, ExpandMore } from '@mui/icons-material';
 import Chat from './Chat'; // Assuming Chat is a separate component
 import RideDetails from './RideDetails'; // Assuming RideDetails is a separate component
@@ -55,7 +55,7 @@ const ButtonGroup = ({ activeTab, setActiveTab, isExpanded, setIsExpanded }) => 
   );
 };
 
-const Popup = () => {
+const Popup = ({ isCreator, handleAssignDriver }) => {
   const [isExpanded, setIsExpanded] = useState(true);
   const [activeTab, setActiveTab] = useState('details');
   const {
@@ -183,9 +183,31 @@ const Popup = () => {
                 </Box>
               </Typography>
             </Box>
-            <Typography variant="subtitle1">
-              Status: <span style={{ color: theme.palette.primaryColor.main }}>{status}</span>
-            </Typography>
+            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 1 }}>
+              <Typography variant="subtitle1" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                Status: <span style={{ color: theme.palette.primaryColor.main }}>{status}</span>
+                {status === "closed" && (
+                  <CircularProgress size={16} sx={{ color: theme.palette.primaryColor.main }} />
+                )}
+              </Typography>
+              {isCreator && status === "open" && (
+                <Button
+                  variant="contained"
+                  onClick={handleAssignDriver}
+                  sx={{
+                    bgcolor: theme.palette.primaryColor.main,
+                    color: theme.palette.txtcol,
+                    '&:hover': {
+                      bgcolor: theme.palette.primaryColor.hover,
+                    },
+                    padding: '4px 8px',
+                    fontSize: '0.75rem',
+                  }}
+                >
+                  Assign Driver
+                </Button>
+              )}
+            </Box>
           </Box>
 
           {/* Button Group */}

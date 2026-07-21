@@ -40,7 +40,7 @@ const CaptainHomePage = () => {
                 Authorization: `Bearer ${localStorage.getItem("token")}`,
               },
               withCredentials: true,
-            }
+            },
           );
           console.log("Ride details:", response.data);
           localStorage.setItem("roomid", activeAcceptedRide);
@@ -56,37 +56,16 @@ const CaptainHomePage = () => {
   // ^ Chaitanya ithe status online asel tr pratyek 10 sec la update hoil location
   const [status, setStatus] = useState("online");
 
-  useEffect(() => {
-    sendMessage("join", { userType: "DRIVER", userId: driverId });
-  }, []);
+
 
   // online offline status
   useEffect(() => {
     if (status === "online") {
-      const updateLocation = () => {
-        if (navigator.geolocation) {
-          navigator.geolocation.getCurrentPosition((position) =>
-            sendMessage("update-location-driver", {
-              driverId,
-              location: {
-                ltd: position.coords.latitude,
-                lng: position.coords.longitude,
-              },
-            })
-          );
-        }
-      };
-
       recieveMessage("new-ride", (rideData) => {
         // ^ Chaitanya whatever new ride Data comes u will recieve it here {roomDetail , creatorDetail}
         // setRefresh( (prev) => !prev);
         console.log("New ride received:", rideData);
       });
-
-      const locationInterval = setInterval(updateLocation, 15000);
-      updateLocation();
-
-      return () => clearInterval(locationInterval);
     }
   }, [status]);
 

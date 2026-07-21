@@ -20,9 +20,11 @@ function initialiseSocket(server) {
     socket.on("join", async (data) => {
       const { userType, userId } = data;
       // console.log("Connted user");
+      console.log("JOIN EVENT", socket.id, data);
       socket.data.userId = userId;
       socket.data.userType = userType;
-      socket.data.currentRideId = null;
+      // socket.data.currentRideId = null;
+      
 
       if (userType === "USER") {
         try {
@@ -33,7 +35,18 @@ function initialiseSocket(server) {
         }
       } else if (userType === "DRIVER") {
         socket.join(`driver:${userId}`);
-        await Driver.findByIdAndUpdate(userId, { socket_id: socket.id });
+
+        const driver = await Driver.findByIdAndUpdate(
+          userId,
+          { socket_id: socket.id },
+          { new: true }
+        );
+
+        if (driver?.currAcceptedRide) {
+          socket.join(`ride:${driver.currAcceptedRide}`);
+          socket.data.currentRideId = driver.currAcceptedRide.toString();
+          console.log("Driver automatically rejoined ride",driver.currAcceptedRide);
+        }
       }
     });
 
@@ -49,10 +62,17 @@ function initialiseSocket(server) {
       if (!location || !location.ltd || !location.lng)
         return socket.emit("error", { message: "Location not found" });
 
+      console.log(
+        "location",
+        socket.id,
+        socket.data.currentRideId
+    );
+
       if (socket.data.currentRideId) {
+        console.log("driver sendiing location to ", `ride:${socket.data.currentRideId}`);
         socket
           .to(`ride:${socket.data.currentRideId}`)
-          .emit("driver-location", location);
+          .emit("update-location-driver", location);
       }
 
       await Driver.findByIdAndUpdate(driverId, {
@@ -64,8 +84,11 @@ function initialiseSocket(server) {
     });
 
     socket.on("ride:join", ({ rideId }) => {
+      console.log("ride:join", rideId);
       socket.join(`ride:${rideId}`);
       socket.data.currentRideId = rideId;
+      console.log("after setting", socket.id, socket.data.currentRideId);
+
     });
 
     socket.on("disconnect", () => {

@@ -45,7 +45,10 @@ function App() {
           <Route path="/user-signin" element={<UserSignIn />} />
           <Route path="/captain-signup" element={<CaptainSignUp />} />
           <Route path="/captain-signin" element={<CaptainSignIn />} />
-          <Route path="/captain-room-int" element={<RoomIntDriver />} />
+          <Route element={<DriverProtectedWrapper />}>
+            <Route path="/captain-homepage" element={<CaptainHomePage />} />
+            <Route path="/captain-room-int" element={<RoomIntDriver />} />
+          </Route>
           <Route
             path="/user-homepage"
             element={
@@ -54,15 +57,6 @@ function App() {
               </UserProtectedWrapper>
             }
           />
-          <Route
-            path="/captain-homepage"
-            element={
-              <DriverProtectedWrapper>
-                <CaptainHomePage />
-              </DriverProtectedWrapper>
-            }
-          />
-
           <Route
             path="/user-history"
             element={
@@ -87,10 +81,14 @@ function App() {
               </UserProtectedWrapper>
             }
           />
-          <Route path="/room-int" element={<RoomInt />} />
-          {/* <Route path="/room-int" element={<UserProtectedWrapper>
-              <RoomInt />
-            </UserProtectedWrapper>} /> */}
+          <Route
+            path="/room-int"
+            element={
+              <UserProtectedWrapper>
+                <RoomInt />
+              </UserProtectedWrapper>
+            }
+          />
           <Route
             path="/join-room"
             element={

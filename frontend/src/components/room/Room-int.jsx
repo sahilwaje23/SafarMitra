@@ -10,6 +10,7 @@ import {
   useMediaQuery,
   Paper,
   GlobalStyles,
+  CircularProgress,
 } from "@mui/material";
 import Map from "../map/Map";
 import Chat from "./Chat";
@@ -85,7 +86,31 @@ const ButtonGroup = ({ activeTab, setActiveTab }) => {
 };
 
 const MobileView = () => {
-  const { creatorData } = useRoom();
+  const { creatorData, roomid, setStatus } = useRoom();
+  const { entity } = useContext(EntityContext);
+  const userId = entity?._id || JSON.parse(localStorage.getItem("USER"))?._id;
+  const isCreator = userId === creatorData?.creatorId;
+
+  const handleAssignDriver = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.post(
+        `${import.meta.env.VITE_BASE_URL}/ride/close-room`,
+        { roomId: roomid },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
+      if (response.status === 200) {
+        setStatus("closed");
+        alert("Driver assigning initiated!");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Error: " + (err.response?.data?.message || err.message));
+    }
+  };
+
   return (
     <>
       <GlobalStyles styles={{ body: { overflowX: "hidden" } }} />
@@ -108,7 +133,10 @@ const MobileView = () => {
           }}
         >
           {/* this popup card contains all the info for particular room for mobile view hence context is directly refered there not that popup wont have all values as further values are distrubuted to RideDetails.jsx which is basically just the Room interface data like information about the drivers creator and mitras their information and other information about the ride */}
-          <Popup />
+          <Popup
+            isCreator={isCreator}
+            handleAssignDriver={handleAssignDriver}
+          />
         </Box>
       </Box>
     </>
@@ -117,7 +145,32 @@ const MobileView = () => {
 
 function DesktopView({ roomIntData }) {
   const [activeTab, setActiveTab] = useState("details");
-  const { pickup, destination, status } = useRoom();
+  const { pickup, destination, status, roomid, creatorData, setStatus } =
+    useRoom();
+  const { entity } = useContext(EntityContext);
+  const userId = entity?._id || JSON.parse(localStorage.getItem("USER"))?._id;
+  const isCreator = userId === creatorData?.creatorId;
+
+  const handleAssignDriver = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.post(
+        `${import.meta.env.VITE_BASE_URL}/ride/close-room`,
+        { roomId: roomid },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
+      if (response.status === 200) {
+        setStatus("closed");
+        alert("Driver assigning initiated!");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Error: " + (err.response?.data?.message || err.message));
+    }
+  };
+
   return (
     <Box
       sx={{
@@ -167,9 +220,39 @@ function DesktopView({ roomIntData }) {
           }}
         >
           <ButtonGroup activeTab={activeTab} setActiveTab={setActiveTab} />
-          <Typography sx={{ color: theme.palette.primaryColor.main }}>
-            Status : {status}
-          </Typography>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+            <Typography
+              sx={{
+                color: theme.palette.primaryColor.main,
+                display: "flex",
+                alignItems: "center",
+                gap: 1,
+              }}
+            >
+              Status : {status}
+              {status === "closed" && (
+                <CircularProgress
+                  size={16}
+                  sx={{ color: theme.palette.primaryColor.main }}
+                />
+              )}
+            </Typography>
+            {isCreator && status === "open" && (
+              <Button
+                variant="contained"
+                onClick={handleAssignDriver}
+                sx={{
+                  bgcolor: theme.palette.primaryColor.main,
+                  color: theme.palette.txtcol,
+                  "&:hover": {
+                    bgcolor: theme.palette.primaryColor.hover,
+                  },
+                }}
+              >
+                Assign Driver
+              </Button>
+            )}
+          </Box>
         </Box>
         {activeTab === "chat" ? (
           <Box
@@ -219,12 +302,14 @@ function DesktopView({ roomIntData }) {
 function RoomInt() {
   const { creatorData } = useRoom();
   const isMobile = useMediaQuery("(max-width:1024px)");
-  const { sendMessage, recieveMessage, stopRecieveMessage } = useContext(SocketContext);
+  const { sendMessage, recieveMessage, stopRecieveMessage } =
+    useContext(SocketContext);
   const { entity } = useContext(EntityContext);
   const userId = entity._id || JSON.parse(localStorage.getItem("USER"))._id;
   const roomIntData = useRoom();
 
-  const { pickup, destination, updateEverything, setMitra } = useRoom();
+  const { pickup, destination, updateEverything, setMitra, setStatus } =
+    useRoom();
 
   const [mitraCopy, setMitraCopy] = useState([]);
   const [searchParams] = useSearchParams();
@@ -232,7 +317,7 @@ function RoomInt() {
   // ^ 15-03-25 : Ye refresh handle karne ka logic hai , isse dont touch
 
   const fetchRideDetails = async () => {
-    const rideId = localStorage.getItem("roomid");
+    const rideId = searchParams.get("roomid");
     // alert(rideId);
     const token = localStorage.getItem("token");
 
@@ -279,7 +364,6 @@ function RoomInt() {
   useEffect(() => {
     // make object here rideData dependency of this useeffect
     // whenever ride data updates u will not only do these socket updates but also reflect them in ui
-    sendMessage("join", { userType: "USER", userId });
 
     const rideId = searchParams.get("roomid");
     sendMessage("ride:join", {
@@ -288,7 +372,7 @@ function RoomInt() {
 
     const handleConfirmRide = (rideData) => {
       // ^ Chaitanya whatever new ride is confirmed by driver u will get data here
-      console.log("Ride Confirmed", rideData);
+      console.log("Ride Confirmed by driver", rideData);
     };
 
     const handleNewUserJoin = (rideData) => {
@@ -321,10 +405,24 @@ function RoomInt() {
       console.log("Message Received: " + msg + " " + name);
     };
 
+    const handleRoomClosed = (roomData) => {
+      setStatus("closed");
+      const roomCreatorId = roomData?.creatorId?._id || roomData?.creatorId;
+      if (roomCreatorId !== userId) {
+        alert("Driver assignment has been initiated!");
+      }
+    };
+
+    const handleDriverLocation = (driverLocation) => {
+      console.log("Driver Location: ", driverLocation);
+    };
+
     recieveMessage("confirm-ride", handleConfirmRide);
     recieveMessage("new-userJoin", handleNewUserJoin);
     recieveMessage("ride-ended", handleRideEnded);
     recieveMessage("new-chat", handleNewChat);
+    recieveMessage("room-closed", handleRoomClosed);
+    recieveMessage("update-location-driver", handleDriverLocation);
 
     return () => {
       if (stopRecieveMessage) {
@@ -332,6 +430,7 @@ function RoomInt() {
         stopRecieveMessage("new-userJoin", handleNewUserJoin);
         stopRecieveMessage("ride-ended", handleRideEnded);
         stopRecieveMessage("new-chat", handleNewChat);
+        stopRecieveMessage("room-closed", handleRoomClosed);
       }
     };
   }, []);

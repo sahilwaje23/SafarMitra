@@ -56,9 +56,7 @@ const UserHomePage = () => {
     console.log("Updated Drop Data", dropData);
   }, [dropData, pickupData]);
 
-  useEffect(() => {
-    sendMessage("join", { userType: "USER", userId });
-  }, []);
+
 
   const handlePickupSelect = (value) => {
     if (value && value.lat && value.lng && value.description) {

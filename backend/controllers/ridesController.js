@@ -69,6 +69,8 @@ const handleCloseRoom = async (req, res) => {
     }
 
     try {
+      getIO().to(`ride:${roomId}`).emit("room-closed", roomData);
+
       const captians = await getCaptainsInTheRadius(
         roomData.pickup.lat,
         roomData.pickup.lng,
@@ -164,24 +166,30 @@ const handleConfirmRide = async (req, res) => {
     ride.status = "ongoing";
     await ride.save();
 
-    if (ride.creatorId?.socket_id) {
-      sendMessageToSocketId("confirm-ride", ride.creatorId.socket_id, {
-        ride,
-        user: req.driver,
-      });
-    }
-
-    ride.mitra.forEach((m) => {
-      if (m.userId?.socket_id) {
-        sendMessageToSocketId("confirm-ride", m.userId.socket_id, {
-          ride,
-          user: req.user,
-        });
-      }
+    getIO().to(`ride:${rideId}`).emit("confirm-ride", {
+      ride,
+      driver: req.driver,
     });
+
+    // if (ride.creatorId?.socket_id) {
+    //   sendMessageToSocketId("confirm-ride", ride.creatorId.socket_id, {
+    //     ride,
+    //     user: req.driver,
+    //   });
+    // }
+
+    // ride.mitra.forEach((m) => {
+    //   if (m.userId?.socket_id) {
+    //     sendMessageToSocketId("confirm-ride", m.userId.socket_id, {
+    //       ride,
+    //       user: req.user,
+    //     });
+    //   }
+    // });
 
     return res.status(200).json(ride);
   } catch (e) {
+    console.log(e);
     res.status(400).send({ rideError: e.message });
   }
 };
@@ -270,10 +278,6 @@ const getRideDetails = async (req, res) => {
       .populate("creatorId", "-password -salt -ridesBooked")
       .populate("driver", "-password -salt -ridesAcceptedUrl")
       .populate("mitra.userId", "-password -salt -ridesBooked");
-
-    if (ride?.status == "closed") {
-      return res.status(400).json({ rideError: "Ride is closed" });
-    }
 
     return res.status(200).json(ride);
   } catch (e) {

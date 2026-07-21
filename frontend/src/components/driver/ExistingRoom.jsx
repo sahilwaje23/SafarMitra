@@ -17,16 +17,12 @@ import { useNavigate } from "react-router-dom";
 // this is essentially the roomcard in the room list here the joining behaviour will be defined , data should be updated and sent to the context here
 const ExistingRoom = () => {
   const navigate = useNavigate();
-  const {
-    updateEverything,
-    closedRooms,
-    setClosedRooms,  
-  } = useRoom();
+  const { updateEverything, closedRooms, setClosedRooms } = useRoom();
 
   // fetching all closed rooms
   useEffect(() => {
     const fetchRooms = async () => {
-      console.log("here");
+      // console.log("here");
       const token = localStorage.getItem("token");
       if (!token) {
         console.error("No token found, cannot fetch rooms");
@@ -41,7 +37,7 @@ const ExistingRoom = () => {
               Authorization: `Bearer ${token}`,
             },
             withCredentials: true,
-          }
+          },
         );
         console.log("All rooms from API:", res.data);
 
@@ -51,7 +47,7 @@ const ExistingRoom = () => {
             return res.data;
           }
           return prevRooms; // No update if data is the same
-        }); 
+        });
       } catch (err) {
         console.error("Error fetching rooms:", err);
         alert(err);
@@ -59,7 +55,6 @@ const ExistingRoom = () => {
     };
     fetchRooms();
   }, []); // Removed closedRooms from the dependency array
-
 
   const handleAcceptRoom = async (roomId) => {
     try {
@@ -73,7 +68,7 @@ const ExistingRoom = () => {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
           withCredentials: true,
-        }
+        },
       );
       localStorage.setItem("roomid", roomId); // to get data after refresh
       console.log(res.data); // Check what the API returns
@@ -127,7 +122,7 @@ const ExistingRoom = () => {
 
       // Navigate to room-int only after state updates
       // navigate("/room-int");
-      navigate(`/captain-room-int`);
+      navigate(`/captain-room-int?roomid=${roomId}`);
     } catch (e) {
       console.log("Failed to accept room: " + e);
     }

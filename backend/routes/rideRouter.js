@@ -39,14 +39,10 @@ router.post(
 router.get(
   "/get-fare",
   authUser,
-  query("pickup")
-    .isString()
-    .isLength({ min: 3 })
-    .withMessage("PickUp is required"),
-  query("destination")
-    .isString()
-    .isLength({ min: 3 })
-    .withMessage("Destination is required"),
+  query("pickupLat").isNumeric().withMessage("pickupLat is required"),
+  query("pickupLng").isNumeric().withMessage("pickupLng is required"),
+  query("dropLat").isNumeric().withMessage("dropLat is required"),
+  query("dropLng").isNumeric().withMessage("dropLng is required"),
   handleGetFare
 );
 

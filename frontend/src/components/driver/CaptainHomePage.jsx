@@ -179,7 +179,7 @@ const CaptainHomePage = () => {
           onClose={handleCloseNewRidePopup}
           severity="success"
           variant="filled"
-          sx={{ width: '100%', alignItems: 'center', boxShadow: 3 }}
+          sx={{ width: '100%', maxWidth: 400, alignItems: 'center', boxShadow: 3, borderRadius: 2 }}
         >
           <Box>
             <Typography variant="subtitle1" fontWeight="bold">

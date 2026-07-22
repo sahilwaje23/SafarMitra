@@ -141,10 +141,13 @@ const handleGetFare = async (req, res) => {
     return res.status(400).json({ fieldErrors: errors.array() });
   }
 
-  const { pickup, destination } = req.query;
-  const { fare } = await getFare(pickup, destination);
-
-  return res.status(200).json(fare);
+  try {
+    const { pickupLat, pickupLng, dropLat, dropLng } = req.query;
+    const fareData = await getFare(pickupLat, pickupLng, dropLat, dropLng);
+    return res.status(200).json(fareData);
+  } catch (error) {
+    return res.status(400).json({ rideError: error.message });
+  }
 };
 
 const handleConfirmRide = async (req, res) => {

@@ -130,9 +130,10 @@ const MapComponent = () => {
   const isMobile = useMediaQuery('(max-width:1024px)');
 
   const [currentLocation, setCurrentLocation] = useState(null);
+  const [driverToPickupDirections, setDriverToPickupDirections] = useState(null);
+  const [driverPathPoints, setDriverPathPoints] = useState([]);
   const [showInfoWindow, setShowInfoWindow] = useState(false);
 
-  const [driverToPickupDirections, setDriverToPickupDirections] = useState(null);
   const [initialDriverLoc, setInitialDriverLoc] = useState(null);
 
   useEffect(() => {
@@ -193,11 +194,40 @@ const MapComponent = () => {
     if (response !== null) {
       if (response.status === 'OK') {
         setDriverToPickupDirections(response);
+        const path = response.routes[0].overview_path.map(p => ({ lat: p.lat(), lng: p.lng() }));
+        setDriverPathPoints(path);
       } else {
         console.error('Driver to Pickup Directions response: ', response);
       }
     }
   }, [setDriverToPickupDirections]);
+
+  useEffect(() => {
+    if (driverLocation && driverLocation.lat) {
+      setDriverPathPoints(prev => {
+        if (prev.length === 0) return prev;
+        let minDistance = Infinity;
+        let minIndex = 0;
+        prev.forEach((point, index) => {
+          const dLat = (point.lat - driverLocation.lat) * (Math.PI / 180);
+          const dLon = (point.lng - driverLocation.lng) * (Math.PI / 180);
+          const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                    Math.cos(driverLocation.lat * (Math.PI / 180)) * Math.cos(point.lat * (Math.PI / 180)) * 
+                    Math.sin(dLon / 2) * Math.sin(dLon / 2); 
+          const distance = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)); 
+          if (distance < minDistance) {
+            minDistance = distance;
+            minIndex = index;
+          }
+        });
+        // Slice from the closest point
+        if (minIndex > 0) {
+          return prev.slice(minIndex);
+        }
+        return prev;
+      });
+    }
+  }, [driverLocation]);
 
   useEffect(() => {
     // If pickup or drop changes, we clear directions to fetch a new route
@@ -365,17 +395,14 @@ const MapComponent = () => {
               />
             )}
 
-            {/* Directions Renderer for Driver to Pickup */}
-            {driverToPickupDirections && (
-              <DirectionsRenderer
+            {/* Dynamic Polyline for Driver to Pickup */}
+            {driverPathPoints.length > 0 && (
+              <Polyline
+                path={driverPathPoints}
                 options={{
-                  directions: driverToPickupDirections,
-                  suppressMarkers: true,
-                  polylineOptions: {
-                    strokeColor: '#D93025', // Red for driver-to-pickup
-                    strokeOpacity: 0.9,
-                    strokeWeight: 6,
-                  }
+                  strokeColor: '#D93025', // Red for driver-to-pickup
+                  strokeOpacity: 0.9,
+                  strokeWeight: 6,
                 }}
               />
             )}

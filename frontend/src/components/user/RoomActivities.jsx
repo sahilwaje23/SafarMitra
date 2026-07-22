@@ -11,6 +11,8 @@ import { useRoom } from "../../contexts/RoomContext.jsx";
 // basically once hitted create room herre information entered so far forwaded to roomcontext
 const RoomActivities = () => {
   const [roomData, setRoomData] = useState([]);
+  const [previewData, setPreviewData] = useState(null);
+  const [isLoadingFare, setIsLoadingFare] = useState(false);
 
   const [participantsLimit, setParticipantsLimit] = useState(1);
   const navigate = useNavigate();
@@ -174,27 +176,47 @@ const RoomActivities = () => {
 
   // MAJOR CHANGE AND LEARNING : USED ASYNC ABOVE BECAUSE  OF HOW REACT STATES ARE ASYNC IN NATURE , HAD THERE BEEN A NORMAL FUNCTION THE STATE UPDATES WOULD BE LOST , CAUSING THE CREATOR DATA TO BE NOT PROPERLY PROPOGATED IN CONTEXT , FOR MAKING SO MANY UPDATES MAKE SURE ALL UPDATES ARE APPLIED TO CONTEXT VALUES ONLY THEN NAVIGATE , HENCE USE AWAIT TO WAIT TILL ALL VALUES ARE SET
 
-  const handleCreateRoom = async () => {
-    const roomData = {
-      pickupLat: pickupLat,
-      pickupLng: pickupLng,
-      dropLat: dropLat,
-      dropLng: dropLng,
-      pickupText: pickupText,
-      dropText: dropText,
-    };
+  const handlePreviewOrCreate = async () => {
+    if (!pickupLat || !pickupLng || !dropLat || !dropLng) {
+      alert("Please select both source and destination");
+      return;
+    }
+    
+    if (!previewData) {
+      // Fetch fare preview
+      try {
+        setIsLoadingFare(true);
+        const token = localStorage.getItem("token");
+        const res = await axios.get(
+          `${import.meta.env.VITE_BASE_URL}/ride/get-fare?pickupLat=${pickupLat}&pickupLng=${pickupLng}&dropLat=${dropLat}&dropLng=${dropLng}`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        setPreviewData(res.data);
+      } catch (e) {
+        console.error(e);
+        alert("Failed to calculate fare");
+      } finally {
+        setIsLoadingFare(false);
+      }
+    } else {
+      // Create room
+      const roomData = {
+        pickupLat: pickupLat,
+        pickupLng: pickupLng,
+        dropLat: dropLat,
+        dropLng: dropLng,
+        pickupText: pickupText,
+        dropText: dropText,
+      };
 
-    // Wait for room creation to finish
-    await createRoom(roomData);
+      // Wait for room creation to finish
+      await createRoom(roomData);
 
-    // Now update the state
-    setPickup(pickupText);
-    setDestination(dropText);
-    setLimit(participantsLimit);
-
-    // Finally, navigate only when everything is set
-
-    // navigate("/room-int");
+      // Now update the state
+      setPickup(pickupText);
+      setDestination(dropText);
+      setLimit(participantsLimit);
+    }
   };
 
   useEffect(() => {
@@ -288,7 +310,27 @@ const RoomActivities = () => {
             }
           />
         </div>
-        <div className="flex flex-col gap-y-3 w-full justify-center items-center mt-12 md:mt-0">
+
+        {/* Preview Card */}
+        {previewData && (
+          <div className="bg-[#333] p-4 rounded-md w-full max-w-[342px] mt-4 shadow-lg border border-yellow-500/30">
+            <Typography variant="h6" className="text-white mb-2">Ride Summary</Typography>
+            <div className="flex justify-between text-white/90 mt-2">
+              <span>Estimated Fare:</span>
+              <span className="font-bold text-green-400">₹{previewData.fare}</span>
+            </div>
+            <div className="flex justify-between text-white/90 mt-1">
+              <span>Distance:</span>
+              <span className="font-bold">{(previewData.distance / 1000).toFixed(1)} km</span>
+            </div>
+            <div className="flex justify-between text-white/90 mt-1">
+              <span>Est. Time:</span>
+              <span className="font-bold">{Math.ceil(previewData.duration / 60)} mins</span>
+            </div>
+          </div>
+        )}
+
+        <div className="flex flex-col gap-y-3 w-full justify-center items-center mt-6 md:mt-0">
           <Button
             sx={{
               height: "3.3rem",
@@ -300,10 +342,11 @@ const RoomActivities = () => {
             variant="contained"
             type="submit"
             fullWidth
-            onClick={handleCreateRoom}
+            onClick={handlePreviewOrCreate}
+            disabled={isLoadingFare}
           >
             <Typography sx={{ fontSize: "large", fontWeight: "bold" }}>
-              Create Room
+              {isLoadingFare ? "Calculating..." : (previewData ? "Confirm & Create" : "Check Fare & Create")}
             </Typography>
           </Button>
         </div>

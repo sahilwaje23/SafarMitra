@@ -11,6 +11,8 @@ import {
   Paper,
   GlobalStyles,
   CircularProgress,
+  Snackbar,
+  Alert
 } from "@mui/material";
 import Map from "../map/Map";
 import Chat from "./Chat";
@@ -315,6 +317,21 @@ function RoomInt() {
 
   const [mitraCopy, setMitraCopy] = useState([]);
   const [searchParams] = useSearchParams();
+  const [driverAssignedPopup, setDriverAssignedPopup] = useState(null);
+
+  const calculateETA = (lat1, lon1, lat2, lon2) => {
+    if (!lat1 || !lon1 || !lat2 || !lon2) return 0;
+    const R = 6371;
+    const dLat = (lat2 - lat1) * (Math.PI / 180);
+    const dLon = (lon2 - lon1) * (Math.PI / 180);
+    const a = 
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) * 
+      Math.sin(dLon / 2) * Math.sin(dLon / 2); 
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)); 
+    const distance = R * c; 
+    return Math.ceil(distance / 0.5); // 30 km/h average speed
+  };
 
   // ^ 15-03-25 : Ye refresh handle karne ka logic hai , isse dont touch
 
@@ -388,6 +405,15 @@ function RoomInt() {
     const handleConfirmRide = (rideData) => {
       // ^ Chaitanya whatever new ride is confirmed by driver u will get data here
       console.log("Ride Confirmed by driver", rideData);
+      const driverLat = rideData?.driver?.location?.ltd;
+      const driverLng = rideData?.driver?.location?.lng;
+      const pLat = rideData?.ride?.pickup?.lat;
+      const pLng = rideData?.ride?.pickup?.lng;
+      let eta = 5; // fallback
+      if (driverLat && driverLng && pLat && pLng) {
+        eta = calculateETA(driverLat, driverLng, pLat, pLng);
+      }
+      setDriverAssignedPopup(eta);
     };
 
     const handleNewUserJoin = (rideData) => {
@@ -467,7 +493,36 @@ function RoomInt() {
     fetchRideDetails();
   }, []);
 
-  return isMobile ? <MobileView /> : <DesktopView roomIntData={roomIntData} />;
+  return (
+    <>
+      {isMobile ? <MobileView /> : <DesktopView roomIntData={roomIntData} />}
+      
+      {/* Driver Assigned Popup */}
+      <Snackbar
+        open={Boolean(driverAssignedPopup !== null)}
+        autoHideDuration={20000}
+        onClose={() => setDriverAssignedPopup(null)}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+        sx={{ mt: 2 }}
+      >
+        <Alert
+          onClose={() => setDriverAssignedPopup(null)}
+          severity="success"
+          variant="filled"
+          sx={{ width: '100%', alignItems: 'center', boxShadow: 3 }}
+        >
+          <Box>
+            <Typography variant="subtitle1" fontWeight="bold">
+              Driver Assigned!
+            </Typography>
+            <Typography variant="body2">
+              Your driver is on the way and arriving in {driverAssignedPopup} min.
+            </Typography>
+          </Box>
+        </Alert>
+      </Snackbar>
+    </>
+  );
 }
 
 export default RoomInt;

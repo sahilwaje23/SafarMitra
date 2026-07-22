@@ -7,10 +7,14 @@ import {
   ParticipantCard,
 } from "../user/DataForRoomInt";
 import { useRoom } from "../../contexts/RoomContext";
+import { EntityContext } from "../../contexts/EntityContext";
+import { useContext } from "react";
 // this is  essentially information for room interface data should be fetched from context and displayed here
 // some things  are delibarately commented out and left there to verify the existing behaviour
 // conditional rendering ensures if driver doesnt , mitras dont exist yet they wont be showcased
-function RideDetails() {
+function RideDetails({ isDriverView }) {
+  const { entity } = useContext(EntityContext);
+  const currentUserId = entity?._id || JSON.parse(localStorage.getItem("USER"))?._id || JSON.parse(localStorage.getItem("DRIVER"))?._id;
   const {
     roomid,
     creatorData,
@@ -60,9 +64,10 @@ function RideDetails() {
     name: driverData?.fullName || null,
     profileImage: driverData?.profileImage || null,
     phone: driverData?.mobileNo || null,
+    email: driverData?.email || null,
     vehicleNumber: driverData?.vehicleNo || null,
-    rating: driverData?.rating ?? null,
-    driverId: driverData?.driverId || null,
+    rating: driverData?.rating || "NA",
+    id: driverData?.socketId || null,
   };
 
   // Check if driver has at least one valid property
@@ -72,14 +77,13 @@ function RideDetails() {
 
   // need to initialize this properly
   const creator = {
-    name: creatorData?.fullName || "Anjali Verma",
-    profileImage:
-      creatorData?.profileImage || "https://via.placeholder.com/150",
-    phone: creatorData?.mobileNo || "+91 9876543211",
-    email: creatorData?.email || "anjali.verma@example.com",
-    gender: creatorData?.gender || "Female",
-    rating: creatorData?.rating ?? 4.6,
-    id: creatorData?.creatorId || "fbje2bjeb2jbejqb",
+    name: creatorData?.fullName || null,
+    profileImage: creatorData?.profileImage || null,
+    phone: creatorData?.mobileNo || null,
+    email: creatorData?.email || null,
+    gender: creatorData?.gender || null,
+    rating: creatorData?.rating || "NA",
+    id: creatorData?.creatorId || null,
   };
 
   // const mitras = mitra
@@ -150,15 +154,17 @@ function RideDetails() {
         >
           <JourneyCard journey={journey} />
         </Typography>
-        {hasValidDriver ? (
-          <Typography
-            variant="h6"
-            sx={{ fontWeight: "bold", width: "100%", p: "1" }}
-          >
-            <DriverCard driver={driver} />
-          </Typography>
-        ) : (
-          "No Driver assigned yet"
+        {(!isDriverView && !localStorage.getItem("DRIVER")) && (
+          hasValidDriver ? (
+            <Typography
+              variant="h6"
+              sx={{ fontWeight: "bold", width: "100%", p: "1" }}
+            >
+              <DriverCard driver={driver} />
+            </Typography>
+          ) : (
+            "No Driver assigned yet"
+          )
         )}
 
         <Typography
@@ -173,7 +179,7 @@ function RideDetails() {
                 variant="h6"
                 sx={{ fontWeight: "bold", width: "100%", p: "1" }}
               >
-                <ParticipantCard participant={mitra} isCreator={false} />
+                <ParticipantCard participant={mitra} isCreator={false} isCurrentUser={mitra.id === currentUserId || mitra.socketId === currentUserId} />
               </Typography>
             ))
           : "No Mitras assigned yet"}
@@ -181,7 +187,7 @@ function RideDetails() {
           variant="h6"
           sx={{ fontWeight: "bold", width: "100%", p: "1" }}
         >
-          <ParticipantCard participant={creator} isCreator={true} />
+          <ParticipantCard participant={creator} isCreator={true} isCurrentUser={creator.id === currentUserId} />
         </Typography>
       </Paper>
     </>

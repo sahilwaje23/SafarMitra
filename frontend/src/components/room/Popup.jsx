@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { Box, IconButton, Paper, Typography, Button, CircularProgress } from '@mui/material';
 import { ExpandLess, ExpandMore } from '@mui/icons-material';
-import Chat from './Chat'; // Assuming Chat is a separate component
-import RideDetails from './RideDetails'; // Assuming RideDetails is a separate component
-import theme from '../../styles/theme';
+import Chat from './Chat';
+import RideDetails from './RideDetails';
 import { useRoom } from '../../contexts/RoomContext';
+import { useLocations } from '../../contexts/LocationsContext';
+import { calculateETA } from '../../utils/eta';
+import theme from '../../styles/theme';
 const ButtonGroup = ({ activeTab, setActiveTab, isExpanded, setIsExpanded }) => {
 
   return (
@@ -59,10 +61,26 @@ const Popup = ({ isCreator, handleAssignDriver }) => {
   const [isExpanded, setIsExpanded] = useState(true);
   const [activeTab, setActiveTab] = useState('details');
   const {
-    pickup,
     destination,
     status,
+    otp
   } = useRoom();
+  const { driverLocation, currentLocation, pickupLat, pickupLng, dropLat, dropLng } = useLocations();
+  const [expandedPickup, setExpandedPickup] = useState(false);
+  const [expandedDrop, setExpandedDrop] = useState(false);
+
+  let dynamicEtaText = "";
+  if (status === "accepted") {
+    const lat1 = driverLocation?.lat || currentLocation?.[0];
+    const lng1 = driverLocation?.lng || currentLocation?.[1];
+    const eta = calculateETA(lat1, lng1, pickupLat, pickupLng);
+    dynamicEtaText = `Pickup in ${eta} mins`;
+  } else if (status === "ongoing") {
+    const lat1 = driverLocation?.lat || currentLocation?.[0];
+    const lng1 = driverLocation?.lng || currentLocation?.[1];
+    const eta = calculateETA(lat1, lng1, dropLat, dropLng);
+    dynamicEtaText = `Drop in ${eta} mins`;
+  }
   return (
     <Box
       sx={{
@@ -158,9 +176,16 @@ const Popup = ({ isCreator, handleAssignDriver }) => {
                   mb: 1,
                   marginLeft: "1rem",
                   '& span': {
-                    color: theme.palette.secondaryColor.main
+                    color: theme.palette.secondaryColor.main,
+                    cursor: 'pointer',
+                    display: expandedPickup ? 'block' : '-webkit-box',
+                    WebkitLineClamp: expandedPickup ? 'none' : 1,
+                    WebkitBoxOrient: 'vertical',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
                   }
                 }}
+                onClick={() => setExpandedPickup(!expandedPickup)}
               >
                 Source:{" "}
                 <Box component="span">
@@ -173,9 +198,16 @@ const Popup = ({ isCreator, handleAssignDriver }) => {
                   mb: 2,
                   marginLeft: "1rem",
                   '& span': {
-                    color: theme.palette.secondaryColor.main
+                    color: theme.palette.secondaryColor.main,
+                    cursor: 'pointer',
+                    display: expandedDrop ? 'block' : '-webkit-box',
+                    WebkitLineClamp: expandedDrop ? 'none' : 1,
+                    WebkitBoxOrient: 'vertical',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
                   }
                 }}
+                onClick={() => setExpandedDrop(!expandedDrop)}
               >
                 Destination:{" "}
                 <Box component="span">
@@ -184,12 +216,20 @@ const Popup = ({ isCreator, handleAssignDriver }) => {
               </Typography>
             </Box>
             <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 1 }}>
-              <Typography variant="subtitle1" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                Status: <span style={{ color: theme.palette.primaryColor.main }}>{status}</span>
-                {status === "closed" && (
-                  <CircularProgress size={16} sx={{ color: theme.palette.primaryColor.main }} />
-                )}
+              <Typography variant="subtitle2" sx={{ display: 'flex', alignItems: 'center', gap: 1, color: theme.palette.primaryColor.main }}>
+                {status === "open" && "Status: Open"}
+                {status === "closed" && "Searching for driver..."}
+                {status === "accepted" && dynamicEtaText}
+                {status === "ongoing" && dynamicEtaText}
+                {status === "completed" && "Journey completed"}
               </Typography>
+              {status === "accepted" && otp && (
+                <Box sx={{ bgcolor: 'rgba(255,255,255,0.1)', px: 1, py: 0.5, borderRadius: 1, border: `1px solid ${theme.palette.primaryColor.main}` }}>
+                  <Typography variant="caption" sx={{ color: theme.palette.txtcol, fontWeight: 'bold' }}>
+                    OTP: <span style={{ color: theme.palette.primaryColor.main, letterSpacing: 1 }}>{otp}</span>
+                  </Typography>
+                </Box>
+              )}
               {isCreator && status === "open" && (
                 <Button
                   variant="contained"

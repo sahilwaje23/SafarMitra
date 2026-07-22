@@ -25,9 +25,9 @@ export default function ActiveRideComponent({ info }) {
     const isDriver = localStorage.getItem("DRIVER");
 
     if (isUser) {
-      navigate("/room-int");
+      window.location.href = `/room-int?roomid=${info._id}`;
     } else if (isDriver) {
-      navigate("/captain-room-int");
+      window.location.href = `/captain-room-int?roomid=${info._id}`;
     }
   };
 

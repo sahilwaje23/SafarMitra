@@ -10,6 +10,10 @@ import {
   useMediaQuery,
   Paper,
   GlobalStyles,
+  TextField,
+  Dialog,
+  Snackbar,
+  Alert
 } from "@mui/material";
 import Map from "../map/Map";
 import Chat from "../room/Chat";
@@ -22,11 +26,10 @@ import { useRoom } from "../../contexts/RoomContext";
 import { useLocations } from "../../contexts/LocationsContext";
 import axios from "axios";
 import { useSearchParams } from "react-router-dom";
+import { calculateETA } from "../../utils/eta";
 
-const handleEndRide = async () => {
-  const [searchParams] = useSearchParams();
+const handleEndRide = async (rideId) => {
   const token = localStorage.getItem("token");
-  const rideId = searchParams.get("roomid");
 
   if (!rideId || !token) {
     alert("roomid ID or Token not found");
@@ -53,33 +56,6 @@ const handleEndRide = async () => {
 const ButtonGroup = ({ activeTab, setActiveTab }) => {
   return (
     <Box sx={{ display: "flex", gap: 2 }}>
-      <Button
-        onClick={() => handleEndRide()}
-        sx={{
-          bgcolor:
-            activeTab === "details"
-              ? theme.palette.primaryColor.main
-              : "transparent",
-          color:
-            activeTab === "details"
-              ? theme.palette.txtcol
-              : theme.palette.primaryColor.main,
-          border: `1px solid ${theme.palette.primaryColor.main}`,
-          py: 1.5,
-          px: 4,
-          borderRadius: "1rem",
-          fontWeight: "bold",
-          outline: "none",
-          "&:hover": {
-            bgcolor:
-              activeTab === "details"
-                ? theme.palette.primaryColor.hover
-                : "rgba(254, 196, 0, 0.1)",
-          },
-        }}
-      >
-        Cancel Ride
-      </Button>
       <Button
         onClick={() => setActiveTab("details")}
         sx={{
@@ -138,6 +114,107 @@ const ButtonGroup = ({ activeTab, setActiveTab }) => {
   );
 };
 
+const DriverControls = () => {
+  const { status, fare } = useRoom();
+  const [otp, setOtp] = useState("");
+  const [searchParams] = useSearchParams();
+  const rideId = searchParams.get("roomid");
+  const [rideEndedPopup, setRideEndedPopup] = useState(false);
+
+  const onStartRide = async () => {
+    if (!otp) {
+      alert("Please enter OTP");
+      return;
+    }
+    const token = localStorage.getItem("token");
+    try {
+      await axios.post(
+        `${import.meta.env.VITE_BASE_URL}/ride/start-ride`,
+        { rideId, otp },
+        { headers: { Authorization: `Bearer ${token}` }, withCredentials: true }
+      );
+      // Wait for socket to update room context or manually refresh
+      window.location.reload(); 
+    } catch (err) {
+      alert("Error starting ride: " + (err.response?.data?.rideError || err.message));
+    }
+  };
+
+  const onEndRide = async () => {
+    await handleEndRide(rideId);
+    setRideEndedPopup(true);
+  };
+
+  return (
+    <>
+      {status === 'accepted' && (
+        <Box sx={{ p: 2, mb: 2, mt: 1, background: 'rgba(255,255,255,0.05)', borderRadius: 2, border: `1px solid ${theme.palette.primaryColor.main}` }}>
+          <Typography variant="h6" sx={{ color: theme.palette.primaryColor.main, mb: 1, fontWeight: 'bold' }}>
+            Start Trip
+          </Typography>
+          <Typography variant="body2" sx={{ mb: 2, color: '#ccc' }}>
+            Enter the secure OTP provided by the passenger.
+          </Typography>
+          <Box sx={{ display: 'flex', gap: 2 }}>
+            <TextField 
+              size="small" 
+              placeholder="4-digit OTP" 
+              value={otp}
+              onChange={(e) => setOtp(e.target.value)}
+              sx={{ flex: 1, input: { color: 'white' }, '& .MuiOutlinedInput-root': { '& fieldset': { borderColor: 'rgba(255,255,255,0.3)' } } }}
+            />
+            <Button variant="contained" onClick={onStartRide} sx={{ bgcolor: '#4caf50', fontWeight: 'bold', color: '#fff' }}>
+              Verify & Start
+            </Button>
+          </Box>
+        </Box>
+      )}
+
+      {status === 'ongoing' && (
+        <Box sx={{ p: 2, mb: 2, mt: 1, background: 'rgba(255,255,255,0.05)', borderRadius: 2, border: '1px solid #f44336' }}>
+          <Typography variant="h6" sx={{ color: '#f44336', mb: 1, fontWeight: 'bold' }}>
+            Trip in Progress
+          </Typography>
+          <Typography variant="body2" sx={{ mb: 2, color: '#ccc' }}>
+            Drive safely to the destination.
+          </Typography>
+          <Button variant="contained" fullWidth onClick={onEndRide} sx={{ bgcolor: '#f44336', fontWeight: 'bold', color: '#fff', py: 1.5, borderRadius: 2 }}>
+            End Ride
+          </Button>
+        </Box>
+      )}
+
+      {/* Ride Ended Popup for Driver */}
+      <Dialog 
+        open={rideEndedPopup} 
+        onClose={() => setRideEndedPopup(false)}
+        PaperProps={{ style: { borderRadius: 16, background: '#1e1e1e' } }}
+      >
+        <Box sx={{ p: 4, textAlign: 'center', color: 'white', minWidth: '300px' }}>
+          <Box sx={{ mb: 2, display: 'flex', justifyContent: 'center' }}>
+            <Box sx={{ width: 60, height: 60, borderRadius: '50%', background: theme.palette.primaryColor.main, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Typography variant="h4">💰</Typography>
+            </Box>
+          </Box>
+          <Typography variant="h5" fontWeight="bold" sx={{ color: theme.palette.primaryColor.main, mb: 2 }}>
+            Trip Completed!
+          </Typography>
+          <Typography variant="body1" sx={{ mb: 1, color: 'rgba(255,255,255,0.7)' }}>
+            Please Collect Cash
+          </Typography>
+          <Typography variant="h2" fontWeight="bold" sx={{ color: '#4caf50', my: 2 }}>
+            ₹{fare || "0"}
+          </Typography>
+          <Button variant="contained" fullWidth onClick={() => { setRideEndedPopup(false); window.location.href = "/captain-homepage"; }} sx={{ bgcolor: theme.palette.primaryColor.main, color: '#000', fontWeight: 'bold', mt: 2, py: 1.5, borderRadius: 2 }}>
+            Confirm & Exit
+          </Button>
+        </Box>
+      </Dialog>
+
+    </>
+  );
+};
+
 const MobileView = () => {
   const { creatorData } = useRoom();
   return (
@@ -161,7 +238,10 @@ const MobileView = () => {
             // height:'32px',
           }}
         >
-          {/* this popup card contains all the info for particular room for mobile view hence context is directly refered there not that popup wont have all values as further values are distrubuted to RideDetails.jsx which is basically just the Room interface data like information about the drivers creator and mitras their information and other information about the ride */}
+          {/* Driver specific action controls for start/end ride */}
+          <Box sx={{ px: 2 }}>
+            <DriverControls />
+          </Box>
           <Popup />
         </Box>
       </Box>
@@ -172,6 +252,22 @@ const MobileView = () => {
 function DesktopView({ roomIntData }) {
   const [activeTab, setActiveTab] = useState("details");
   const { pickup, destination, status } = useRoom();
+  const { driverLocation, currentLocation, pickupLat, pickupLng, dropLat, dropLng } = useLocations();
+  const [expandedPickup, setExpandedPickup] = useState(false);
+  const [expandedDrop, setExpandedDrop] = useState(false);
+
+  let dynamicEtaText = "";
+  if (status === "accepted") {
+    const lat1 = driverLocation?.lat || currentLocation?.[0];
+    const lng1 = driverLocation?.lng || currentLocation?.[1];
+    const eta = calculateETA(lat1, lng1, pickupLat, pickupLng);
+    dynamicEtaText = `Pickup in ${eta} mins`;
+  } else if (status === "ongoing") {
+    const lat1 = driverLocation?.lat || currentLocation?.[0];
+    const lng1 = driverLocation?.lng || currentLocation?.[1];
+    const eta = calculateETA(lat1, lng1, dropLat, dropLng);
+    dynamicEtaText = `Drop in ${eta} mins`;
+  }
   return (
     <Box
       sx={{
@@ -221,10 +317,13 @@ function DesktopView({ roomIntData }) {
           }}
         >
           <ButtonGroup activeTab={activeTab} setActiveTab={setActiveTab} />
-          <Typography sx={{ color: theme.palette.primaryColor.main }}>
-            Status : {status}
+          <Typography sx={{ color: theme.palette.primaryColor.main, fontWeight: 'bold' }}>
+            {status === "accepted" && dynamicEtaText}
+            {status === "ongoing" && dynamicEtaText}
+            {status === "completed" && "Trip Completed"}
           </Typography>
         </Box>
+        <DriverControls />
         {activeTab === "chat" ? (
           <Box
             sx={{
@@ -243,8 +342,15 @@ function DesktopView({ roomIntData }) {
                 marginLeft: "1rem",
                 "& span": {
                   color: theme.palette.secondaryColor.main,
+                  cursor: 'pointer',
+                  display: expandedPickup ? 'block' : '-webkit-box',
+                  WebkitLineClamp: expandedPickup ? 'none' : 1,
+                  WebkitBoxOrient: 'vertical',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
                 },
               }}
+              onClick={() => setExpandedPickup(!expandedPickup)}
             >
               Source: <Box component="span">{pickup || "CSMT"}</Box>
             </Typography>
@@ -255,13 +361,20 @@ function DesktopView({ roomIntData }) {
                 marginLeft: "1rem",
                 "& span": {
                   color: theme.palette.secondaryColor.main,
+                  cursor: 'pointer',
+                  display: expandedDrop ? 'block' : '-webkit-box',
+                  WebkitLineClamp: expandedDrop ? 'none' : 1,
+                  WebkitBoxOrient: 'vertical',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
                 },
               }}
+              onClick={() => setExpandedDrop(!expandedDrop)}
             >
               Destination: <Box component="span">{destination || "Kalyan"}</Box>
             </Typography>
             <div className="overflow-y-auto ">
-              <RideDetails />
+              <RideDetails isDriverView={true} />
             </div>
           </>
         )}
@@ -272,14 +385,24 @@ function DesktopView({ roomIntData }) {
 
 function RoomIntDriver() {
   const { creatorData } = useRoom();
-  const isMobile = useMediaQuery("(max-width:1024px)");
+  const [isMobile, setIsMobile] = useState(
+    window.matchMedia("(max-width: 768px)").matches
+  );
+
+  const [chatNotification, setChatNotification] = useState({ open: false, message: "" });
   const { sendMessage, recieveMessage } = useContext(SocketContext);
+
+  useEffect(() => {
+    recieveMessage("new-chat", (data) => {
+      setChatNotification({ open: true, message: `New message from ${data.senderName}` });
+    });
+  }, [recieveMessage]);
   const { entity } = useContext(EntityContext);
   const driverId = entity._id || JSON.parse(localStorage.getItem("DRIVER"))?._id || JSON.parse(localStorage.getItem("USER"))?._id;
   const roomIntData = useRoom();
   const [searchParams] = useSearchParams();
   const { updateEverything } = useRoom();
-  const { setPickupLat, setPickupLng, setPickupText, setDropLat, setDropLng, setDropText } = useLocations();
+  const { setPickupLat, setPickupLng, setPickupText, setDropLat, setDropLng, setDropText, setDriverLocation } = useLocations();
   const rideId = searchParams.get("roomid");
 
   const fetchRideDetails = async () => {
@@ -317,6 +440,12 @@ function RoomIntDriver() {
         setDropLat(rideData.destination.lat);
         setDropLng(rideData.destination.lng);
         setDropText(rideData.destination.text);
+      }
+      if (rideData?.driver?.location?.ltd && rideData?.driver?.location?.lng) {
+        setDriverLocation({
+          lat: rideData.driver.location.ltd,
+          lng: rideData.driver.location.lng,
+        });
       }
     } catch (err) {
       console.log(err);
@@ -383,7 +512,21 @@ function RoomIntDriver() {
     fetchRideDetails();
   }, []);
 
-  return isMobile ? <MobileView /> : <DesktopView roomIntData={roomIntData} />;
+  return (
+    <>
+      {isMobile ? <MobileView /> : <DesktopView roomIntData={roomIntData} />}
+      <Snackbar
+        open={chatNotification.open}
+        autoHideDuration={4000}
+        onClose={() => setChatNotification({ ...chatNotification, open: false })}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        <Alert severity="info" sx={{ width: '100%', mt: 8 }}>
+          {chatNotification.message}
+        </Alert>
+      </Snackbar>
+    </>
+  );
 }
 
 export default RoomIntDriver;

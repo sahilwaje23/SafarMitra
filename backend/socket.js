@@ -88,7 +88,19 @@ function initialiseSocket(server) {
       socket.join(`ride:${rideId}`);
       socket.data.currentRideId = rideId;
       console.log("after setting", socket.id, socket.data.currentRideId);
+    });
 
+    socket.on("send-message", (data) => {
+      const { rideId, message, senderName, senderId } = data;
+      if (rideId) {
+        console.log("sending new-chat to room", rideId, data);
+        socket.to(`ride:${rideId}`).emit("new-chat", {
+          message,
+          senderName,
+          senderId,
+          timestamp: new Date().toISOString()
+        });
+      }
     });
 
     socket.on("disconnect", () => {

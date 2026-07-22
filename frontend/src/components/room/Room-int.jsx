@@ -12,7 +12,8 @@ import {
   GlobalStyles,
   CircularProgress,
   Snackbar,
-  Alert
+  Alert,
+  Dialog
 } from "@mui/material";
 import Map from "../map/Map";
 import Chat from "./Chat";
@@ -25,6 +26,7 @@ import { useRoom } from "../../contexts/RoomContext";
 import axios from "axios";
 import { useSearchParams } from "react-router-dom";
 import { useLocations } from "../../contexts/LocationsContext";
+import { calculateETA } from "../../utils/eta";
 
 const ButtonGroup = ({ activeTab, setActiveTab }) => {
   return (
@@ -150,6 +152,20 @@ function DesktopView({ roomIntData }) {
   const [activeTab, setActiveTab] = useState("details");
   const { pickup, destination, status, roomid, creatorData, setStatus } =
     useRoom();
+  const { driverLocation, currentLocation, pickupLat, pickupLng, dropLat, dropLng } = useLocations();
+
+  let dynamicEtaText = "";
+  if (status === "accepted") {
+    const lat1 = driverLocation?.lat || currentLocation?.[0];
+    const lng1 = driverLocation?.lng || currentLocation?.[1];
+    const eta = calculateETA(lat1, lng1, pickupLat, pickupLng);
+    dynamicEtaText = `Pickup in ${eta} mins`;
+  } else if (status === "ongoing") {
+    const lat1 = driverLocation?.lat || currentLocation?.[0];
+    const lng1 = driverLocation?.lng || currentLocation?.[1];
+    const eta = calculateETA(lat1, lng1, dropLat, dropLng);
+    dynamicEtaText = `Drop in ${eta} mins`;
+  }
   const { entity } = useContext(EntityContext);
   const userId = entity?._id || JSON.parse(localStorage.getItem("USER"))?._id;
   const isCreator = userId === creatorData?.creatorId;
@@ -232,14 +248,19 @@ function DesktopView({ roomIntData }) {
                 gap: 1,
               }}
             >
-              Status : {status}
-              {status === "closed" && (
-                <CircularProgress
-                  size={16}
-                  sx={{ color: theme.palette.primaryColor.main }}
-                />
-              )}
+              {status === "open" && "Status : Open"}
+              {status === "closed" && "Searching for driver..."}
+              {status === "accepted" && dynamicEtaText}
+              {status === "ongoing" && dynamicEtaText}
+              {status === "completed" && "Journey completed"}
             </Typography>
+            {status === "accepted" && roomIntData?.otp && (
+              <Box sx={{ bgcolor: 'rgba(255,255,255,0.1)', px: 2, py: 0.5, borderRadius: 1, border: `1px solid ${theme.palette.primaryColor.main}` }}>
+                <Typography variant="body2" sx={{ color: theme.palette.txtcol, fontWeight: 'bold' }}>
+                  OTP: <span style={{ color: theme.palette.primaryColor.main, letterSpacing: 2 }}>{roomIntData.otp}</span>
+                </Typography>
+              </Box>
+            )}
             {isCreator && status === "open" && (
               <Button
                 variant="contained"
@@ -315,25 +336,26 @@ function RoomInt() {
   const { pickup, destination, updateEverything, setMitra, setStatus } =
     useRoom();
 
+  const [chatNotification, setChatNotification] = useState({ open: false, message: "" });
+
+  useEffect(() => {
+    recieveMessage("new-chat", (data) => {
+      setChatNotification({ open: true, message: `New message from ${data.senderName}` });
+    });
+  }, [recieveMessage]);
+
   const [mitraCopy, setMitraCopy] = useState([]);
   const [searchParams] = useSearchParams();
-  const [driverAssignedPopup, setDriverAssignedPopup] = useState(null);
+  const [rideStartedPopup, setRideStartedPopup] = useState(false);
+  const [rideEndedPopup, setRideEndedPopup] = useState(null);
+  const [rideAcceptedPopup, setRideAcceptedPopup] = useState(false);
 
-  const calculateETA = (lat1, lon1, lat2, lon2) => {
-    if (!lat1 || !lon1 || !lat2 || !lon2) return 0;
-    const R = 6371;
-    const dLat = (lat2 - lat1) * (Math.PI / 180);
-    const dLon = (lon2 - lon1) * (Math.PI / 180);
-    const a = 
-      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) * 
-      Math.sin(dLon / 2) * Math.sin(dLon / 2); 
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)); 
-    const distance = R * c; 
-    return Math.ceil(distance / 0.5); // 30 km/h average speed
-  };
-
-  // ^ 15-03-25 : Ye refresh handle karne ka logic hai , isse dont touch
+  useEffect(() => {
+    recieveMessage("confirm-ride", (rideData) => {
+      setRideAcceptedPopup(true);
+      // optionally could fetch ride details again
+    });
+  }, [recieveMessage]);
 
   const fetchRideDetails = async () => {
     const rideId = searchParams.get("roomid");
@@ -377,6 +399,12 @@ function RoomInt() {
         setDropLng(rideData.destination.lng);
         setDropText(rideData.destination.text);
       }
+      if (rideData?.driver?.location?.ltd && rideData?.driver?.location?.lng) {
+        setDriverLocation({
+          lat: rideData.driver.location.ltd,
+          lng: rideData.driver.location.lng,
+        });
+      }
 
     } catch (err) {
       console.log(err);
@@ -405,6 +433,11 @@ function RoomInt() {
     const handleConfirmRide = (rideData) => {
       // ^ Chaitanya whatever new ride is confirmed by driver u will get data here
       console.log("Ride Confirmed by driver", rideData);
+      
+      if (rideData?.ride) {
+        updateEverything(rideData.ride);
+      }
+
       const driverLat = rideData?.driver?.location?.ltd;
       const driverLng = rideData?.driver?.location?.lng;
       const pLat = rideData?.ride?.pickup?.lat;
@@ -413,7 +446,7 @@ function RoomInt() {
       if (driverLat && driverLng && pLat && pLng) {
         eta = calculateETA(driverLat, driverLng, pLat, pLng);
       }
-      setDriverAssignedPopup(eta);
+      // driverAssignedPopup logic removed
     };
 
     const handleNewUserJoin = (rideData) => {
@@ -437,9 +470,16 @@ function RoomInt() {
     };
 
     const handleRideEnded = (rideData) => {
-      // ^ Chaitanya whatever a ride ends u will get data here
-      console.log("Ride Ended", rideData);
-      alert("Ride Ended: " + rideData.fare);
+      console.log("Ride ended:", rideData);
+      setRideEndedPopup(rideData);
+    };
+
+    const handleRideStarted = (rideData) => {
+      console.log("Ride started:", rideData);
+      if (rideData) {
+        updateEverything(rideData);
+      }
+      setRideStartedPopup(true);
     };
 
     const handleNewChat = ({ msg, name }) => {
@@ -467,6 +507,7 @@ function RoomInt() {
     recieveMessage("confirm-ride", handleConfirmRide);
     recieveMessage("new-userJoin", handleNewUserJoin);
     recieveMessage("ride-ended", handleRideEnded);
+    recieveMessage("ride-started", handleRideStarted);
     recieveMessage("new-chat", handleNewChat);
     recieveMessage("room-closed", handleRoomClosed);
     recieveMessage("update-location-driver", handleDriverLocation);
@@ -476,6 +517,7 @@ function RoomInt() {
         stopRecieveMessage("confirm-ride", handleConfirmRide);
         stopRecieveMessage("new-userJoin", handleNewUserJoin);
         stopRecieveMessage("ride-ended", handleRideEnded);
+        stopRecieveMessage("ride-started", handleRideStarted);
         stopRecieveMessage("new-chat", handleNewChat);
         stopRecieveMessage("room-closed", handleRoomClosed);
       }
@@ -497,28 +539,86 @@ function RoomInt() {
     <>
       {isMobile ? <MobileView /> : <DesktopView roomIntData={roomIntData} />}
       
-      {/* Driver Assigned Popup */}
-      <Snackbar
-        open={Boolean(driverAssignedPopup !== null)}
-        autoHideDuration={20000}
-        onClose={() => setDriverAssignedPopup(null)}
-        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
-        sx={{ mt: 2 }}
+      {/* Driver Assigned & OTP Popup Removed */}
+
+      {/* Ride Started Popup */}
+      <Dialog 
+        open={rideStartedPopup} 
+        onClose={() => setRideStartedPopup(false)}
+        PaperProps={{ style: { borderRadius: 16, background: '#1e1e1e' } }}
       >
-        <Alert
-          onClose={() => setDriverAssignedPopup(null)}
-          severity="success"
-          variant="filled"
-          sx={{ width: '100%', alignItems: 'center', boxShadow: 3 }}
-        >
-          <Box>
-            <Typography variant="subtitle1" fontWeight="bold">
-              Driver Assigned!
-            </Typography>
-            <Typography variant="body2">
-              Your driver is on the way and arriving in {driverAssignedPopup} min.
-            </Typography>
+        <Box sx={{ p: 4, textAlign: 'center', color: 'white', minWidth: '300px' }}>
+          <Typography variant="h5" fontWeight="bold" sx={{ color: '#4caf50', mb: 2 }}>
+            Journey Started!
+          </Typography>
+          <Typography variant="body1" sx={{ mb: 4, color: 'rgba(255,255,255,0.8)' }}>
+            Your OTP has been verified and your trip has begun. Sit back, relax, and enjoy the ride!
+          </Typography>
+          <Button variant="contained" fullWidth onClick={() => setRideStartedPopup(false)} sx={{ bgcolor: '#4caf50', color: '#fff', fontWeight: 'bold', py: 1.5, borderRadius: 2 }}>
+            Awesome
+          </Button>
+        </Box>
+      </Dialog>
+
+      {/* Ride Ended Popup */}
+      <Dialog 
+        open={Boolean(rideEndedPopup)} 
+        onClose={() => setRideEndedPopup(null)}
+        PaperProps={{ style: { borderRadius: 16, background: '#1e1e1e' } }}
+      >
+        <Box sx={{ p: 4, textAlign: 'center', color: 'white', minWidth: '300px' }}>
+          <Box sx={{ mb: 2, display: 'flex', justifyContent: 'center' }}>
+            <Box sx={{ width: 60, height: 60, borderRadius: '50%', background: theme.palette.primaryColor.main, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Typography variant="h4">🏁</Typography>
+            </Box>
           </Box>
+          <Typography variant="h5" fontWeight="bold" sx={{ color: theme.palette.primaryColor.main, mb: 2 }}>
+            You've Arrived!
+          </Typography>
+          <Typography variant="body1" sx={{ mb: 1, color: 'rgba(255,255,255,0.7)' }}>
+            Total Fare to Pay
+          </Typography>
+          <Typography variant="h2" fontWeight="bold" sx={{ color: '#4caf50', my: 2 }}>
+            ₹{rideEndedPopup?.ride?.fare || "0"}
+          </Typography>
+          <Button variant="contained" fullWidth onClick={() => { setRideEndedPopup(null); window.location.href = "/"; }} sx={{ bgcolor: theme.palette.primaryColor.main, color: '#000', fontWeight: 'bold', mt: 2, py: 1.5, borderRadius: 2 }}>
+            Pay & Complete
+          </Button>
+        </Box>
+      </Dialog>
+      
+      {/* Ride Accepted Popup */}
+      <Dialog 
+        open={rideAcceptedPopup} 
+        onClose={() => setRideAcceptedPopup(false)}
+        PaperProps={{ style: { borderRadius: 16, background: '#1e1e1e' } }}
+      >
+        <Box sx={{ p: 4, textAlign: 'center', color: 'white', minWidth: '300px' }}>
+          <Box sx={{ mb: 2, display: 'flex', justifyContent: 'center' }}>
+            <Box sx={{ width: 60, height: 60, borderRadius: '50%', background: theme.palette.primaryColor.main, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Typography variant="h4">🚕</Typography>
+            </Box>
+          </Box>
+          <Typography variant="h5" fontWeight="bold" sx={{ color: theme.palette.primaryColor.main, mb: 2 }}>
+            Ride Confirmed!
+          </Typography>
+          <Typography variant="body1" sx={{ mb: 4, color: 'rgba(255,255,255,0.8)' }}>
+            A captain has accepted your ride and is on their way.
+          </Typography>
+          <Button variant="contained" fullWidth onClick={() => { setRideAcceptedPopup(false); fetchRideDetails(); }} sx={{ bgcolor: theme.palette.primaryColor.main, color: '#000', fontWeight: 'bold', py: 1.5, borderRadius: 2 }}>
+            View Details
+          </Button>
+        </Box>
+      </Dialog>
+
+      <Snackbar
+        open={chatNotification.open}
+        autoHideDuration={4000}
+        onClose={() => setChatNotification({ ...chatNotification, open: false })}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        <Alert severity="info" sx={{ width: '100%', mt: 8 }}>
+          {chatNotification.message}
         </Alert>
       </Snackbar>
     </>

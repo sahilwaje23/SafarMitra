@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from "react";
-import { Box, useMediaQuery, Snackbar, Alert, Typography } from "@mui/material";
+import { Box, useMediaQuery, Snackbar, Alert, Typography, Dialog, Button } from "@mui/material";
 import QuickActions from "./QuickActions"; // Assuming the component is renamed without 'Captain'
 import Dashboard from "./Dashboard"; // Assuming the component is renamed without 'Captain'
 import Map from "../map/Map";
@@ -28,29 +28,32 @@ const CaptainHomePage = () => {
   const [currActRide, setCurrActRide] = useState(null);
 
   useEffect(() => {
-    if (activeAcceptedRide) {
-      const fetchRideDetails = async () => {
-        try {
+    const refreshProfileAndRide = async () => {
+      try {
+        const profileRes = await axios.get(
+          `${import.meta.env.VITE_BASE_URL}/driver/my-profile`,
+          {
+            headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+            withCredentials: true,
+          }
+        );
+        const latestEntity = profileRes.data;
+        
+        if (latestEntity?.currAcceptedRide) {
           const response = await axios.get(
-            `${import.meta.env.VITE_BASE_URL}/ride/get-ride-details?rideId=${
-              entity.currAcceptedRide
-            }`,
+            `${import.meta.env.VITE_BASE_URL}/ride/get-ride-details?rideId=${latestEntity.currAcceptedRide}`,
             {
-              headers: {
-                Authorization: `Bearer ${localStorage.getItem("token")}`,
-              },
+              headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
               withCredentials: true,
-            },
+            }
           );
-          console.log("Ride details:", response.data);
-          localStorage.setItem("roomid", activeAcceptedRide);
           setCurrActRide(response.data);
-        } catch (error) {
-          console.error("Error fetching ride details:", error);
         }
-      };
-      fetchRideDetails();
-    }
+      } catch (error) {
+        console.error("Error refreshing active ride:", error);
+      }
+    };
+    refreshProfileAndRide();
   }, []);
 
   // ^ Chaitanya ithe status online asel tr pratyek 10 sec la update hoil location
@@ -62,6 +65,32 @@ const CaptainHomePage = () => {
       return;
     }
     setNewRidePopup(null);
+  };
+
+  const handleAcceptRide = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const rideId = newRidePopup?.roomData?._id;
+      if (!rideId) return;
+
+      const response = await axios.post(
+        `${import.meta.env.VITE_BASE_URL}/ride/confirm-ride`,
+        { rideId },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      
+      if (response.status === 200) {
+        setNewRidePopup(null);
+        window.location.href = `/captain-room-int?roomid=${rideId}`;
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Error confirming ride: " + (err.response?.data?.message || err.message));
+    }
   };
 
   // online offline status
@@ -163,35 +192,43 @@ const CaptainHomePage = () => {
   return (
     <>
       <div className="absolute z-10">
-        {activeAcceptedRide && <ActiveRideComponent info={currActRide} />}
+        {currActRide && <ActiveRideComponent info={currActRide} />}
       </div>
       {isMobile ? <MobileView /> : <DesktopView />}
       
       {/* New Ride Popup */}
-      <Snackbar
-        open={Boolean(newRidePopup)}
-        autoHideDuration={30000}
+      <Dialog 
+        open={Boolean(newRidePopup)} 
         onClose={handleCloseNewRidePopup}
-        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
-        sx={{ mt: 2 }}
+        PaperProps={{ style: { borderRadius: 16, background: 'linear-gradient(135deg, #1e1e1e 0%, #2a2a2a 100%)' } }}
       >
-        <Alert
-          onClose={handleCloseNewRidePopup}
-          severity="success"
-          variant="filled"
-          sx={{ width: '100%', maxWidth: 400, alignItems: 'center', boxShadow: 3, borderRadius: 2 }}
-        >
-          <Box>
-            <Typography variant="subtitle1" fontWeight="bold">
-              New Ride Request Available!
+        <Box sx={{ p: 4, textAlign: 'center', color: 'white', minWidth: '300px' }}>
+          <Box sx={{ mb: 2, display: 'flex', justifyContent: 'center' }}>
+            <Box sx={{ width: 60, height: 60, borderRadius: '50%', background: theme.palette.primaryColor.main, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Typography variant="h4">🔔</Typography>
+            </Box>
+          </Box>
+          <Typography variant="h5" fontWeight="bold" sx={{ color: theme.palette.primaryColor.main, mb: 1 }}>
+            New Ride Request!
+          </Typography>
+          
+          <Box sx={{ background: 'rgba(255,255,255,0.05)', p: 2, borderRadius: 2, border: '1px dashed rgba(255,255,255,0.2)', textAlign: 'left', mt: 3, mb: 3 }}>
+            <Typography variant="body2" sx={{ color: '#ccc', mb: 1 }}>
+              <strong style={{ color: theme.palette.primaryColor.main }}>From:</strong> {newRidePopup?.roomData?.pickup?.text || 'Unknown'}
             </Typography>
-            <Typography variant="body2">
-              From: {newRidePopup?.roomData?.pickup?.text || 'Unknown'} <br/>
-              To: {newRidePopup?.roomData?.destination?.text || 'Unknown'}
+            <Typography variant="body2" sx={{ color: '#ccc', mb: 1 }}>
+              <strong style={{ color: theme.palette.primaryColor.main }}>To:</strong> {newRidePopup?.roomData?.destination?.text || 'Unknown'}
+            </Typography>
+            <Typography variant="body2" sx={{ color: '#ccc' }}>
+              <strong style={{ color: theme.palette.primaryColor.main }}>Passengers:</strong> {newRidePopup?.roomData?.pcount || 1}
             </Typography>
           </Box>
-        </Alert>
-      </Snackbar>
+          
+          <Button variant="contained" fullWidth onClick={handleAcceptRide} sx={{ bgcolor: theme.palette.primaryColor.main, color: '#000', fontWeight: 'bold', py: 1.5, borderRadius: 2 }}>
+            Accept Ride
+          </Button>
+        </Box>
+      </Dialog>
     </>
   );
 };

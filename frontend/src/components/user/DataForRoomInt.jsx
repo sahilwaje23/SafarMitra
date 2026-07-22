@@ -15,13 +15,14 @@ const DriverCard = ({ driver }) => {
             <Avatar 
               src={driver.profileImage} 
               alt={driver.name}
-              className="w-12 h-12"
+              className="w-16 h-16"
+              sx={{ width: 64, height: 64 }}
             >
               {driver.name?.charAt(0)}
             </Avatar>
             <Box className="space-y-3">
               <Box className="flex items-center gap-2">
-                <Typography className="text-white text-lg font-semibold">
+                <Typography className="text-white text-xl font-bold">
                   {driver.name}
                 </Typography>
               </Box>
@@ -54,7 +55,7 @@ const DriverCard = ({ driver }) => {
 };
 
 // Participant Card Component
-const ParticipantCard = ({ participant, isCreator }) => {
+const ParticipantCard = ({ participant, isCreator, isCurrentUser }) => {
   return (
     <Card className="w-full bg-[#2a2a2a] hover:bg-[#333333] transition-colors border-0">
       <Box className="p-4">
@@ -63,14 +64,15 @@ const ParticipantCard = ({ participant, isCreator }) => {
             <Avatar 
               src={participant.profileImage} 
               alt={participant.name}
-              className="w-12 h-12"
+              className="w-10 h-10"
+              sx={{ width: 40, height: 40 }}
             >
               {participant.name?.charAt(0)}
             </Avatar>
             <Box className="space-y-3">
               <Box className="flex items-center gap-2">
-                <Typography className="text-white text-lg font-semibold">
-                  {participant.name}
+                <Typography className="text-white text-base font-semibold">
+                  {participant.name} {isCurrentUser && <span className="text-gray-400 text-sm font-normal ml-1">(You)</span>}
                 </Typography>
                 {isCreator && <AiFillCrown className="text-yellow-500 text-xl" />}
               </Box>

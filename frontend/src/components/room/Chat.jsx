@@ -1,20 +1,41 @@
-import React, { useState, useEffect, useRef } from "react";
-import { Box, Paper, TextField, Button, Typography } from "@mui/material";
+import React, { useState, useEffect, useRef, useContext } from "react";
+import { Box, Paper, TextField, Button, Typography, Avatar } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
+import { SocketContext } from "../../contexts/Socket";
+import { EntityContext } from "../../contexts/EntityContext";
+import { useRoom } from "../../contexts/RoomContext";
+
 // use local storage or some light weight database to persist messages 
 function Chat() {
   const theme = useTheme();
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const messagesEndRef = useRef(null);
+  
+  const { sendMessage, recieveMessage } = useContext(SocketContext);
+  const { entity } = useContext(EntityContext);
+  const { roomid } = useRoom();
+
+  const currentUserId = entity?._id || JSON.parse(localStorage.getItem("USER"))?._id || JSON.parse(localStorage.getItem("DRIVER"))?._id;
+  const currentUserName = entity?.fullName || JSON.parse(localStorage.getItem("USER"))?.fullName || JSON.parse(localStorage.getItem("DRIVER"))?.fullName || "User";
 
   // Load messages from sessionStorage when the component mounts
   useEffect(() => {
-    const storedMessages = sessionStorage.getItem("messages");
+    const storedMessages = sessionStorage.getItem(`messages_${roomid}`);
     if (storedMessages) {
       setMessages(JSON.parse(storedMessages));
     }
-  }, []);
+  }, [roomid]);
+
+  useEffect(() => {
+    recieveMessage("new-chat", (data) => {
+      setMessages((prev) => {
+        const newMsgs = [...prev, data];
+        sessionStorage.setItem(`messages_${roomid}`, JSON.stringify(newMsgs));
+        return newMsgs;
+      });
+    });
+  }, [roomid, recieveMessage]);
 
   // Scroll to the bottom of the messages container when messages change
   useEffect(() => {
@@ -25,13 +46,28 @@ function Chat() {
 
   // Save messages to sessionStorage whenever the messages array changes
   useEffect(() => {
-    sessionStorage.setItem("messages", JSON.stringify(messages));
-  }, [messages]);
+    if (messages.length > 0) {
+      sessionStorage.setItem(`messages_${roomid}`, JSON.stringify(messages));
+    }
+  }, [messages, roomid]);
 
   const handleSend = () => {
     if (input.trim()) {
-      setMessages([...messages, `You: ${input}`]); // Name: Message format
-      setInput(""); // Clear input field
+      const msgData = {
+        message: input,
+        senderId: currentUserId,
+        senderName: currentUserName,
+        timestamp: new Date().toISOString()
+      };
+      // Optimistically add to UI
+      setMessages([...messages, msgData]);
+      
+      // Send over socket
+      sendMessage("send-message", {
+        rideId: roomid,
+        ...msgData
+      });
+      setInput("");
     }
   };
 
@@ -72,23 +108,33 @@ function Chat() {
           borderRadius: 2,
         }}
       >
-        {messages.map((msg, index) => (
-          <Typography
-            key={index}
-            sx={{
-              alignSelf: "flex-start",
-              bgcolor: theme.palette.tbgcolor,
-              color: theme.palette.txtcol,
-              p: 1,
-              borderRadius: 2,
-              maxWidth: "70%",
-              wordWrap: "break-word",
-              fontSize: "0.9rem",
-            }}
-          >
-            {msg}
-          </Typography>
-        ))}
+        {messages.map((msg, index) => {
+          const isMe = msg.senderId === currentUserId;
+          return (
+            <Box key={index} sx={{ display: 'flex', flexDirection: isMe ? 'row-reverse' : 'row', alignItems: 'flex-start', gap: 1, mb: 1 }}>
+              <Avatar sx={{ width: 24, height: 24, fontSize: '0.8rem', bgcolor: isMe ? theme.palette.primaryColor.main : 'gray' }}>
+                {msg.senderName?.charAt(0) || "U"}
+              </Avatar>
+              <Box sx={{ maxWidth: '70%' }}>
+                <Typography variant="caption" sx={{ color: 'gray', ml: isMe ? 0 : 1, mr: isMe ? 1 : 0, display: 'block', textAlign: isMe ? 'right' : 'left' }}>
+                  {isMe ? "You" : msg.senderName}
+                </Typography>
+                <Typography
+                  sx={{
+                    bgcolor: isMe ? theme.palette.primaryColor.main : theme.palette.tbgcolor,
+                    color: isMe ? 'black' : theme.palette.txtcol,
+                    p: 1.5,
+                    borderRadius: 2,
+                    wordWrap: "break-word",
+                    fontSize: "0.9rem",
+                  }}
+                >
+                  {msg.message}
+                </Typography>
+              </Box>
+            </Box>
+          );
+        })}
         {/* Dummy div to ensure focus on the latest message */}
         <div ref={messagesEndRef} />
       </Box>

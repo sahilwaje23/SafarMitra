@@ -23,6 +23,7 @@ export const RoomContextProvider = ({ children }) => {
   const [duration, setDuration] = useState(null);
   const [fare, setFare] = useState(null);
   const [status, setStatus] = useState("open");
+  const [otp, setOtp] = useState(null);
   //  open -> closed -> accepted -> ongoing -> completed
   const [mitra, setMitra] = useState([
     {
@@ -74,6 +75,7 @@ export const RoomContextProvider = ({ children }) => {
     setDuration(data.duration);
     setFare(data.fare);
     setStatus(data.status || "open");
+    setOtp(data.otp || null);
     setMitra(
       (data.mitra || []).map((m) => ({
         fullName: m?.userId?.fullName || null,
@@ -137,6 +139,8 @@ export const RoomContextProvider = ({ children }) => {
         updateEverything,
         closedRooms,
         setClosedRooms,
+        otp,
+        setOtp,
       }}
     >
       {children}

@@ -12,6 +12,7 @@ const {
   getAllOpenRooms,
   getAllWaitingClosedRooms,
   getRideDetails,
+  handleStartRide,
   endRide,
 } = require("../controllers/ridesController");
 const { query, body } = require("express-validator");
@@ -65,6 +66,8 @@ router.get("/get-all-closed-rooms", authDriver, getAllWaitingClosedRooms);
 router.get("/join-room", authUser, query("roomId").isString(), handleJoinRoom);
 
 router.get("/get-ride-details", query("rideId").isString(), getRideDetails);
+
+router.post("/start-ride", authDriver, body("rideId").isString(), body("otp").notEmpty(), handleStartRide);
 
 router.post("/end-ride", authDriver, body("rideId").isString(), endRide);
 

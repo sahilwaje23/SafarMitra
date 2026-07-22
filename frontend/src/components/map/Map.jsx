@@ -5,6 +5,7 @@ import { GoogleMap, useJsApiLoader, Marker, InfoWindow, DirectionsService, Direc
 import theme from '../../styles/theme';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import { useLocations } from "../../contexts/LocationsContext";
+import { useRoom } from "../../contexts/RoomContext";
 // we may also need roomcontext import here , the source destination permenantly marked 
 const libraries = ['places'];
 
@@ -93,7 +94,7 @@ const mapOptions = {
   mapTypeControl: false,
   streetViewControl: false,
   fullscreenControl: false,
-  minZoom: 16,
+  minZoom: 40,
   maxZoom: 18,
   zoom: 15,
   styles: theme.palette.mode === 'dark' ? getDarkMapStyles(theme) : getLightMapStyles(theme)
@@ -116,6 +117,8 @@ const MapComponent = () => {
     setDirectionsResponse
   } = useLocations();
 
+  const { status } = useRoom();
+
   const [pickupData, setPickupData] = useState({
     pickupLat,
     pickupLng,
@@ -132,6 +135,7 @@ const MapComponent = () => {
   const [currentLocation, setCurrentLocation] = useState(null);
   const [driverToPickupDirections, setDriverToPickupDirections] = useState(null);
   const [driverPathPoints, setDriverPathPoints] = useState([]);
+  const [dropPathPoints, setDropPathPoints] = useState([]);
   const [showInfoWindow, setShowInfoWindow] = useState(false);
 
   const [initialDriverLoc, setInitialDriverLoc] = useState(null);
@@ -184,11 +188,13 @@ const MapComponent = () => {
     if (response !== null) {
       if (response.status === 'OK') {
         setDirectionsResponse(response);
+        const path = response.routes[0].overview_path.map(p => ({ lat: p.lat(), lng: p.lng() }));
+        setDropPathPoints(path);
       } else {
         console.error('DirectionsService response: ', response);
       }
     }
-  }, [setDirectionsResponse]);
+  }, [setDirectionsResponse, setDropPathPoints]);
 
   const driverPickupDirectionsCallback = React.useCallback((response) => {
     if (response !== null) {
@@ -204,7 +210,7 @@ const MapComponent = () => {
 
   useEffect(() => {
     if (driverLocation && driverLocation.lat) {
-      setDriverPathPoints(prev => {
+      const shrinkPath = (prev) => {
         if (prev.length === 0) return prev;
         let minDistance = Infinity;
         let minIndex = 0;
@@ -220,14 +226,19 @@ const MapComponent = () => {
             minIndex = index;
           }
         });
-        // Slice from the closest point
         if (minIndex > 0) {
           return prev.slice(minIndex);
         }
         return prev;
-      });
+      };
+
+      if (status === 'ongoing') {
+        setDropPathPoints(shrinkPath);
+      } else {
+        setDriverPathPoints(shrinkPath);
+      }
     }
-  }, [driverLocation]);
+  }, [driverLocation, status]);
 
   useEffect(() => {
     // If pickup or drop changes, we clear directions to fetch a new route
@@ -241,9 +252,9 @@ const MapComponent = () => {
   const dLat = parseFloat(dropLat);
   const dLng = parseFloat(dropLng);
 
-  if (!isLoaded) {
+  if (!isLoaded || (!currentLocation && !pickupLat && !driverLocation?.lat)) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '400px' }}>
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%', minHeight: '400px' }}>
         <CircularProgress />
       </Box>
     );
@@ -373,7 +384,7 @@ const MapComponent = () => {
               }}
               title="Driver"
             />
-            {!isNaN(pLat) && !isNaN(pLng) && (
+            {status !== 'ongoing' && !isNaN(pLat) && !isNaN(pLng) && (
               <InfoWindow
                 position={{ lat: driverLocation.lat, lng: driverLocation.lng }}
                 options={{ disableAutoPan: true }}
@@ -383,8 +394,19 @@ const MapComponent = () => {
                 </Typography>
               </InfoWindow>
             )}
+            {status === 'ongoing' && !isNaN(dLat) && !isNaN(dLng) && (
+              <InfoWindow
+                position={{ lat: driverLocation.lat, lng: driverLocation.lng }}
+                options={{ disableAutoPan: true }}
+              >
+                <Typography variant="body2" sx={{ fontWeight: 'bold', color: 'black' }}>
+                  Drop off in {calculateETA(driverLocation.lat, driverLocation.lng, dLat, dLng)} min
+                </Typography>
+              </InfoWindow>
+            )}
+
             {/* Directions Service for Driver to Pickup */}
-            {!isNaN(pLat) && !isNaN(pLng) && initialDriverLoc && !driverToPickupDirections && (
+            {status !== 'ongoing' && !isNaN(pLat) && !isNaN(pLng) && initialDriverLoc && !driverToPickupDirections && (
               <DirectionsService
                 options={{
                   origin: initialDriverLoc,
@@ -396,11 +418,23 @@ const MapComponent = () => {
             )}
 
             {/* Dynamic Polyline for Driver to Pickup */}
-            {driverPathPoints.length > 0 && (
+            {status !== 'ongoing' && driverPathPoints.length > 0 && (
               <Polyline
                 path={driverPathPoints}
                 options={{
                   strokeColor: '#D93025', // Red for driver-to-pickup
+                  strokeOpacity: 0.9,
+                  strokeWeight: 6,
+                }}
+              />
+            )}
+            
+            {/* Dynamic Polyline for Driver to Drop (when ongoing) */}
+            {status === 'ongoing' && dropPathPoints.length > 0 && (
+              <Polyline
+                path={dropPathPoints}
+                options={{
+                  strokeColor: '#1A73E8', // Google Blue for pickup-to-drop
                   strokeOpacity: 0.9,
                   strokeWeight: 6,
                 }}
@@ -421,8 +455,8 @@ const MapComponent = () => {
           />
         )}
 
-        {/* Directions Renderer */}
-        {directionsResponse && (
+        {/* Directions Renderer - Only show if not ongoing */}
+        {status !== 'ongoing' && directionsResponse && (
           <DirectionsRenderer
             options={{
               directions: directionsResponse,

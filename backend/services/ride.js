@@ -54,11 +54,12 @@ const confirmRide = async (rideId, driver) => {
   // Update ride status and assign driver
   await Ride.findOneAndUpdate(
     { _id: rideId },
-    { driver: driver._id, status: "ongoing" }
+    { driver: driver._id, status: "accepted" }
   );
 
   // Fetch updated ride using findById to get a Mongoose document
   const ride = await Ride.findById(rideId)
+    .select("+otp")
     .populate("creatorId", "-password -salt -ridesBooked")
     .populate("driver", "-password -salt -ridesAcceptedUrl")
     .populate("mitra.userId", "-password -salt -ridesBooked");

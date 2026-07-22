@@ -76,29 +76,32 @@ const UserHomePage = () => {
 
   const [currActRide, setCurrActRide] = useState(null);
   useEffect(() => {
-    if (entity.currActiveRide) {
-      console.log("ride", entity.currActiveRide);
-      const fetchRideDetails = async () => {
-        try {
+    const refreshProfileAndRide = async () => {
+      try {
+        const profileRes = await axios.get(
+          `${import.meta.env.VITE_BASE_URL}/my-profile`,
+          {
+            headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+            withCredentials: true,
+          }
+        );
+        const latestEntity = profileRes.data;
+        
+        if (latestEntity?.currActiveRide) {
           const response = await axios.get(
-            `${import.meta.env.VITE_BASE_URL}/ride/get-ride-details?rideId=${
-              entity.currActiveRide
-            }`,
+            `${import.meta.env.VITE_BASE_URL}/ride/get-ride-details?rideId=${latestEntity.currActiveRide}`,
             {
-              headers: {
-                Authorization: `Bearer ${localStorage.getItem("token")}`,
-              },
+              headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
               withCredentials: true,
             }
           );
-          console.log("Ride details:", response.data);
           setCurrActRide(response.data);
-        } catch (error) {
-          console.error("Error fetching ride details:", error);
         }
-      };
-      fetchRideDetails();
-    }
+      } catch (error) {
+        console.error("Error refreshing active ride:", error);
+      }
+    };
+    refreshProfileAndRide();
   }, []);
 
   const handleDropSelect = (value) => {
@@ -126,7 +129,7 @@ const UserHomePage = () => {
 
   return (
     <>
-      {entity.currActiveRide && (
+      {currActRide && (
         <div className="absolute right-0 h-[32px] w-[24%] bg-[#1E1E2F] z-10">
           <ActiveRideComponent info={currActRide} />
         </div>

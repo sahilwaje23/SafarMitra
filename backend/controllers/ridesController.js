@@ -166,7 +166,7 @@ const handleConfirmRide = async (req, res) => {
       throw new Error("Ride not found");
     }
 
-    ride.status = "ongoing";
+    ride.status = "accepted";
     await ride.save();
 
     getIO().to(`ride:${rideId}`).emit("confirm-ride", {
@@ -193,6 +193,40 @@ const handleConfirmRide = async (req, res) => {
     return res.status(200).json(ride);
   } catch (e) {
     console.log(e);
+    res.status(400).send({ rideError: e.message });
+  }
+};
+
+const handleStartRide = async (req, res) => {
+  const errors = validationResult(req);
+
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ fieldErrors: errors.array() });
+  }
+
+  try {
+    const { rideId, otp } = req.body;
+
+    const ride = await Ride.findById(rideId).select("+otp")
+      .populate("creatorId", "-password -salt -ridesBooked")
+      .populate("driver", "-password -salt -ridesAcceptedUrl")
+      .populate("mitra.userId", "-password -salt -ridesBooked");
+
+    if (!ride) {
+      throw new Error("Ride not found");
+    }
+
+    if (ride.otp !== Number(otp)) {
+      throw new Error("Invalid OTP");
+    }
+
+    ride.status = "ongoing";
+    await ride.save();
+
+    getIO().to(`ride:${rideId}`).emit("ride-started", ride);
+
+    return res.status(200).json(ride);
+  } catch (e) {
     res.status(400).send({ rideError: e.message });
   }
 };
@@ -278,6 +312,7 @@ const getRideDetails = async (req, res) => {
     const { rideId } = req.query;
 
     const ride = await Ride.findById(rideId)
+      .select("+otp")
       .populate("creatorId", "-password -salt -ridesBooked")
       .populate("driver", "-password -salt -ridesAcceptedUrl")
       .populate("mitra.userId", "-password -salt -ridesBooked");
@@ -334,6 +369,9 @@ const endRide = async (req, res) => {
 
     await ride.save();
 
+    // Broadcast to the entire room so the client definitely gets the popup
+    getIO().to(`ride:${rideId}`).emit("ride-ended", { ride });
+
     return res.status(200).json(ride);
   } catch (e) {
     res.status(400).send({ rideError: e.message });
@@ -350,5 +388,6 @@ module.exports = {
   getAllOpenRooms,
   getAllWaitingClosedRooms,
   getRideDetails,
+  handleStartRide,
   endRide,
 };

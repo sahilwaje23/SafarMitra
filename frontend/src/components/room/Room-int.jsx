@@ -24,7 +24,7 @@ import { SocketContext } from "../../contexts/Socket";
 import { EntityContext } from "../../contexts/EntityContext";
 import { useRoom } from "../../contexts/RoomContext";
 import axios from "axios";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import { useLocations } from "../../contexts/LocationsContext";
 import { calculateETA } from "../../utils/eta";
 
@@ -91,7 +91,7 @@ const ButtonGroup = ({ activeTab, setActiveTab }) => {
 };
 
 const MobileView = () => {
-  const { creatorData, roomid, setStatus } = useRoom();
+  const { updateEverything, setMitraCopy, messages, setMessages, creatorData, roomid, setStatus } = useRoom();
   const { entity } = useContext(EntityContext);
   const userId = entity?._id || JSON.parse(localStorage.getItem("USER"))?._id;
   const isCreator = userId === creatorData?.creatorId;
@@ -113,6 +113,25 @@ const MobileView = () => {
     } catch (err) {
       console.error(err);
       alert("Error: " + (err.response?.data?.message || err.message));
+    }
+  };
+
+  const handleCancelRide = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.post(
+        `${import.meta.env.VITE_BASE_URL}/ride/user-cancel-ride`,
+        { rideId: roomid },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
+      if (response.status === 200) {
+        alert("Ride cancelled successfully.");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Error cancelling ride: " + (err.response?.data?.rideError || err.message));
     }
   };
 
@@ -141,6 +160,8 @@ const MobileView = () => {
           <Popup
             isCreator={isCreator}
             handleAssignDriver={handleAssignDriver}
+            handleCancelRide={handleCancelRide}
+            status={status}
           />
         </Box>
       </Box>
@@ -187,6 +208,25 @@ function DesktopView({ roomIntData }) {
     } catch (err) {
       console.error(err);
       alert("Error: " + (err.response?.data?.message || err.message));
+    }
+  };
+
+  const handleCancelRide = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.post(
+        `${import.meta.env.VITE_BASE_URL}/ride/user-cancel-ride`,
+        { rideId: roomid },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
+      if (response.status === 200) {
+        alert("Ride cancelled successfully.");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Error cancelling ride: " + (err.response?.data?.rideError || err.message));
     }
   };
 
@@ -276,6 +316,22 @@ function DesktopView({ roomIntData }) {
                 Assign Driver
               </Button>
             )}
+            {isCreator && (status === "open" || status === "closed" || status === "accepted") && (
+              <Button
+                variant="outlined"
+                onClick={handleCancelRide}
+                sx={{
+                  borderColor: 'red',
+                  color: 'red',
+                  "&:hover": {
+                    bgcolor: 'rgba(255, 0, 0, 0.1)',
+                    borderColor: 'red',
+                  },
+                }}
+              >
+                Cancel Ride
+              </Button>
+            )}
           </Box>
         </Box>
         {activeTab === "chat" ? (
@@ -323,17 +379,21 @@ function DesktopView({ roomIntData }) {
   );
 }
 
-function RoomInt() {
+const RoomInt = () => {
   const { creatorData } = useRoom();
-  const isMobile = useMediaQuery("(max-width:1024px)");
-  const { sendMessage, recieveMessage, stopRecieveMessage } =
-    useContext(SocketContext);
   const { entity } = useContext(EntityContext);
   const userId = entity._id || JSON.parse(localStorage.getItem("USER"))._id;
+  const isCreator = userId === creatorData?.creatorId;
+
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const { recieveMessage, stopRecieveMessage, sendMessage } =
+    useContext(SocketContext);
   const roomIntData = useRoom();
   const { setDriverLocation, setPickupLat, setPickupLng, setPickupText, setDropLat, setDropLng, setDropText } = useLocations();
 
-  const { pickup, destination, updateEverything, setMitra, setStatus } =
+  const { pickup, destination, updateEverything, setMitra, setStatus, messages, setMessages } =
     useRoom();
 
   const [chatNotification, setChatNotification] = useState({ open: false, message: "" });
@@ -341,14 +401,19 @@ function RoomInt() {
   useEffect(() => {
     recieveMessage("new-chat", (data) => {
       setChatNotification({ open: true, message: `New message from ${data.senderName}` });
+      setMessages((prev) => {
+        const newMsgs = [...prev, data];
+        sessionStorage.setItem(`messages_${roomIntData.roomid}`, JSON.stringify(newMsgs));
+        return newMsgs;
+      });
     });
-  }, [recieveMessage]);
+  }, [recieveMessage, roomIntData.roomid, setMessages]);
 
   const [mitraCopy, setMitraCopy] = useState([]);
-  const [searchParams] = useSearchParams();
   const [rideStartedPopup, setRideStartedPopup] = useState(false);
   const [rideEndedPopup, setRideEndedPopup] = useState(null);
   const [rideAcceptedPopup, setRideAcceptedPopup] = useState(false);
+  const [rideNotFoundPopup, setRideNotFoundPopup] = useState(false);
 
   useEffect(() => {
     recieveMessage("confirm-ride", (rideData) => {
@@ -409,6 +474,32 @@ function RoomInt() {
     } catch (err) {
       console.log(err);
       alert("Error: " + err.message);
+    }
+  };
+
+  const handleRetrySearchApi = async () => {
+    const rideId = searchParams.get("roomid");
+    const token = localStorage.getItem("token");
+    if (!rideId || !token) return;
+
+    try {
+      setRideNotFoundPopup(false);
+      setStatus("closed");
+      
+      const response = await axios.post(
+        `${import.meta.env.VITE_BASE_URL}/ride/close-room`,
+        { roomId: rideId },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+          withCredentials: true,
+        }
+      );
+      
+      console.log("Retry response:", response.data);
+      alert("Searching for drivers again...");
+    } catch (err) {
+      console.error(err);
+      alert("Error retrying search: " + (err.response?.data?.rideError || err.message));
     }
   };
 
@@ -482,8 +573,8 @@ function RoomInt() {
       setRideStartedPopup(true);
     };
 
-    const handleNewChat = ({ msg, name }) => {
-      console.log("Message Received: " + msg + " " + name);
+    const handleNewChat = (data) => {
+      console.log("Message Received: ", data);
     };
 
     const handleRoomClosed = (roomData) => {
@@ -504,6 +595,26 @@ function RoomInt() {
       }
     };
 
+    const handleRideNotFound = (data) => {
+      console.log("Ride not found:", data);
+      setRideNotFoundPopup(true);
+      setStatus("cancelled");
+    };
+
+    const handleRideCancelled = (data) => {
+      console.log("Ride cancelled:", data);
+      alert(data.message || "The ride has been cancelled.");
+      setStatus("cancelled");
+      navigate("/user-homepage");
+    };
+
+    const handleDriverCancelledRedispatch = (data) => {
+      console.log("Driver cancelled, searching again:", data);
+      alert(data.message || "Driver cancelled. Searching for a new driver...");
+      setStatus("closed");
+      // Ride will be redispatched automatically by the backend
+    };
+
     recieveMessage("confirm-ride", handleConfirmRide);
     recieveMessage("new-userJoin", handleNewUserJoin);
     recieveMessage("ride-ended", handleRideEnded);
@@ -511,6 +622,9 @@ function RoomInt() {
     recieveMessage("new-chat", handleNewChat);
     recieveMessage("room-closed", handleRoomClosed);
     recieveMessage("update-location-driver", handleDriverLocation);
+    recieveMessage("ride-not-found", handleRideNotFound);
+    recieveMessage("ride-cancelled", handleRideCancelled);
+    recieveMessage("driver-cancelled-redispatch", handleDriverCancelledRedispatch);
 
     return () => {
       if (stopRecieveMessage) {
@@ -520,6 +634,9 @@ function RoomInt() {
         stopRecieveMessage("ride-started", handleRideStarted);
         stopRecieveMessage("new-chat", handleNewChat);
         stopRecieveMessage("room-closed", handleRoomClosed);
+        stopRecieveMessage("ride-not-found", handleRideNotFound);
+        stopRecieveMessage("ride-cancelled", handleRideCancelled);
+        stopRecieveMessage("driver-cancelled-redispatch", handleDriverCancelledRedispatch);
       }
     };
   }, []);
@@ -581,7 +698,7 @@ function RoomInt() {
           <Typography variant="h2" fontWeight="bold" sx={{ color: '#4caf50', my: 2 }}>
             ₹{rideEndedPopup?.ride?.fare || "0"}
           </Typography>
-          <Button variant="contained" fullWidth onClick={() => { setRideEndedPopup(null); window.location.href = "/"; }} sx={{ bgcolor: theme.palette.primaryColor.main, color: '#000', fontWeight: 'bold', mt: 2, py: 1.5, borderRadius: 2 }}>
+          <Button variant="contained" fullWidth onClick={() => { setRideEndedPopup(null); window.location.href = "/user-homepage"; }} sx={{ bgcolor: theme.palette.primaryColor.main, color: '#000', fontWeight: 'bold', mt: 2, py: 1.5, borderRadius: 2 }}>
             Pay & Complete
           </Button>
         </Box>
@@ -608,6 +725,37 @@ function RoomInt() {
           <Button variant="contained" fullWidth onClick={() => { setRideAcceptedPopup(false); fetchRideDetails(); }} sx={{ bgcolor: theme.palette.primaryColor.main, color: '#000', fontWeight: 'bold', py: 1.5, borderRadius: 2 }}>
             View Details
           </Button>
+        </Box>
+      </Dialog>
+
+      {/* Ride Not Found Popup */}
+      <Dialog 
+        open={rideNotFoundPopup} 
+        onClose={() => setRideNotFoundPopup(false)}
+        PaperProps={{ style: { borderRadius: 16, background: '#1e1e1e' } }}
+      >
+        <Box sx={{ p: 4, textAlign: 'center', color: 'white', minWidth: '300px' }}>
+          <Box sx={{ mb: 2, display: 'flex', justifyContent: 'center' }}>
+            <Box sx={{ width: 60, height: 60, borderRadius: '50%', background: '#f44336', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Typography variant="h4">⚠️</Typography>
+            </Box>
+          </Box>
+          <Typography variant="h5" fontWeight="bold" sx={{ color: '#f44336', mb: 2 }}>
+            No Drivers Found
+          </Typography>
+          <Typography variant="body1" sx={{ mb: 4, color: 'rgba(255,255,255,0.8)' }}>
+            No drivers were available for your ride. {isCreator ? "Would you like to retry?" : "Please wait for the creator to retry or cancel."}
+          </Typography>
+          <Box sx={{ display: 'flex', gap: 2 }}>
+            <Button variant="outlined" fullWidth onClick={() => setRideNotFoundPopup(false)} sx={{ color: '#fff', borderColor: 'rgba(255,255,255,0.3)', py: 1.5, borderRadius: 2 }}>
+              Close
+            </Button>
+            {isCreator && (
+              <Button variant="contained" fullWidth onClick={handleRetrySearchApi} sx={{ bgcolor: theme.palette.primaryColor.main, color: '#000', fontWeight: 'bold', py: 1.5, borderRadius: 2 }}>
+                Retry
+              </Button>
+            )}
+          </Box>
         </Box>
       </Dialog>
 

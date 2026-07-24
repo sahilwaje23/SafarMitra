@@ -19,7 +19,7 @@ const CaptainHomePage = () => {
   const { entity } = useContext(EntityContext);
   const driverId =
     entity._id || JSON.parse(localStorage.getItem("DRIVER"))?._id;
-  const { sendMessage, recieveMessage } = useContext(SocketContext);
+  const { sendMessage, recieveMessage, stopRecieveMessage } = useContext(SocketContext);
 
   console.log(entity);
 
@@ -58,56 +58,36 @@ const CaptainHomePage = () => {
 
   // ^ Chaitanya ithe status online asel tr pratyek 10 sec la update hoil location
   const [status, setStatus] = useState("online");
-  const [newRidePopup, setNewRidePopup] = useState(null);
+  const [incomingRequests, setIncomingRequests] = useState([]);
 
-  const handleCloseNewRidePopup = (event, reason) => {
-    if (reason === 'clickaway') {
-      return;
-    }
-    setNewRidePopup(null);
-  };
-
-  const handleAcceptRide = async () => {
-    try {
-      const token = localStorage.getItem("token");
-      const rideId = newRidePopup?.roomData?._id;
-      if (!rideId) return;
-
-      const response = await axios.post(
-        `${import.meta.env.VITE_BASE_URL}/ride/confirm-ride`,
-        { rideId },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      
-      if (response.status === 200) {
-        setNewRidePopup(null);
-        window.location.href = `/captain-room-int?roomid=${rideId}`;
-      }
-    } catch (err) {
-      console.error(err);
-      alert("Error confirming ride: " + (err.response?.data?.message || err.message));
-    }
-  };
-
-  // online offline status
   useEffect(() => {
-    if (status === "online") {
-      recieveMessage("new-ride", (rideData) => {
-        // ^ Chaitanya whatever new ride Data comes u will recieve it here {roomDetail , creatorDetail}
-        // setRefresh( (prev) => !prev);
-        console.log("New ride received:", rideData);
-        setNewRidePopup(rideData);
+    const handleNewRide = (rideData) => {
+      console.log("New ride received:", rideData);
+      setIncomingRequests((prev) => {
+        // Add new ride to the top, with a timestamp for countdown
+        return [{ ...rideData, receivedAt: Date.now() }, ...prev];
       });
+    };
+
+    const handleRideExpired = (data) => {
+      setIncomingRequests((prev) => prev.filter(req => req.roomData?._id !== data.rideId));
+    };
+
+    if (status === "online") {
+      recieveMessage("new-ride", handleNewRide);
+      recieveMessage("ride-expired", handleRideExpired);
     }
+
+    return () => {
+      stopRecieveMessage("new-ride", handleNewRide);
+      stopRecieveMessage("ride-expired", handleRideExpired);
+    };
   }, [status]);
 
   const isMobile = useMediaQuery("(max-width:1024px)");
 
-  const MobileView = () => (
+  // Inlined view to prevent unmounting
+  const renderMobileView = () => (
     <Box
       sx={{
         display: "flex",
@@ -130,11 +110,11 @@ const CaptainHomePage = () => {
         <Map />
       </div>
       {/* <RoomPopup/> */}
-      <ExistingRoom />
+      <ExistingRoom incomingRequests={incomingRequests} setIncomingRequests={setIncomingRequests} />
     </Box>
   );
 
-  const DesktopView = () => (
+  const renderDesktopView = () => (
     <Box
       sx={{
         display: "flex",
@@ -184,51 +164,17 @@ const CaptainHomePage = () => {
       >
         <QuickActions />
         <Dashboard />
-        {<ExistingRoom sx={{ flex: 1 }} />}
+        {<ExistingRoom incomingRequests={incomingRequests} setIncomingRequests={setIncomingRequests} sx={{ flex: 1 }} />}
       </Box>
     </Box>
   );
   console.log("activeAcceptedRide", activeAcceptedRide);
   return (
     <>
-      <div className="absolute z-10">
+      <div className="absolute top-20 right-4 w-[400px] z-[9999]">
         {currActRide && <ActiveRideComponent info={currActRide} />}
       </div>
-      {isMobile ? <MobileView /> : <DesktopView />}
-      
-      {/* New Ride Popup */}
-      <Dialog 
-        open={Boolean(newRidePopup)} 
-        onClose={handleCloseNewRidePopup}
-        PaperProps={{ style: { borderRadius: 16, background: 'linear-gradient(135deg, #1e1e1e 0%, #2a2a2a 100%)' } }}
-      >
-        <Box sx={{ p: 4, textAlign: 'center', color: 'white', minWidth: '300px' }}>
-          <Box sx={{ mb: 2, display: 'flex', justifyContent: 'center' }}>
-            <Box sx={{ width: 60, height: 60, borderRadius: '50%', background: theme.palette.primaryColor.main, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Typography variant="h4">🔔</Typography>
-            </Box>
-          </Box>
-          <Typography variant="h5" fontWeight="bold" sx={{ color: theme.palette.primaryColor.main, mb: 1 }}>
-            New Ride Request!
-          </Typography>
-          
-          <Box sx={{ background: 'rgba(255,255,255,0.05)', p: 2, borderRadius: 2, border: '1px dashed rgba(255,255,255,0.2)', textAlign: 'left', mt: 3, mb: 3 }}>
-            <Typography variant="body2" sx={{ color: '#ccc', mb: 1 }}>
-              <strong style={{ color: theme.palette.primaryColor.main }}>From:</strong> {newRidePopup?.roomData?.pickup?.text || 'Unknown'}
-            </Typography>
-            <Typography variant="body2" sx={{ color: '#ccc', mb: 1 }}>
-              <strong style={{ color: theme.palette.primaryColor.main }}>To:</strong> {newRidePopup?.roomData?.destination?.text || 'Unknown'}
-            </Typography>
-            <Typography variant="body2" sx={{ color: '#ccc' }}>
-              <strong style={{ color: theme.palette.primaryColor.main }}>Passengers:</strong> {newRidePopup?.roomData?.pcount || 1}
-            </Typography>
-          </Box>
-          
-          <Button variant="contained" fullWidth onClick={handleAcceptRide} sx={{ bgcolor: theme.palette.primaryColor.main, color: '#000', fontWeight: 'bold', py: 1.5, borderRadius: 2 }}>
-            Accept Ride
-          </Button>
-        </Box>
-      </Dialog>
+      {isMobile ? renderMobileView() : renderDesktopView()}
     </>
   );
 };

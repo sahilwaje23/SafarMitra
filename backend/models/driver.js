@@ -63,11 +63,14 @@ const driverSchema = new Schema(
       default: 0,
     },
     location: {
-      ltd: {
-        type: Number,
+      type: {
+        type: String,
+        enum: ["Point"],
+        default: "Point",
       },
-      lng: {
-        type: Number,
+      coordinates: {
+        type: [Number], // [longitude, latitude]
+        default: [0, 0],
       },
     },
     salt: {
@@ -80,6 +83,8 @@ const driverSchema = new Schema(
   },
   { timestamps: true }
 );
+
+driverSchema.index({ location: "2dsphere" });
 
 driverSchema.pre("save", function (next) {
   const driver = this;

@@ -8,34 +8,25 @@ import { useRoom } from "../../contexts/RoomContext";
 // use local storage or some light weight database to persist messages 
 function Chat() {
   const theme = useTheme();
-  const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const messagesEndRef = useRef(null);
   
   const { sendMessage, recieveMessage } = useContext(SocketContext);
   const { entity } = useContext(EntityContext);
-  const { roomid } = useRoom();
+  const { roomid, messages, setMessages } = useRoom();
 
   const currentUserId = entity?._id || JSON.parse(localStorage.getItem("USER"))?._id || JSON.parse(localStorage.getItem("DRIVER"))?._id;
   const currentUserName = entity?.fullName || JSON.parse(localStorage.getItem("USER"))?.fullName || JSON.parse(localStorage.getItem("DRIVER"))?.fullName || "User";
 
   // Load messages from sessionStorage when the component mounts
   useEffect(() => {
-    const storedMessages = sessionStorage.getItem(`messages_${roomid}`);
-    if (storedMessages) {
-      setMessages(JSON.parse(storedMessages));
+    if (messages.length === 0) {
+      const storedMessages = sessionStorage.getItem(`messages_${roomid}`);
+      if (storedMessages) {
+        setMessages(JSON.parse(storedMessages));
+      }
     }
-  }, [roomid]);
-
-  useEffect(() => {
-    recieveMessage("new-chat", (data) => {
-      setMessages((prev) => {
-        const newMsgs = [...prev, data];
-        sessionStorage.setItem(`messages_${roomid}`, JSON.stringify(newMsgs));
-        return newMsgs;
-      });
-    });
-  }, [roomid, recieveMessage]);
+  }, [roomid, messages.length, setMessages]);
 
   // Scroll to the bottom of the messages container when messages change
   useEffect(() => {

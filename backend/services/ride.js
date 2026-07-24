@@ -39,11 +39,12 @@ const getCaptainsInTheRadius = async (lat, lng, radius) => {
     const captains = await Drivers.find({
       location: {
         $geoWithin: {
-          $centerSphere: [[lat, lng], radius / 6371],
+          $centerSphere: [[lng, lat], radius / 6371], // [longitude, latitude]
         },
       },
     });
 
+    console.log(`Found ${captains.length} captains within ${radius}km using GeoJSON.`);
     return captains;
   } catch (error) {
     throw new Error(`Error fetching captains: ${error.message}`);
@@ -51,11 +52,16 @@ const getCaptainsInTheRadius = async (lat, lng, radius) => {
 };
 
 const confirmRide = async (rideId, driver) => {
-  // Update ride status and assign driver
-  await Ride.findOneAndUpdate(
-    { _id: rideId },
-    { driver: driver._id, status: "accepted" }
+  // Update ride status and assign driver atomically
+  const updatedRide = await Ride.findOneAndUpdate(
+    { _id: rideId, status: "closed" },
+    { driver: driver._id, status: "accepted" },
+    { new: true }
   );
+
+  if (!updatedRide) {
+    throw new Error("Ride already accepted or no longer available");
+  }
 
   // Fetch updated ride using findById to get a Mongoose document
   const ride = await Ride.findById(rideId)

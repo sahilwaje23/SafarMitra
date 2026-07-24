@@ -24,6 +24,7 @@ export const RoomContextProvider = ({ children }) => {
   const [fare, setFare] = useState(null);
   const [status, setStatus] = useState("open");
   const [otp, setOtp] = useState(null);
+  const [messages, setMessages] = useState([]); // Array of chat messages
   //  open -> closed -> accepted -> ongoing -> completed
   const [mitra, setMitra] = useState([
     {
@@ -52,6 +53,13 @@ export const RoomContextProvider = ({ children }) => {
   // all closed rooms
   const [closedRooms, setClosedRooms] = useState([]);
 
+  const formatImageUrl = (path) => {
+    if (!path) return null;
+    if (path.startsWith('http')) return path;
+    const normalizedPath = path.replace(/\\/g, '/');
+    return `${import.meta.env.VITE_BASE_URL}/${normalizedPath}`;
+  };
+
   // ~ Ritesh Made this : (took help of GPT)
   const updateEverything = (data) => {
     setPickup(data.pickup.text);
@@ -67,7 +75,7 @@ export const RoomContextProvider = ({ children }) => {
       createdAt: data.creatorId.createdAt,
       updatedAt: data.creatorId.updatedAt,
       socketId: data.creatorId.socketId,
-      profileImage: data.creatorId.profileImage,
+      profileImage: formatImageUrl(data.creatorId.docs?.profileImageUrl || data.creatorId.profileImageUrl || data.creatorId.profileImage),
     });
     // setLimit(data.limit || 1);
     // setPcount(data.pcount || 1);
@@ -85,7 +93,7 @@ export const RoomContextProvider = ({ children }) => {
         email: m?.userId?.email || null,
         socketId: m?.userId?.socket_id || null,
         docs: {
-          profileImage: m?.userId?.docs?.profileImageUrl || null,
+          profileImage: formatImageUrl(m?.userId?.docs?.profileImageUrl),
         },
       }))
     );
@@ -104,7 +112,7 @@ export const RoomContextProvider = ({ children }) => {
       mobileNo: data.driver?.mobileNo || null,
       rating: data.driver?.rating || null,
       socketId: data.driver?.socket_id || null,
-      profileImage: data.driver?.docs?.profileImageUrl || null,
+      profileImage: formatImageUrl(data.driver?.docs?.profileImageUrl || data.driver?.profileImageUrl),
     });
   };
 
@@ -141,6 +149,8 @@ export const RoomContextProvider = ({ children }) => {
         setClosedRooms,
         otp,
         setOtp,
+        messages,
+        setMessages,
       }}
     >
       {children}

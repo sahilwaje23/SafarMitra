@@ -130,7 +130,7 @@ const UserHomePage = () => {
   return (
     <>
       {currActRide && (
-        <div className="absolute right-0 h-[32px] w-[24%] bg-[#1E1E2F] z-10">
+        <div className="absolute top-20 right-4 w-[400px] z-[9999]">
           <ActiveRideComponent info={currActRide} />
         </div>
       )}

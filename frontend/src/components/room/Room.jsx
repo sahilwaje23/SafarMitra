@@ -221,7 +221,7 @@ const Room = ({ roomData = [] }) => {
         ) : (
           <Card className="bg-[#2a2a2a] p-6">
             <Typography className="text-white text-center">
-              No rooms available.
+              No matching rides found. Create a new room?
             </Typography>
           </Card>
         )}

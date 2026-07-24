@@ -80,6 +80,12 @@ const RoomActivities = () => {
   // }, [roomData]);
 
   const fetchRooms = async () => {
+    // If no pickup/drop locations, do not fetch rooms
+    if (!pickupData.pickupLat || !pickupData.pickupLng || !dropData.dropLat || !dropData.dropLng) {
+      setRoomData([]);
+      return;
+    }
+
     const token = localStorage.getItem("token");
     if (!token) {
       console.error("No token found, cannot fetch rooms");
@@ -87,15 +93,20 @@ const RoomActivities = () => {
       return;
     }
     try {
-      const res = await axios.get(
-        `${import.meta.env.VITE_BASE_URL}/ride/get-all-open-rooms`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-          withCredentials: true,
-        }
-      );
+      const url = new URL(`${import.meta.env.VITE_BASE_URL}/ride/get-all-open-rooms`);
+      
+      // Add query params if pickup and drop coordinates exist
+      url.searchParams.append("pickupLat", pickupData.pickupLat);
+      url.searchParams.append("pickupLng", pickupData.pickupLng);
+      url.searchParams.append("dropLat", dropData.dropLat);
+      url.searchParams.append("dropLng", dropData.dropLng);
+
+      const res = await axios.get(url.toString(), {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        withCredentials: true,
+      });
       console.log("All rooms from API ", res.data); // Check what the API returns
       setRoomData(res.data);
     } catch (err) {
@@ -219,9 +230,10 @@ const RoomActivities = () => {
     }
   };
 
-  useEffect(() => {
-    fetchRooms();
-  }, [dropText]);
+  // User wants explicit button to fetch rooms instead of auto-fetching
+  // useEffect(() => {
+  //   fetchRooms();
+  // }, [dropText]);
 
   const handlePickupSelect = (value) => {
     if (value && value.lat && value.lng && value.description) {
@@ -264,7 +276,7 @@ const RoomActivities = () => {
   return (
     <div className="w-full h-[calc(100vh-64px)] min-w-[100vw] grid grid-cols-1 md:grid-cols-2">
       <div className="flex flex-col items-center justify-center w-full h-full max-h-screen gap-y-8">
-        <div className="hidden md:flex flex-col gap-y-3 w-full justify-center items-center pb-2">
+        <div className="flex flex-col gap-y-3 w-full justify-center items-center pb-2">
           <label
             className="text-start w-full max-w-[342px] pl-1 text-xl"
             htmlFor=""
@@ -334,6 +346,22 @@ const RoomActivities = () => {
           <Button
             sx={{
               height: "3.3rem",
+              backgroundColor: theme.palette.secondaryColor?.main || "#4caf50",
+              text: "center",
+              width: "100%",
+              maxWidth: "342px",
+            }}
+            variant="contained"
+            onClick={fetchRooms}
+          >
+            <Typography sx={{ fontSize: "large", fontWeight: "bold" }}>
+              Search Similar Rides
+            </Typography>
+          </Button>
+
+          <Button
+            sx={{
+              height: "3.3rem",
               backgroundColor: theme.palette.primaryColor.main,
               text: "center",
               width: "100%",
@@ -357,7 +385,15 @@ const RoomActivities = () => {
         <div className="bg-white/30 h-[0.5px] w-full"></div>
       </div>
       <div className="border-2 rounded-lg border-white/30 m-1 max-h-screen h-auto flex flex-col gap-y-3 overflow-y-scroll overflow-x-hidden">
-        <Room roomData={roomData} />
+        {(!pickupData.pickupLat || !dropData.dropLat) ? (
+          <div className="flex flex-col items-center justify-center p-8 bg-[#2a2a2a] rounded-lg text-center mt-4 mx-4">
+            <Typography variant="h6" className="text-white mb-4">
+              Please enter your pickup and drop locations above to find matching rides.
+            </Typography>
+          </div>
+        ) : (
+          <Room roomData={roomData} />
+        )}
       </div>
     </div>
   );

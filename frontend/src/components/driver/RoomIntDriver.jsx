@@ -25,7 +25,7 @@ import { EntityContext } from "../../contexts/EntityContext";
 import { useRoom } from "../../contexts/RoomContext";
 import { useLocations } from "../../contexts/LocationsContext";
 import axios from "axios";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import { calculateETA } from "../../utils/eta";
 
 const handleEndRide = async (rideId) => {
@@ -145,6 +145,26 @@ const DriverControls = () => {
     setRideEndedPopup(true);
   };
 
+  const handleCancelRide = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.post(
+        `${import.meta.env.VITE_BASE_URL}/ride/driver-cancel-ride`,
+        { rideId },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      if (response.status === 200) {
+        alert("You have cancelled the ride.");
+        window.location.href = "/captain-homepage";
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Error cancelling ride: " + (err.response?.data?.rideError || err.message));
+    }
+  };
+
   return (
     <>
       {status === 'accepted' && (
@@ -167,6 +187,9 @@ const DriverControls = () => {
               Verify & Start
             </Button>
           </Box>
+          <Button variant="outlined" onClick={handleCancelRide} sx={{ mt: 2, borderColor: 'red', color: 'red', width: '100%', '&:hover': { bgcolor: 'rgba(255, 0, 0, 0.1)', borderColor: 'red' } }}>
+            Cancel Ride
+          </Button>
         </Box>
       )}
 
@@ -390,16 +413,23 @@ function RoomIntDriver() {
   );
 
   const [chatNotification, setChatNotification] = useState({ open: false, message: "" });
-  const { sendMessage, recieveMessage } = useContext(SocketContext);
+  const [creatorCancelledPopup, setCreatorCancelledPopup] = useState(false);
+  const { sendMessage, recieveMessage, stopRecieveMessage } = useContext(SocketContext);
+  const roomIntData = useRoom();
+  const { setMessages } = roomIntData;
 
   useEffect(() => {
     recieveMessage("new-chat", (data) => {
       setChatNotification({ open: true, message: `New message from ${data.senderName}` });
+      setMessages((prev) => {
+        const newMsgs = [...prev, data];
+        sessionStorage.setItem(`messages_${roomIntData.roomid}`, JSON.stringify(newMsgs));
+        return newMsgs;
+      });
     });
-  }, [recieveMessage]);
+  }, [recieveMessage, roomIntData.roomid, setMessages]);
   const { entity } = useContext(EntityContext);
   const driverId = entity._id || JSON.parse(localStorage.getItem("DRIVER"))?._id || JSON.parse(localStorage.getItem("USER"))?._id;
-  const roomIntData = useRoom();
   const [searchParams] = useSearchParams();
   const { updateEverything } = useRoom();
   const { setPickupLat, setPickupLng, setPickupText, setDropLat, setDropLng, setDropText, setDriverLocation } = useLocations();
@@ -499,6 +529,19 @@ function RoomIntDriver() {
       rideId,
     });
     console.log("should run only once...")
+
+    const handleRideCancelled = (data) => {
+      console.log("Ride cancelled:", data);
+      setCreatorCancelledPopup(true);
+    };
+
+    recieveMessage("ride-cancelled", handleRideCancelled);
+
+    return () => {
+      if (stopRecieveMessage) {
+        stopRecieveMessage("ride-cancelled", handleRideCancelled);
+      }
+    };
   }, []);
 
   useEffect(() => {
@@ -525,6 +568,29 @@ function RoomIntDriver() {
           {chatNotification.message}
         </Alert>
       </Snackbar>
+
+      <Dialog 
+        open={creatorCancelledPopup} 
+        onClose={() => { setCreatorCancelledPopup(false); window.location.href = "/captain-homepage"; }}
+        PaperProps={{ style: { borderRadius: 16, background: '#1e1e1e' } }}
+      >
+        <Box sx={{ p: 4, textAlign: 'center', color: 'white', minWidth: '300px' }}>
+          <Box sx={{ mb: 2, display: 'flex', justifyContent: 'center' }}>
+            <Box sx={{ width: 60, height: 60, borderRadius: '50%', background: '#f44336', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Typography variant="h4">⚠️</Typography>
+            </Box>
+          </Box>
+          <Typography variant="h5" fontWeight="bold" sx={{ color: '#f44336', mb: 2 }}>
+            Ride Cancelled
+          </Typography>
+          <Typography variant="body1" sx={{ mb: 4, color: 'rgba(255,255,255,0.8)' }}>
+            The passenger has cancelled this ride.
+          </Typography>
+          <Button variant="contained" fullWidth onClick={() => { setCreatorCancelledPopup(false); window.location.href = "/captain-homepage"; }} sx={{ bgcolor: theme.palette.primaryColor.main, color: '#000', fontWeight: 'bold', py: 1.5, borderRadius: 2 }}>
+            Go to Home
+          </Button>
+        </Box>
+      </Dialog>
     </>
   );
 }

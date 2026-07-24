@@ -4,6 +4,8 @@ import { Paper, CircularProgress, Typography, Box, useMediaQuery } from '@mui/ma
 import { GoogleMap, useJsApiLoader, Marker, InfoWindow, DirectionsService, DirectionsRenderer } from '@react-google-maps/api';
 import theme from '../../styles/theme';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
+import MyLocationIcon from '@mui/icons-material/MyLocation';
+import { IconButton } from '@mui/material';
 import { useLocations } from "../../contexts/LocationsContext";
 import { useRoom } from "../../contexts/RoomContext";
 // we may also need roomcontext import here , the source destination permenantly marked 
@@ -94,7 +96,7 @@ const mapOptions = {
   mapTypeControl: false,
   streetViewControl: false,
   fullscreenControl: false,
-  minZoom: 40,
+  minZoom: 3,
   maxZoom: 18,
   zoom: 15,
   styles: theme.palette.mode === 'dark' ? getDarkMapStyles(theme) : getLightMapStyles(theme)
@@ -321,7 +323,7 @@ const MapComponent = () => {
   return (
 
     <Paper sx={{
-      
+      position: 'relative',
       height: '100%',
       width: '100%', border: '1px solid black'
     }}>
@@ -456,7 +458,7 @@ const MapComponent = () => {
         )}
 
         {/* Directions Renderer - Only show if not ongoing */}
-        {status !== 'ongoing' && directionsResponse && (
+        {directionsResponse && status !== 'ongoing' && (
           <DirectionsRenderer
             options={{
               directions: directionsResponse,
@@ -470,6 +472,26 @@ const MapComponent = () => {
           />
         )}
 
+        <Box
+          sx={{
+            position: 'absolute',
+            bottom: 24,
+            right: 24,
+            zIndex: 1000
+          }}
+        >
+          <IconButton
+            onClick={handleMarkerClick}
+            sx={{
+              bgcolor: 'background.paper',
+              color: 'primary.main',
+              boxShadow: 3,
+              '&:hover': { bgcolor: 'background.paper', opacity: 0.9 }
+            }}
+          >
+            <MyLocationIcon />
+          </IconButton>
+        </Box>
       </GoogleMap>
 
     </Paper>

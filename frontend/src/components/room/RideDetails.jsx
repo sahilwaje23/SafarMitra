@@ -70,10 +70,8 @@ function RideDetails({ isDriverView }) {
     id: driverData?.socketId || null,
   };
 
-  // Check if driver has at least one valid property
-  const hasValidDriver = Object.values(driver).some(
-    (value) => value !== null && value !== undefined
-  );
+  // Check if driver has a valid ID
+  const hasValidDriver = Boolean(driverData?.driverId);
 
   // need to initialize this properly
   const creator = {
@@ -154,7 +152,7 @@ function RideDetails({ isDriverView }) {
         >
           <JourneyCard journey={journey} />
         </Typography>
-        {(!isDriverView && !localStorage.getItem("DRIVER")) && (
+        {!isDriverView && (
           hasValidDriver ? (
             <Typography
               variant="h6"

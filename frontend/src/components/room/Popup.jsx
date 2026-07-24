@@ -57,10 +57,11 @@ const ButtonGroup = ({ activeTab, setActiveTab, isExpanded, setIsExpanded }) => 
   );
 };
 
-const Popup = ({ isCreator, handleAssignDriver }) => {
+const Popup = ({ isCreator, handleAssignDriver, handleCancelRide }) => {
   const [isExpanded, setIsExpanded] = useState(true);
   const [activeTab, setActiveTab] = useState('details');
   const {
+    pickup,
     destination,
     status,
     otp
@@ -223,14 +224,18 @@ const Popup = ({ isCreator, handleAssignDriver }) => {
                 {status === "ongoing" && dynamicEtaText}
                 {status === "completed" && "Journey completed"}
               </Typography>
-              {status === "accepted" && otp && (
-                <Box sx={{ bgcolor: 'rgba(255,255,255,0.1)', px: 1, py: 0.5, borderRadius: 1, border: `1px solid ${theme.palette.primaryColor.main}` }}>
-                  <Typography variant="caption" sx={{ color: theme.palette.txtcol, fontWeight: 'bold' }}>
-                    OTP: <span style={{ color: theme.palette.primaryColor.main, letterSpacing: 1 }}>{otp}</span>
-                  </Typography>
+              {/* OTP Section (Visible when accepted) */}
+              {status === 'accepted' && otp && (
+                <Box sx={{ width: '100%', display: 'flex', justifyContent: 'center', mb: 2 }}>
+                  <Box sx={{ bgcolor: 'rgba(255,255,255,0.1)', px: 3, py: 1, borderRadius: 2, border: `1px solid ${theme.palette.primaryColor.main}` }}>
+                    <Typography variant="h6" sx={{ color: theme.palette.txtcol, fontWeight: 'bold' }}>
+                      OTP: <span style={{ color: theme.palette.primaryColor.main, letterSpacing: 4 }}>{otp}</span>
+                    </Typography>
+                  </Box>
                 </Box>
               )}
-              {isCreator && status === "open" && (
+
+              {isCreator && status === 'open' && (
                 <Button
                   variant="contained"
                   onClick={handleAssignDriver}
@@ -240,11 +245,29 @@ const Popup = ({ isCreator, handleAssignDriver }) => {
                     '&:hover': {
                       bgcolor: theme.palette.primaryColor.hover,
                     },
-                    padding: '4px 8px',
-                    fontSize: '0.75rem',
+                    width: '100%',
+                    mb: 2,
                   }}
                 >
                   Assign Driver
+                </Button>
+              )}
+              {isCreator && (status === 'open' || status === 'closed' || status === 'accepted') && (
+                <Button
+                  variant="outlined"
+                  onClick={handleCancelRide}
+                  sx={{
+                    borderColor: 'red',
+                    color: 'red',
+                    width: '100%',
+                    mb: 2,
+                    '&:hover': {
+                      bgcolor: 'rgba(255, 0, 0, 0.1)',
+                      borderColor: 'red',
+                    },
+                  }}
+                >
+                  Cancel Ride
                 </Button>
               )}
             </Box>

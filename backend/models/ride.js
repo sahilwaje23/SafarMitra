@@ -48,6 +48,28 @@ const rideSchema = new Schema(
       },
     },
 
+    pickupLocation: {
+      type: {
+        type: String,
+        enum: ["Point"],
+        default: "Point",
+      },
+      coordinates: {
+        type: [Number], // [longitude, latitude]
+      },
+    },
+
+    dropLocation: {
+      type: {
+        type: String,
+        enum: ["Point"],
+        default: "Point",
+      },
+      coordinates: {
+        type: [Number], // [longitude, latitude]
+      },
+    },
+
     driver: {
       type: Schema.Types.ObjectId,
       ref: "driver",
@@ -88,6 +110,9 @@ const rideSchema = new Schema(
   },
   { timestamps: true }
 );
+
+rideSchema.index({ pickupLocation: "2dsphere" });
+rideSchema.index({ dropLocation: "2dsphere" });
 
 const Ride = model("ride", rideSchema);
 module.exports = Ride;

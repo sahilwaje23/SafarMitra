@@ -5,6 +5,7 @@ const User = require("../models/user");
 const { getCaptainsInTheRadius } = require("../services/ride");
 const { sendMessageToSocketId } = require("../socket");
 const { getIO } = require("../socket");
+const DispatchService = require("../services/dispatchService");
 
 const handleCreateRoom = async (req, res) => {
   const errors = validationResult(req);
@@ -31,10 +32,18 @@ const handleCreateRoom = async (req, res) => {
         lng: pickupLng,
         text: pickupText,
       },
+      pickupLocation: {
+        type: "Point",
+        coordinates: [pickupLng, pickupLat], // [longitude, latitude]
+      },
       destination: {
         lat: dropLat,
         lng: dropLng,
         text: dropText,
+      },
+      dropLocation: {
+        type: "Point",
+        coordinates: [dropLng, dropLat],
       },
       fare,
       distance: Math.ceil(distance / 1000),
@@ -71,25 +80,14 @@ const handleCloseRoom = async (req, res) => {
     try {
       getIO().to(`ride:${roomId}`).emit("room-closed", roomData);
 
-      const captians = await getCaptainsInTheRadius(
-        roomData.pickup.lat,
-        roomData.pickup.lng,
-        300,
-      );
-      // console.log(captians);
-
       roomData.status = "closed";
       await roomData.save();
 
       // remove otp
       roomData.otp = null;
 
-      captians.forEach((captain) => {
-        sendMessageToSocketId("new-ride", captain.socket_id, {
-          roomData,
-          user: req.user,
-        });
-      });
+      // Start asynchronous dispatch flow
+      DispatchService.dispatchRide(roomData._id);
 
       res.status(200).json({ roomData });
     } catch (e) {
@@ -173,6 +171,10 @@ const handleConfirmRide = async (req, res) => {
       ride,
       driver: req.driver,
     });
+
+    // Notify other drivers in dispatch room that the ride is taken
+    getIO().to(`dispatch:${rideId}`).emit("ride-expired", { rideId });
+    getIO().in(`dispatch:${rideId}`).socketsLeave(`dispatch:${rideId}`);
 
     // if (ride.creatorId?.socket_id) {
     //   sendMessageToSocketId("confirm-ride", ride.creatorId.socket_id, {
@@ -289,10 +291,63 @@ const handleJoinRoom = async (req, res) => {
   }
 };
 
+const { getDistance } = require("../utils/distance");
+
 const getAllOpenRooms = async (req, res) => {
   try {
-    const rooms = await Ride.find({ status: "open" });
-    return res.status(200).json(rooms);
+    const { pickupLat, pickupLng, dropLat, dropLng } = req.query;
+
+    if (!pickupLat || !pickupLng || !dropLat || !dropLng) {
+      // Fallback to returning all open rooms if no location is provided
+      const rooms = await Ride.find({ status: "open" })
+        .populate("creatorId", "-password -salt -ridesBooked")
+        .populate("mitra.userId", "-password -salt -ridesBooked");
+      return res.status(200).json(rooms);
+    }
+
+    const pLat = parseFloat(pickupLat);
+    const pLng = parseFloat(pickupLng);
+    const dLat = parseFloat(dropLat);
+    const dLng = parseFloat(dropLng);
+
+    const maxDistancePickup = 1000; // 1km
+    const maxDistanceDrop = 1000; // 1km
+
+    // 1. Find all open rooms where the pickup location is within 1km
+    const rooms = await Ride.aggregate([
+      {
+        $geoNear: {
+          near: { type: "Point", coordinates: [pLng, pLat] },
+          distanceField: "pickupDistance",
+          maxDistance: maxDistancePickup,
+          query: { status: "open" },
+          spherical: true,
+          key: "pickupLocation"
+        }
+      }
+    ]);
+
+    // 2. Populate creator and mitra details (aggregation doesn't populate, so we use populate on model)
+    const populatedRooms = await Ride.populate(rooms, [
+      { path: "creatorId", select: "-password -salt -ridesBooked" },
+      { path: "mitra.userId", select: "-password -salt -ridesBooked" }
+    ]);
+
+    // 3. Filter by destination distance (within 1km) and calculate score
+    const candidateRooms = populatedRooms.map(room => {
+      // Calculate distance between user's destination and room's destination
+      const destDistance = getDistance(dLat, dLng, room.dropLocation.coordinates[1], room.dropLocation.coordinates[0]);
+      return {
+        ...room,
+        destinationDistance: destDistance,
+        score: room.pickupDistance + destDistance
+      };
+    }).filter(room => room.destinationDistance <= maxDistanceDrop);
+
+    // 4. Sort by score (lowest distance score first)
+    candidateRooms.sort((a, b) => a.score - b.score);
+
+    return res.status(200).json(candidateRooms);
   } catch (e) {
     return res.status(500).json({ rideError: e.message });
   }
@@ -345,26 +400,20 @@ const endRide = async (req, res) => {
     ride.status = "completed";
 
     if (ride.creatorId?.socket_id) {
-      sendMessageToSocketId("ride-ended", ride.creatorId.socket_id, {
+      sendMessageToSocketId("ride-ended", `user:${ride.creatorId}`, {
         ride,
       });
-
-      ride.creatorId.currActiveRide = null;
-      await ride.creatorId.save();
     }
+
+    ride.creatorId.currActiveRide = null;
+    await ride.creatorId.save();
 
     ride.driver.currAcceptedRide = null;
     await ride.driver.save();
 
     ride.mitra.forEach((m) => {
-      if (m.userId?.socket_id) {
-        sendMessageToSocketId("ride-ended", m.userId.socket_id, {
-          ride,
-        });
-
-        m.userId.currActiveRide = null;
-        m.userId.save();
-      }
+      m.userId.currActiveRide = null;
+      m.userId.save();
     });
 
     await ride.save();
@@ -375,6 +424,84 @@ const endRide = async (req, res) => {
     return res.status(200).json(ride);
   } catch (e) {
     res.status(400).send({ rideError: e.message });
+  }
+};
+
+const cancelRide = async (req, res) => {
+  try {
+    const { rideId } = req.body;
+    const userId = req.user ? req.user._id : req.driver._id;
+
+    if (!rideId) {
+      return res.status(400).json({ rideError: "Ride ID is required" });
+    }
+
+    const ride = await Ride.findById(rideId);
+    if (!ride) {
+      return res.status(404).json({ rideError: "Ride not found" });
+    }
+
+    // Check if user is the creator
+    const isCreator = ride.creatorId.toString() === userId.toString();
+    
+    // Check if user is the assigned driver
+    const isDriver = ride.driverId && ride.driverId.toString() === userId.toString();
+
+    if (!isCreator && !isDriver) {
+      return res.status(403).json({ rideError: "Unauthorized to cancel this ride" });
+    }
+
+    const io = getIO();
+    const DispatchService = require("../services/dispatchService");
+    const userModel = require("../models/user");
+
+    if (isCreator) {
+      // Creator cancels: Cancel ride completely
+      ride.status = "cancelled";
+      await ride.save();
+
+      // Clear creator's active ride
+      await userModel.findByIdAndUpdate(ride.creatorId, { currActiveRide: null });
+      
+      // Clear all mitras' active rides
+      if (ride.mitra && ride.mitra.length > 0) {
+        const mitraIds = ride.mitra.map(m => m.userId);
+        await userModel.updateMany({ _id: { $in: mitraIds } }, { currActiveRide: null });
+      }
+
+      // Clear driver's active ride if assigned
+      if (ride.driverId) {
+        const driverModel = require("../models/driver");
+        await driverModel.findByIdAndUpdate(ride.driverId, { currAcceptedRide: null });
+      }
+
+      // Emit event
+      io.to(`ride:${rideId}`).emit("ride-cancelled", { message: "The ride has been cancelled by the creator." });
+      
+      return res.status(200).json({ message: "Ride successfully cancelled." });
+
+    } else if (isDriver) {
+      // Driver cancels: Drop driver, reset to closed, and re-dispatch
+      ride.status = "closed";
+      ride.driverId = null;
+      await ride.save();
+
+      // Clear driver's active ride ONLY
+      const driverModel = require("../models/driver");
+      await driverModel.findByIdAndUpdate(userId, { currAcceptedRide: null });
+
+      // Emit event to notify users that driver cancelled and we are searching again
+      io.to(`ride:${rideId}`).emit("driver-cancelled-redispatch", { message: "The driver cancelled the ride. Searching for a new driver..." });
+
+      // Trigger DispatchService to find a new driver
+      DispatchService.dispatchRide(rideId);
+
+      return res.status(200).json({ message: "You have cancelled the ride." });
+    }
+
+  } catch (err) {
+    console.error("Error in cancelRide:", err);
+    return res.status(500).json({ rideError: err.message });
   }
 };
 
@@ -390,4 +517,5 @@ module.exports = {
   getRideDetails,
   handleStartRide,
   endRide,
+  cancelRide,
 };

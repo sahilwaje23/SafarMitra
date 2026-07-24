@@ -13,249 +13,185 @@ import { Link } from "react-router-dom";
 import axios from "axios";
 import { useRoom } from "../../contexts/RoomContext.jsx";
 import { useNavigate } from "react-router-dom";
-// import sendMessage from "../../../../backend/socket";
-// this is essentially the roomcard in the room list here the joining behaviour will be defined , data should be updated and sent to the context here
-const ExistingRoom = () => {
-  const navigate = useNavigate();
-  const { updateEverything, closedRooms, setClosedRooms } = useRoom();
 
-  // fetching all closed rooms
+// A sub-component to handle the individual countdown and shining effect
+const IncomingRideCard = ({ req, onAccept, onReject, onExpire }) => {
+  const [timeLeft, setTimeLeft] = useState(15); // 15 seconds countdown
+
   useEffect(() => {
-    const fetchRooms = async () => {
-      // console.log("here");
-      const token = localStorage.getItem("token");
-      if (!token) {
-        console.error("No token found, cannot fetch rooms");
-        navigate("/captain-signin");
-        return;
-      }
-      try {
-        const res = await axios.get(
-          `${import.meta.env.VITE_BASE_URL}/driver/get-all-closed-rooms`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-            withCredentials: true,
-          },
-        );
-        console.log("All rooms from API:", res.data);
+    // Calculate how much time has already elapsed since the request was received
+    const elapsed = Math.floor((Date.now() - req.receivedAt) / 1000);
+    const initialTimeLeft = Math.max(15 - elapsed, 0);
+    setTimeLeft(initialTimeLeft);
 
-        // Only update state if the data has changed
-        setClosedRooms((prevRooms) => {
-          if (JSON.stringify(prevRooms) !== JSON.stringify(res.data)) {
-            return res.data;
-          }
-          return prevRooms; // No update if data is the same
-        });
-      } catch (err) {
-        console.error("Error fetching rooms:", err);
-        alert(err);
-      }
-    };
-    fetchRooms();
-  }, []); // Removed closedRooms from the dependency array
+    if (initialTimeLeft === 0) {
+      onExpire(req.roomData._id);
+      return;
+    }
+
+    const timer = setInterval(() => {
+      setTimeLeft((prev) => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          onExpire(req.roomData._id);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [req, onExpire]);
+
+  return (
+    <Card
+      sx={{
+        bgcolor:
+          theme.palette.mode === "dark"
+            ? "rgba(18, 18, 18, 0.8)"
+            : "rgba(255, 255, 255, 0.8)",
+        borderRadius: "16px",
+        overflow: "hidden",
+        position: "relative",
+        mb: 2,
+        animation: "pulseGlow 2s infinite",
+        border: `1px solid ${theme.palette.primaryColor.main}`,
+        "@keyframes pulseGlow": {
+          "0%": { boxShadow: `0 0 5px ${theme.palette.primaryColor.main}40` },
+          "50%": { boxShadow: `0 0 15px ${theme.palette.primaryColor.main}80` },
+          "100%": { boxShadow: `0 0 5px ${theme.palette.primaryColor.main}40` }
+        }
+      }}
+    >
+      <Box sx={{ p: 2 }}>
+        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
+          <Typography variant="h6" fontWeight="bold" sx={{ color: theme.palette.primaryColor.main }}>
+            New Ride Request
+          </Typography>
+          <Typography variant="h6" fontWeight="bold" sx={{ color: timeLeft <= 5 ? '#f44336' : '#fff' }}>
+            00:{timeLeft < 10 ? `0${timeLeft}` : timeLeft}
+          </Typography>
+        </Box>
+
+        <Box sx={{ display: "flex", alignItems: "flex-start", gap: 1, mb: 1 }}>
+          <LocationOn sx={{ color: "#4caf50", mt: 0.5 }} />
+          <Typography variant="body2" sx={{ color: "text.primary", fontWeight: 500 }}>
+            <span style={{ color: "#aaa" }}>Pickup:</span> {req.roomData.pickup.text}
+          </Typography>
+        </Box>
+
+        <Box sx={{ display: "flex", alignItems: "flex-start", gap: 1, mb: 2 }}>
+          <LocationOn sx={{ color: "#f44336", mt: 0.5 }} />
+          <Typography variant="body2" sx={{ color: "text.primary", fontWeight: 500 }}>
+            <span style={{ color: "#aaa" }}>Drop:</span> {req.roomData.destination.text}
+          </Typography>
+        </Box>
+
+        <Box sx={{ display: "flex", gap: 3, mb: 2, px: 1 }}>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+            <AttachMoney sx={{ fontSize: 20, color: theme.palette.primaryColor.main }} />
+            <Typography variant="body1" fontWeight="bold">₹{req.roomData.fare}</Typography>
+          </Box>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+            <Group sx={{ fontSize: 20, color: "text.secondary" }} />
+            <Typography variant="body2">{req.roomData.pcount || 1} Person</Typography>
+          </Box>
+        </Box>
+
+        <Box sx={{ display: "flex", gap: 2 }}>
+          <Button
+            variant="outlined"
+            fullWidth
+            onClick={() => onReject(req.roomData._id)}
+            sx={{
+              borderColor: "rgba(255,255,255,0.2)",
+              color: "#fff",
+              borderRadius: "8px",
+              "&:hover": { borderColor: "#f44336", color: "#f44336" }
+            }}
+          >
+            Reject
+          </Button>
+          <Button
+            variant="contained"
+            fullWidth
+            onClick={() => onAccept(req.roomData._id)}
+            sx={{
+              bgcolor: theme.palette.primaryColor.main,
+              color: "#000",
+              fontWeight: "bold",
+              borderRadius: "8px",
+            }}
+          >
+            Accept
+          </Button>
+        </Box>
+      </Box>
+    </Card>
+  );
+};
+
+const ExistingRoom = ({ incomingRequests, setIncomingRequests }) => {
+  const navigate = useNavigate();
+  const { updateEverything } = useRoom();
 
   const handleAcceptRoom = async (roomId) => {
     try {
       const res = await axios.post(
         `${import.meta.env.VITE_BASE_URL}/ride/confirm-ride`,
+        { rideId: roomId },
         {
-          rideId: roomId,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
           withCredentials: true,
-        },
+        }
       );
-      localStorage.setItem("roomid", roomId); // to get data after refresh
-      console.log(res.data); // Check what the API returns
-
-      //   // Add driver details to RoomContext
-      //   if (roomData.driver) {
-      //     // setDriverData({
-      //     //   vehicleNo: roomData.driver.details?.vehicleNo || "N/A",
-      //     //   driverId: roomData.driver._id || null,
-      //     //   fullName: roomData.driver.fullName || "Unknown",
-      //     //   mobileNo: roomData.driver.mobileNo || "Not Available",
-      //     //   rating: roomData.driver.rating || "No Rating",
-      //     //   socketId: roomData.driver.socket_id || null,
-      //     //   profileImage: roomData.driver.docs?.profileImageUrl || "",
-      //     // });
-
-      // }
+      
+      localStorage.setItem("roomid", roomId);
       updateEverything(res.data);
-
-      //   // Update RoomContext state
-      //   setPickup(roomData.pickup.text);
-      //   setDestination(roomData.destination.text);
-      //   setRoomid(roomData._id);
-      //   setDistance(roomData.distance);
-      //   setDuration(roomData.duration);
-      //   setFare(roomData.fare);
-      //   setStatus(roomData.status);
-      //   setPcount(roomData.mitra.length);
-
-      //   // Update creator details
-      //   setCreatorData({
-      //     creatorId: roomData.creatorId._id,
-      //     fullName: roomData.creatorId.fullName,
-      //     email: roomData.creatorId.email,
-      //     mobileNo: roomData.creatorId.mobileNo,
-      //     gender: roomData.creatorId.gender,
-      //     rating: roomData.creatorId.rating,
-      //     createdAt: roomData.creatorId.createdAt,
-      //     updatedAt: roomData.creatorId.updatedAt,
-      //     socketId: roomData.creatorId.socket_id,
-      //     profileImage: roomData.creatorId.docs.profileImageUrl,
-      //   });
-
-      //   // Update mitra list
-      //   setMitra(
-      //     roomData.mitra.map((mitraObj) => ({
-      //       mitraId: mitraObj.userId._id,
-      //       socketId: mitraObj.userId.socket_id,
-      //     }))
-      //   );
-
-      // Navigate to room-int only after state updates
-      // navigate("/room-int");
+      
+      // Navigate to the active room interface without fully refreshing the page
       navigate(`/captain-room-int?roomid=${roomId}`);
-    } catch (e) {
-      console.log("Failed to accept room: " + e);
+
+    } catch (err) {
+      console.error("Error accepting ride:", err);
+      alert("Error confirming ride: " + (err.response?.data?.rideError || err.response?.data?.message || err.message));
+      // Remove from list if it failed (e.g. someone else took it)
+      setIncomingRequests((prev) => prev.filter(req => req.roomData._id !== roomId));
     }
   };
 
-  // const roomData = closedRooms;
+  const handleRejectRoom = (roomId) => {
+    // Manually remove from our local list
+    setIncomingRequests((prev) => prev.filter(req => req.roomData._id !== roomId));
+  };
+
+  const handleExpire = (roomId) => {
+    setIncomingRequests((prev) => prev.filter(req => req.roomData._id !== roomId));
+  };
+
   return (
-    <Box className="p-4 bg-[#1a1a1a] min-h-screen">
-      <Typography variant="h5" className="text-white mb-4 px-2">
-        Existing Rooms :
+    <Box sx={{ p: 2 }}>
+      <Typography variant="h6" fontWeight="bold" sx={{ mb: 2, color: "text.primary" }}>
+        Incoming Ride Requests
       </Typography>
 
-      <Box className="space-y-4">
-        {Array.isArray(closedRooms) && closedRooms.length > 0 ? (
-          closedRooms.map((room, index) => (
-            <Card
-              key={index}
-              className="bg-[#2a2a2a] hover:bg-[#333333] transition-colors border-none"
-            >
-              <Box className="p-4">
-                <Box className="flex justify-between items-start">
-                  <Box className="space-y-4 flex-1">
-                    <Box className="flex items-center gap-2">
-                      <Typography className="text-white">
-                        # {index + 1} Room ID:{" "}
-                        <span className="text-yellow-500 font-mono">
-                          {room._id.substring(0, 8)}
-                        </span>
-                      </Typography>
-                    </Box>
-
-                    <Box className="grid gap-3">
-                      <Box className="flex items-center gap-3">
-                        <LocationOn className="text-red-400/80" />
-                        <Box>
-                          <Typography className="text-white/50 text-sm">
-                            Pickup:{" "}
-                            <span className="text-white ml-2">
-                              {room.pickup.text}
-                            </span>
-                          </Typography>
-                        </Box>
-                      </Box>
-
-                      <Box className="flex items-center gap-3">
-                        <LocationOn className="text-green-400/80" />
-                        <Box>
-                          <Typography className="text-white/50 text-sm">
-                            Destination:{" "}
-                            <span className="text-white ml-2">
-                              {room.destination.text}
-                            </span>
-                          </Typography>
-                        </Box>
-                      </Box>
-
-                      <Box className="flex items-center gap-3">
-                        <AttachMoney className="text-white/70" />
-                        <Box>
-                          <Typography className="text-white/50 text-sm">
-                            Fare :{" "}
-                            <span className="text-white ml-2">
-                              ₹ {room.fare}
-                            </span>
-                          </Typography>
-                        </Box>
-                      </Box>
-
-                      <Box className="flex items-center gap-3">
-                        <DirectionsCar className="text-white/70" />
-                        <Box>
-                          <Typography className="text-white/50 text-sm">
-                            Distance:{" "}
-                            <span className="text-white ml-2">
-                              {room.distance} km
-                            </span>
-                          </Typography>
-                        </Box>
-                      </Box>
-
-                      <Box className="flex items-center gap-3">
-                        <AccessTime className="text-white/70" />
-                        <Box>
-                          <Typography className="text-white/50 text-sm">
-                            Duration:{" "}
-                            <span className="text-white ml-2">
-                              {room.duration} mins
-                            </span>
-                          </Typography>
-                        </Box>
-                      </Box>
-
-                      <Box className="flex items-center gap-3">
-                        <Group className="text-white/70" />
-                        <Box>
-                          <Typography className="text-white/50 text-sm">
-                            Participants:{" "}
-                            <span className="text-white ml-2">
-                              {room.mitra.length}{" "}
-                              {room.mitra.length === 1 ? "user" : "users"}
-                            </span>
-                          </Typography>
-                        </Box>
-                      </Box>
-                    </Box>
-                  </Box>
-
-                  <Button
-                    variant="contained"
-                    onClick={() => handleAcceptRoom(room._id)}
-                    className="font-semibold px-6 min-w-[100px]"
-                    sx={{
-                      bgcolor: theme.palette.primaryColor.main,
-                      color: theme.palette.txtcol,
-                      "&:hover": {
-                        bgcolor: theme.palette.primaryColor.hover,
-                      },
-                    }}
-                  >
-                    Accept
-                  </Button>
-                </Box>
-              </Box>
-            </Card>
-          ))
-        ) : (
-          <Card className="bg-[#2a2a2a] p-6">
-            <Typography className="text-white text-center">
-              No rooms available.
-            </Typography>
-          </Card>
-        )}
-      </Box>
+      {(!incomingRequests || incomingRequests.length === 0) ? (
+        <Typography variant="body2" sx={{ color: "text.secondary", textAlign: "center", mt: 4 }}>
+          No incoming ride requests at the moment.
+        </Typography>
+      ) : (
+        <Box sx={{ display: "flex", flexDirection: "column" }}>
+          {incomingRequests.map((req) => (
+            <IncomingRideCard
+              key={req.roomData._id}
+              req={req}
+              onAccept={handleAcceptRoom}
+              onReject={handleRejectRoom}
+              onExpire={handleExpire}
+            />
+          ))}
+        </Box>
+      )}
     </Box>
   );
 };

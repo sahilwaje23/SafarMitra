@@ -1,0 +1,161 @@
+// =============================================================================
+// SafarMitra — Prisma Schema
+// Database: Supabase PostgreSQL + PostGIS
+// =============================================================================
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  extensions = [postgis, pg_stat_statements, pgcrypto, supabase_vault, uuid_ossp(map: "uuid-ossp")]
+}
+
+// =============================================================================
+// Enums
+// =============================================================================
+
+enum Gender {
+  MALE
+  FEMALE
+
+  @@map("gender")
+}
+
+enum DriverStatus {
+  ONLINE
+  OFFLINE
+  BUSY
+
+  @@map("driver_status")
+}
+
+enum RideStatus {
+  OPEN
+  CLOSED
+  ACCEPTED
+  ONGOING
+  COMPLETED
+  CANCELLED
+
+  @@map("ride_status")
+}
+
+// =============================================================================
+// Models
+// =============================================================================
+
+model User {
+  id                  Int      @id @default(autoincrement())
+  fullName            String   @map("full_name")
+  email               String   @unique
+  mobileNo            String   @unique @map("mobile_no")
+  password            String
+  salt                String?
+  gender              Gender
+  profileImageUrl     String   @default("/images/defaultUser.png") @map("profile_image_url")
+  idImageUrl          String?  @map("id_image_url")
+  rating              Decimal  @default(0) @db.Decimal(2, 1)
+  currentActiveRideId Int?     @map("current_active_ride_id")
+  createdAt           DateTime @default(now()) @map("created_at")
+  updatedAt           DateTime @updatedAt @map("updated_at")
+
+  // PostGIS — raw SQL required for reads/writes
+  location Unsupported("geography(Point,4326)")?
+
+  // Relations
+  currentActiveRide Ride?       @relation("UserActiveRide", fields: [currentActiveRideId], references: [id])
+  createdRides      Ride[]      @relation("RideCreator")
+  rideMitras        RideMitra[]
+
+  @@map("users")
+}
+
+model Driver {
+  id                    Int          @id @default(autoincrement())
+  fullName              String       @map("full_name")
+  email                 String       @unique
+  mobileNo              String       @unique @map("mobile_no")
+  password              String
+  salt                  String?
+  gender                Gender
+  status                DriverStatus @default(OFFLINE)
+  profileImageUrl       String       @default("/images/defaultDriver.png") @map("profile_image_url")
+  aadharImageUrl        String?      @map("aadhar_image_url")
+  vehicleNo             String       @unique @map("vehicle_no")
+  chassisNo             String       @unique @map("chassis_no")
+  rcImageUrl            String       @map("rc_image_url")
+  licenseImageUrl       String       @map("license_image_url")
+  rating                Decimal      @default(0) @db.Decimal(2, 1)
+  currentAcceptedRideId Int?         @map("current_accepted_ride_id")
+  createdAt             DateTime     @default(now()) @map("created_at")
+  updatedAt             DateTime     @updatedAt @map("updated_at")
+
+  // PostGIS — raw SQL required for reads/writes
+  location Unsupported("geography(Point,4326)")?
+
+  // Relations
+  currentAcceptedRide Ride?  @relation("DriverAcceptedRide", fields: [currentAcceptedRideId], references: [id])
+  acceptedRides       Ride[] @relation("RideDriver")
+
+  @@index([status])
+  @@map("drivers")
+}
+
+model Ride {
+  id                    Int        @id @default(autoincrement())
+  creatorId             Int        @map("creator_id")
+  driverId              Int?       @map("driver_id")
+  pickupAddress         String     @map("pickup_address")
+  dropAddress           String     @map("drop_address")
+  distanceMeters        Float?     @map("distance_meters")
+  durationSeconds       Int        @map("duration_seconds")
+  fare                  Decimal    @db.Decimal(10, 2)
+  maxPassengerCount     Int        @default(1) @map("max_passenger_count")
+  currentPassengerCount Int        @default(1) @map("current_passenger_count")
+  status                RideStatus @default(OPEN)
+  otp                   Int?
+  createdAt             DateTime   @default(now()) @map("created_at")
+  updatedAt             DateTime   @updatedAt @map("updated_at")
+
+  // PostGIS — raw SQL required for reads/writes
+  pickupLocation Unsupported("geography(Point,4326)")? @map("pickup_location")
+  dropLocation   Unsupported("geography(Point,4326)")? @map("drop_location")
+
+  // Relations
+  creator           User        @relation("RideCreator", fields: [creatorId], references: [id])
+  driver            Driver?     @relation("RideDriver", fields: [driverId], references: [id])
+  mitras            RideMitra[]
+  activeForUsers    User[]      @relation("UserActiveRide")
+  acceptedByDrivers Driver[]    @relation("DriverAcceptedRide")
+
+  @@index([creatorId])
+  @@index([driverId])
+  @@index([status])
+  @@map("rides")
+}
+
+model RideMitra {
+  rideId   Int      @map("ride_id")
+  userId   Int      @map("user_id")
+  joinedAt DateTime @default(now()) @map("joined_at")
+
+  // Relations
+  ride Ride @relation(fields: [rideId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([rideId, userId])
+  @@index([userId])
+  @@map("ride_mitras")
+}
+
+model BlacklistToken {
+  id        Int      @id @default(autoincrement())
+  token     String   @unique
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("blacklist_tokens")
+}

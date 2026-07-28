@@ -10,7 +10,7 @@ function createToken(entity) {
     email: entity.email,
     mobileNo: entity.mobileNo,
     gender: entity.gender,
-    profileImageUrl: entity.docs.profileImageUrl,
+    profileImageUrl: entity.profileImageUrl || entity.docs?.profileImageUrl,
     rating: entity.rating,
   };
 

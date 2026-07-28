@@ -1,7 +1,7 @@
 const { Server } = require("socket.io");
 const cors = require("cors");
-const User = require("./models/user");
-const Driver = require("./models/driver");
+const prisma = require("./config/prisma");
+const driverService = require("./services/driverService");
 
 let io; // bahar isliye declare kar rahe hai kyuki niche use karna hai
 
@@ -19,33 +19,31 @@ function initialiseSocket(server) {
     // server yahape listen for join from this server
     socket.on("join", async (data) => {
       const { userType, userId } = data;
-      // console.log("Connted user");
       console.log("JOIN EVENT", socket.id, data);
-      socket.data.userId = userId;
+      if (!userId) return;
+      const parsedUserId = parseInt(userId, 10);
+      socket.data.userId = parsedUserId;
       socket.data.userType = userType;
-      // socket.data.currentRideId = null;
-      
 
       if (userType === "USER") {
         try {
+          // socket.join(`user:${parsedUserId}`);
           socket.join(`user:${userId}`);
-          await User.findByIdAndUpdate(userId, { socket_id: socket.id });
+          // We rely purely on Socket.IO's native rooms, so we don't save socket_id to the DB anymore.
         } catch (e) {
           console.log(e);
         }
       } else if (userType === "DRIVER") {
+        // socket.join(`driver:${parsedUserId}`);
         socket.join(`driver:${userId}`);
 
-        const driver = await Driver.findByIdAndUpdate(
-          userId,
-          { socket_id: socket.id },
-          { new: true }
-        );
+        // Fetch driver to see if they need to automatically rejoin a ride room
+        const driver = await prisma.driver.findUnique({ where: { id: parsedUserId } });
 
-        if (driver?.currAcceptedRide) {
-          socket.join(`ride:${driver.currAcceptedRide}`);
-          socket.data.currentRideId = driver.currAcceptedRide.toString();
-          console.log("Driver automatically rejoined ride",driver.currAcceptedRide);
+        if (driver?.currentAcceptedRideId) {
+          socket.join(`ride:${driver.currentAcceptedRideId}`);
+          socket.data.currentRideId = driver.currentAcceptedRideId.toString();
+          console.log("Driver automatically rejoined ride", driver.currentAcceptedRideId);
         }
       }
     });
@@ -66,7 +64,7 @@ function initialiseSocket(server) {
         "location",
         socket.id,
         socket.data.currentRideId
-    );
+      );
 
       if (socket.data.currentRideId) {
         console.log("driver sendiing location to ", `ride:${socket.data.currentRideId}`);
@@ -75,12 +73,8 @@ function initialiseSocket(server) {
           .emit("update-location-driver", location);
       }
 
-      await Driver.findByIdAndUpdate(driverId, {
-        location: {
-          type: "Point",
-          coordinates: [location.lng, location.ltd],
-        },
-      });
+      // Update PostGIS geography using the service layer
+      await driverService.updateLocation(driverId, location.lng, location.ltd);
     });
 
     socket.on("ride:join", ({ rideId }) => {

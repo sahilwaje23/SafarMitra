@@ -1,7 +1,6 @@
-const Driver = require("../models/driver");
-const Ride = require("../models/ride");
+const driverService = require("../services/driverService");
+const prisma = require("../config/prisma");
 const { validationResult } = require("express-validator");
-const BlackList = require("../models/blacklistToken");
 
 const handleDriverSignup = async (req, res) => {
   const errors = validationResult(req);
@@ -27,7 +26,7 @@ const handleDriverSignup = async (req, res) => {
       req.files.registrationCertificate[0].path;
     const licenseImagePath = req.files.licenseImage[0].path;
 
-    const { token, newDriver } = await Driver.addDriverAndGenerateToken({
+    const { token, newDriver } = await driverService.addDriverAndGenerateToken({
       ...req.body,
       profileImageUrl: profileImagePath,
       aadharImageUrl: aadharImagePath,
@@ -44,7 +43,7 @@ const handleDriverSignup = async (req, res) => {
 const handleDriverSignin = async (req, res) => {
   let { email, password } = req.body;
   try {
-    const { token, driver } = await Driver.findDriverAndGenerateToken(
+    const { token, driver } = await driverService.findDriverAndGenerateToken(
       email,
       password
     );
@@ -60,7 +59,8 @@ const handleDriverLogOut = async (req, res) => {
     req.cookies.token || req.headers.authorization?.split("Bearer ")[1];
 
   try {
-    await BlackList.create({ token });
+    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
+    await prisma.blacklistToken.create({ data: { token, expiresAt } });
     res.clearCookie("token");
     res.status(200).json({ msg: "success" });
   } catch (err) {
@@ -69,16 +69,17 @@ const handleDriverLogOut = async (req, res) => {
 };
 
 const handleGetDriverProfile = async (req, res) => {
-  const driver = await req.driver.populate({
-    path: "ridesAcceptedUrl",
-    model: "ride",
+  const driverWithRides = await prisma.driver.findUnique({
+    where: { id: req.driver.id },
+    include: { acceptedRides: true },
+    omit: { password: true, salt: true }
   });
-  return res.status(200).json(driver);
+  return res.status(200).json(driverWithRides);
 };
 
 const handleGetAllClosedRooms = async (req, res) => {
   try {
-    const rooms = await Ride.find({ status: "closed" });
+    const rooms = await prisma.ride.findMany({ where: { status: "CLOSED" } });
     return res.status(200).json(rooms);
   } catch (e) {
     return res.status(500).json({ rideError: e.message });

@@ -116,6 +116,7 @@ const ButtonGroup = ({ activeTab, setActiveTab }) => {
 
 const DriverControls = () => {
   const { status, fare } = useRoom();
+  const { resetLocationContext } = useLocations();
   const [otp, setOtp] = useState("");
   const [searchParams] = useSearchParams();
   const rideId = searchParams.get("roomid");
@@ -157,6 +158,7 @@ const DriverControls = () => {
       );
       if (response.status === 200) {
         alert("You have cancelled the ride.");
+        resetLocationContext();
         window.location.href = "/captain-homepage";
       }
     } catch (err) {
@@ -228,7 +230,7 @@ const DriverControls = () => {
           <Typography variant="h2" fontWeight="bold" sx={{ color: '#4caf50', my: 2 }}>
             ₹{fare || "0"}
           </Typography>
-          <Button variant="contained" fullWidth onClick={() => { setRideEndedPopup(false); window.location.href = "/captain-homepage"; }} sx={{ bgcolor: theme.palette.primaryColor.main, color: '#000', fontWeight: 'bold', mt: 2, py: 1.5, borderRadius: 2 }}>
+          <Button variant="contained" fullWidth onClick={() => { setRideEndedPopup(false); resetLocationContext(); window.location.href = "/captain-homepage"; }} sx={{ bgcolor: theme.palette.primaryColor.main, color: '#000', fontWeight: 'bold', mt: 2, py: 1.5, borderRadius: 2 }}>
             Confirm & Exit
           </Button>
         </Box>
@@ -464,12 +466,12 @@ function RoomIntDriver() {
       if (rideData?.pickup?.lat) {
         setPickupLat(rideData.pickup.lat);
         setPickupLng(rideData.pickup.lng);
-        setPickupText(rideData.pickup.text);
+        setPickupText((rideData.pickupAddress || rideData.pickup?.text));
       }
       if (rideData?.destination?.lat) {
         setDropLat(rideData.destination.lat);
         setDropLng(rideData.destination.lng);
-        setDropText(rideData.destination.text);
+        setDropText((rideData.dropAddress || rideData.destination?.text));
       }
       if (rideData?.driver?.location?.ltd && rideData?.driver?.location?.lng) {
         setDriverLocation({

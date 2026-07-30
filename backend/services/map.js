@@ -105,6 +105,7 @@ const getAutoCompleteSuggestions = async (input) => {
     // console.log(response);
 
     if (predictions.length === 0) {
+      console.error("Google API Response when 0 predictions:", response.data);
       throw new Error("No suggestions found");
     }
 

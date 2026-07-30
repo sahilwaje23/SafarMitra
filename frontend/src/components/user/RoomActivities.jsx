@@ -137,12 +137,12 @@ const RoomActivities = () => {
       );
       console.log("Room created successfully:", res.data);
 
-      localStorage.setItem("roomid", res.data.newRoom._id);
+      localStorage.setItem("roomid", res.data.newRoom.id);
 
       // Handle state update if needed, e.g., updating the room list
       setRoomData((prevRooms) => [...prevRooms, res.data.newRoom]);
       // now that room is created the corresponding roomid addded in context , also initialise room parameters , like fare  distance duration default particpant always set to 1 this will be updated soon inside join room
-      setRoomid(res.data.newRoom._id);
+      setRoomid(res.data.newRoom.id);
       setFare(res.data.newRoom.fare);
       setDuration(res.data.newRoom.duration);
       setDistance(res.data.newRoom.distance);
@@ -156,7 +156,7 @@ const RoomActivities = () => {
       if (userData) {
         setCreatorData((prev) => {
           const newCreatorData = {
-            creatorId: userData._id,
+            creatorId: userData.id || userData._id,
             fullName: userData.fullName,
             email: userData.email,
             mobileNo: userData.mobileNo,
@@ -174,7 +174,7 @@ const RoomActivities = () => {
 
       // the above initialises the creator data object but sadly doesnt add it to the room data
 
-      navigate(`/room-int?roomid=${res.data.newRoom._id}`);
+      navigate(`/room-int?roomid=${res.data.newRoom.id}`);
     } catch (err) {
       console.error("Error creating room:", err);
       if (err.response && err.response.status === 401) {
@@ -218,6 +218,7 @@ const RoomActivities = () => {
         dropLng: dropLng,
         pickupText: pickupText,
         dropText: dropText,
+        maxPassengerCount: participantsLimit,
       };
 
       // Wait for room creation to finish

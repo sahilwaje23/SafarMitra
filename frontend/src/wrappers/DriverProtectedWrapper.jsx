@@ -34,7 +34,7 @@ const DriverProtectedWrapper = ({ children }) => {
           }
         );
         setEntity(res.data);
-        sendMessage("join", { userType: "DRIVER", userId: res.data._id || res.data.userId });
+        sendMessage("join", { userType: "DRIVER", userId: res.data.id || res.data._id });
       } catch (err) {
         console.error(err);
         navigate("/captain-signin", {
@@ -49,11 +49,12 @@ const DriverProtectedWrapper = ({ children }) => {
   }, [token, navigate, setEntity, sendMessage]);
 
   useEffect(() => {
-    const driverId = entity?._id || JSON.parse(localStorage.getItem("DRIVER"))?._id;
+    const driverId = entity?.id || entity?._id || JSON.parse(localStorage.getItem("DRIVER"))?.id || JSON.parse(localStorage.getItem("DRIVER"))?._id;
     if (!driverId || !token || loading) return;
 
     const updateLocation = () => {
       if (navigator.geolocation) {
+        // console.log("updating location ...")
         navigator.geolocation.getCurrentPosition((position) => {
           console.log("Global driver location updated:", position.coords);
           const locationData = {

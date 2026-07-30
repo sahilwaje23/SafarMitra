@@ -23,6 +23,7 @@ export const RoomContextProvider = ({ children }) => {
   const [duration, setDuration] = useState(null);
   const [fare, setFare] = useState(null);
   const [status, setStatus] = useState("open");
+  const [isSearching, setIsSearching] = useState(false);
   const [otp, setOtp] = useState(null);
   const [messages, setMessages] = useState([]); // Array of chat messages
   //  open -> closed -> accepted -> ongoing -> completed
@@ -62,57 +63,62 @@ export const RoomContextProvider = ({ children }) => {
 
   // ~ Ritesh Made this : (took help of GPT)
   const updateEverything = (data) => {
-    setPickup(data.pickup.text);
-    setDestination(data.destination.text);
-    setRoomid(data._id);
+
+    console.log("context ka data", data)
+
+    if(!data) return;
+
+    setPickup((data?.pickupAddress || data?.pickup?.text));
+    setDestination((data?.dropAddress || data?.destination?.text));
+    setRoomid(data?.id || data?._id);
+    
+    const creatorObj = data.creator || data.creatorId || {};
     setCreatorData({
-      creatorId: data.creatorId?._id,
-      fullName: data.creatorId?.fullName,
-      email: data.creatorId?.email,
-      mobileNo: data.creatorId?.mobileNo,
-      gender: data.creatorId.gender,
-      rating: data.creatorId.rating || "NA",
-      createdAt: data.creatorId.createdAt,
-      updatedAt: data.creatorId.updatedAt,
-      socketId: data.creatorId.socketId,
-      profileImage: formatImageUrl(data.creatorId.docs?.profileImageUrl || data.creatorId.profileImageUrl || data.creatorId.profileImage),
+      creatorId: creatorObj.id || creatorObj._id,
+      fullName: creatorObj.fullName,
+      email: creatorObj.email,
+      mobileNo: creatorObj.mobileNo,
+      gender: creatorObj.gender,
+      rating: creatorObj.rating || "NA",
+      createdAt: creatorObj.createdAt,
+      updatedAt: creatorObj.updatedAt,
+      socketId: creatorObj.socket_id || creatorObj.socketId,
+      profileImage: formatImageUrl(creatorObj.docs?.profileImageUrl || creatorObj.profileImageUrl || creatorObj.profileImage),
     });
-    // setLimit(data.limit || 1);
-    // setPcount(data.pcount || 1);
+
     setDistance(data.distance);
     setDuration(data.duration);
     setFare(data.fare);
-    setStatus(data.status || "open");
+    setStatus(data.status?.toLowerCase() || "open");
     setOtp(data.otp || null);
+    
     setMitra(
-      (data.mitra || []).map((m) => ({
-        fullName: m?.userId?.fullName || null,
-        rating: m?.userId?.rating || "NA",
-        gender: m?.userId?.gender || null,
-        mobileNo: m?.userId?.mobileNo || null,
-        email: m?.userId?.email || null,
-        socketId: m?.userId?.socket_id || null,
-        docs: {
-          profileImage: formatImageUrl(m?.userId?.docs?.profileImageUrl),
-        },
-      }))
+      (data.mitras || data.mitra || []).map((m) => {
+        const userObj = m?.user || m?.userId || {};
+        return {
+          fullName: userObj.fullName || null,
+          rating: userObj.rating || "NA",
+          gender: userObj.gender || null,
+          mobileNo: userObj.mobileNo || null,
+          email: userObj.email || null,
+          socketId: userObj.socket_id || userObj.socketId || null,
+          docs: {
+            profileImage: formatImageUrl(userObj.docs?.profileImageUrl || userObj.profileImageUrl || userObj.profileImage),
+          },
+          id : userObj.id || userObj._id || null,
+        };
+      })
     );
-    setDriverData({
-      // vehicleNo: data.driver?.vehicleNo || null,
-      // driverId: data.driver?._id || null,
-      // fullName: data.driver?.fullName || null,
-      // mobileNo: data.driver?.mobileNo || null,
-      // rating: data.driver?.rating || null,
-      // socketId: data.driver?.socketId || null,
-      // profileImage: data.driver?.profileImage || null,
 
-      vehicleNo: data.driver?.details?.vehicleNo || null,
-      driverId: data.driver?._id || null,
-      fullName: data.driver?.fullName || null,
-      mobileNo: data.driver?.mobileNo || null,
-      rating: data.driver?.rating || null,
-      socketId: data.driver?.socket_id || null,
-      profileImage: formatImageUrl(data.driver?.docs?.profileImageUrl || data.driver?.profileImageUrl),
+    const driverObj = data.driver || {};
+    setDriverData({
+      vehicleNo: driverObj.details?.vehicleNo || driverObj.vehicleNo || null,
+      driverId: driverObj.id || driverObj._id || null,
+      fullName: driverObj.fullName || null,
+      mobileNo: driverObj.mobileNo || null,
+      rating: driverObj.rating || null,
+      socketId: driverObj.socket_id || driverObj.socketId || null,
+      profileImage: formatImageUrl(driverObj.docs?.profileImageUrl || driverObj.profileImageUrl || driverObj.profileImage),
     });
   };
 
@@ -151,6 +157,8 @@ export const RoomContextProvider = ({ children }) => {
         setOtp,
         messages,
         setMessages,
+        isSearching,
+        setIsSearching,
       }}
     >
       {children}

@@ -1,38 +1,69 @@
-const Ride = require("../models/ride");
+const prisma = require("../config/prisma");
 const { getCaptainsInTheRadius } = require("../services/ride");
 const { getIO, sendMessageToSocketId } = require("../socket");
-const userModel = require("../models/user");
+const { getDistance } = require("../utils/distance");
 
 const DISPATCH_BATCH_SIZE = 3;
 const DISPATCH_TIMEOUT_MS = 15000;
 
-const { getDistance } = require("../utils/distance");
 class DispatchService {
   static async dispatchRide(rideId) {
     try {
-      const roomData = await Ride.findById(rideId).populate("creatorId");
-      if (!roomData) return;
+      const parsedId = parseInt(rideId, 10);
+      
+      const [ride, locations] = await Promise.all([
+        prisma.ride.findUnique({
+          where: { id: parsedId },
+          include: { 
+            creator: { omit: { password: true, salt: true } }, 
+            mitras: { include: { user: { omit: { password: true, salt: true } } } } 
+          }
+        }),
+        prisma.$queryRaw`
+          SELECT ST_Y("pickup_location"::geometry) AS "pickupLat", 
+                 ST_X("pickup_location"::geometry) AS "pickupLng",
+                 ST_Y("drop_location"::geometry) AS "dropLat", 
+                 ST_X("drop_location"::geometry) AS "dropLng"
+          FROM "rides" 
+          WHERE "id" = ${parsedId}
+        `
+      ]);
+
+      if (!ride) return;
+
+      if (locations && locations.length > 0) {
+        ride.pickup = { lat: locations[0].pickupLat, lng: locations[0].pickupLng, text: ride.pickupAddress };
+        ride.destination = { lat: locations[0].dropLat, lng: locations[0].dropLng, text: ride.dropAddress };
+      } else {
+        return; 
+      }
 
       const io = getIO();
-      const user = roomData.creatorId;
+      const user = ride.creator;
+      const roomData = ride;
 
       // 1. Get all nearby drivers (5km radius)
       let captains = await getCaptainsInTheRadius(roomData.pickup.lat, roomData.pickup.lng, 5);
+
+      
       
       // 2. Sort by nearest distance (using haversine formula)
       captains.sort((a, b) => {
-         const distA = getDistance(roomData.pickup.lat, roomData.pickup.lng, a.location.ltd, a.location.lng);
-         const distB = getDistance(roomData.pickup.lat, roomData.pickup.lng, b.location.ltd, b.location.lng);
+         // a and b now have .lat and .lng from our updated ST_Y/ST_X query
+         const distA = getDistance(roomData.pickup.lat, roomData.pickup.lng, a.lat, a.lng);
+         const distB = getDistance(roomData.pickup.lat, roomData.pickup.lng, b.lat, b.lng);
          return distA - distB;
       });
+
+      console.log(captains)
 
       let batchIndex = 0;
       
       const dispatchNextBatch = async () => {
          try {
-             // Check if ride is still open before dispatching next batch
-             const currentRide = await Ride.findById(rideId);
-             if (!currentRide || currentRide.status !== 'closed') { // 'closed' means searching for driver in this app
+             // Check if ride is still open/closed before dispatching next batch
+             const currentRide = await prisma.ride.findUnique({ where: { id: parsedId } });
+             if (!currentRide || currentRide.status !== 'CLOSED') { // 'CLOSED' means searching for driver in Prisma
                  return; // Stop dispatching if accepted or cancelled
              }
 
@@ -41,31 +72,17 @@ class DispatchService {
              const batch = captains.slice(startIndex, endIndex);
 
              if (batch.length === 0) {
-                 console.log(`No more drivers available for ride ${rideId}. Cancelling search.`);
-                 // Exhausted drivers -> cancel ride
-                 const updatedRide = await Ride.findByIdAndUpdate(rideId, { status: "cancelled" }, { new: true });
-                 
-                 if (updatedRide) {
-                   // Clear currActiveRide for creator
-                   await userModel.findByIdAndUpdate(updatedRide.creatorId, { currActiveRide: null });
-                   
-                   // Clear currActiveRide for all mitras
-                   if (updatedRide.mitra && updatedRide.mitra.length > 0) {
-                     const mitraIds = updatedRide.mitra.map(m => m.userId);
-                     await userModel.updateMany({ _id: { $in: mitraIds } }, { currActiveRide: null });
-                   }
-                 }
-
-                 io.to(`ride:${rideId}`).emit("ride-not-found", { message: "No drivers were available for your ride." });
+                 console.log(`No more drivers available for ride ${parsedId}. Cancelling search.`);
+                 io.to(`ride:${parsedId}`).emit("ride-not-found", { message: "No drivers were available for your ride." });
                  return; 
              }
 
              batch.forEach(captain => {
                  // add driver to temporary dispatch room using server-side socketsJoin
-                 io.in(`driver:${captain._id}`).socketsJoin(`dispatch:${rideId}`);
+                 io.in(`driver:${captain.id}`).socketsJoin(`dispatch:${parsedId}`);
                  
                  // notify driver
-                 sendMessageToSocketId("new-ride", `driver:${captain._id}`, {
+                 sendMessageToSocketId("new-ride", `driver:${captain.id}`, {
                      roomData,
                      user
                  });

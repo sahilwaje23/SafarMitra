@@ -14,7 +14,7 @@ import { useContext } from "react";
 // conditional rendering ensures if driver doesnt , mitras dont exist yet they wont be showcased
 function RideDetails({ isDriverView }) {
   const { entity } = useContext(EntityContext);
-  const currentUserId = entity?._id || JSON.parse(localStorage.getItem("USER"))?._id || JSON.parse(localStorage.getItem("DRIVER"))?._id;
+  const currentUserId = entity?.id || entity?._id || JSON.parse(localStorage.getItem("USER"))?.id || JSON.parse(localStorage.getItem("USER"))?._id || JSON.parse(localStorage.getItem("DRIVER"))?.id || JSON.parse(localStorage.getItem("DRIVER"))?._id;
   const {
     roomid,
     creatorData,
@@ -97,21 +97,26 @@ function RideDetails({ isDriverView }) {
   //   .filter((m) => Object.values(m).some((value) => value !== null && value !== undefined));
 
   const mitras = mitra
-    .map((m) => ({
-      name: m?.fullName || null,
-      profileImage: m?.docs?.profileImage || null,
-      phone: m?.mobileNo || null,
-      email: m?.email || null,
-      gender: m?.gender || null,
-      rating: m?.rating,
-      id: m?.socketId || null,
-    }))
+    .map((m) => {
+      const u = m?.user || m || {};
+      return {
+        name: u.fullName || null,
+        profileImage: u.profileImageUrl || u.docs?.profileImageUrl || u.docs?.profileImage || null,
+        phone: u.mobileNo || null,
+        email: u.email || null,
+        gender: u.gender || null,
+        rating: u.rating,
+        id: u.id
+      };
+    })
     .filter((m) =>
       Object.values(m).some((value) => value !== null && value !== undefined)
     );
 
+    console.log("mitras are here",mitras)
+
   const journey = {
-    roomId: roomid?.slice(0, 7) || "XJZP123",
+    roomId: roomid?.toString()?.slice(0, 7) || "XJZP123",
     fare: fare ?? 250,
     distance: distance ?? 15.4,
     duration: duration ?? 32,

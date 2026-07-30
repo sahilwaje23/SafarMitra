@@ -57,15 +57,16 @@ const ButtonGroup = ({ activeTab, setActiveTab, isExpanded, setIsExpanded }) => 
   );
 };
 
-const Popup = ({ isCreator, handleAssignDriver, handleCancelRide }) => {
+const Popup = ({ isCreator, handleAssignDriver, handleCancelRide, status, isSearching }) => {
   const [isExpanded, setIsExpanded] = useState(true);
   const [activeTab, setActiveTab] = useState('details');
   const {
     pickup,
     destination,
-    status,
-    otp
+    otp,
+    isSearching: contextIsSearching
   } = useRoom();
+  const effectiveIsSearching = isSearching !== undefined ? isSearching : contextIsSearching;
   const { driverLocation, currentLocation, pickupLat, pickupLng, dropLat, dropLng } = useLocations();
   const [expandedPickup, setExpandedPickup] = useState(false);
   const [expandedDrop, setExpandedDrop] = useState(false);
@@ -219,7 +220,8 @@ const Popup = ({ isCreator, handleAssignDriver, handleCancelRide }) => {
             <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 1 }}>
               <Typography variant="subtitle2" sx={{ display: 'flex', alignItems: 'center', gap: 1, color: theme.palette.primaryColor.main }}>
                 {status === "open" && "Status: Open"}
-                {status === "closed" && "Searching for driver..."}
+                {status === "closed" && effectiveIsSearching && "Searching for driver..."}
+                {status === "closed" && !effectiveIsSearching && "No Drivers Found"}
                 {status === "accepted" && dynamicEtaText}
                 {status === "ongoing" && dynamicEtaText}
                 {status === "completed" && "Journey completed"}
@@ -235,7 +237,7 @@ const Popup = ({ isCreator, handleAssignDriver, handleCancelRide }) => {
                 </Box>
               )}
 
-              {isCreator && status === 'open' && (
+              {isCreator && (status === 'open' || status === 'closed') && (
                 <Button
                   variant="contained"
                   onClick={handleAssignDriver}

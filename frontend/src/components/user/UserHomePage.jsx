@@ -87,9 +87,9 @@ const UserHomePage = () => {
         );
         const latestEntity = profileRes.data;
         
-        if (latestEntity?.currActiveRide) {
+        if (latestEntity?.currentActiveRideId) {
           const response = await axios.get(
-            `${import.meta.env.VITE_BASE_URL}/ride/get-ride-details?rideId=${latestEntity.currActiveRide}`,
+            `${import.meta.env.VITE_BASE_URL}/ride/get-ride-details?rideId=${latestEntity.currentActiveRideId}`,
             {
               headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
               withCredentials: true,
@@ -167,7 +167,7 @@ const UserHomePage = () => {
               Hello {entity.fullName.split(" ")[0]}
             </div>
 
-            {entity.currActiveRide ? (
+            {entity.currentActiveRideId ? (
               "You cannot book one more ride"
             ) : (
               <div className="flex flex-col gap-y-3 w-full justify-center items-center">

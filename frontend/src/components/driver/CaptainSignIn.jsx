@@ -74,7 +74,9 @@ const CaptainSignIn = () => {
         }, 500);
         // driver email not found -> 400 error
         // correct email but wrong password -> 400 error
+        setSnackbar({open: true,message:e.response.data,vertical: "top",horizontal: "center",});
         console.log(e);
+        
         setState({ ...state, open: true, message: e.response.data });
       });
   };

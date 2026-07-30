@@ -170,7 +170,7 @@ const UserProfile = () => {
                               sx={{ color: "#FF4444", fontSize: 20 }}
                             />
                             <Typography variant="body2" color="text.secondary">
-                              From: {ride.pickup.text}
+                              From: {(ride.pickupAddress || ride.pickup?.text)}
                             </Typography>
                           </div>
                           <div className="flex items-center gap-2">
@@ -178,7 +178,7 @@ const UserProfile = () => {
                               sx={{ color: "#4CAF50", fontSize: 20 }}
                             />
                             <Typography variant="body2" color="text.secondary">
-                              To: {ride.destination.text}
+                              To: {(ride.dropAddress || ride.destination?.text)}
                             </Typography>
                           </div>
                         </div>

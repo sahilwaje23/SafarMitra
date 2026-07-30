@@ -23,7 +23,7 @@ const CaptainHomePage = () => {
 
   console.log(entity);
 
-  const activeAcceptedRide = entity.currAcceptedRide;
+  const activeAcceptedRide = entity.currentAcceptedRideId;
 
   const [currActRide, setCurrActRide] = useState(null);
 
@@ -39,9 +39,9 @@ const CaptainHomePage = () => {
         );
         const latestEntity = profileRes.data;
         
-        if (latestEntity?.currAcceptedRide) {
+        if (latestEntity?.currentAcceptedRideId) {
           const response = await axios.get(
-            `${import.meta.env.VITE_BASE_URL}/ride/get-ride-details?rideId=${latestEntity.currAcceptedRide}`,
+            `${import.meta.env.VITE_BASE_URL}/ride/get-ride-details?rideId=${latestEntity.currentAcceptedRideId}`,
             {
               headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
               withCredentials: true,
@@ -62,6 +62,12 @@ const CaptainHomePage = () => {
 
   useEffect(() => {
     const handleNewRide = (rideData) => {
+      // Ignore if the driver is already assigned to a ride
+      if (entity?.currentAcceptedRideId || entity?.currentActiveRideId) {
+        console.log("Ignored new ride request (already assigned):", rideData);
+        return;
+      }
+      
       console.log("New ride received:", rideData);
       setIncomingRequests((prev) => {
         // Add new ride to the top, with a timestamp for countdown
@@ -70,7 +76,7 @@ const CaptainHomePage = () => {
     };
 
     const handleRideExpired = (data) => {
-      setIncomingRequests((prev) => prev.filter(req => req.roomData?._id !== data.rideId));
+      setIncomingRequests((prev) => prev.filter(req => (req.roomData?.id || req.roomData?._id) !== data.rideId));
     };
 
     if (status === "online") {
@@ -82,7 +88,7 @@ const CaptainHomePage = () => {
       stopRecieveMessage("new-ride", handleNewRide);
       stopRecieveMessage("ride-expired", handleRideExpired);
     };
-  }, [status]);
+  }, [status, entity]);
 
   const isMobile = useMediaQuery("(max-width:1024px)");
 

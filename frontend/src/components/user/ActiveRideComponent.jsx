@@ -25,9 +25,9 @@ export default function ActiveRideComponent({ info }) {
     const isDriver = localStorage.getItem("DRIVER");
 
     if (isUser) {
-      window.location.href = `/room-int?roomid=${info._id}`;
-    } else if (isDriver) {
-      window.location.href = `/captain-room-int?roomid=${info._id}`;
+      window.location.href = `/room-int?roomid=${info.id || info._id}`;
+    } else {
+      window.location.href = `/captain-room-int?roomid=${info.id || info._id}`;
     }
   };
 
@@ -61,13 +61,11 @@ export default function ActiveRideComponent({ info }) {
             <div className="flex-1">
               <div className="mb-2">
                 <div className="text-gray-400 text-xs">FROM</div>
-                <div className="font-medium text-sm">{info?.pickup.text}</div>
+                <div className="font-medium text-sm">{info?.pickupAddress || info?.pickup?.text}</div>
               </div>
               <div>
                 <div className="text-gray-400 text-xs">TO</div>
-                <div className="font-medium text-sm">
-                  {info?.destination.text}
-                </div>
+                <div className="font-medium text-sm">{info?.dropAddress || info?.destination?.text}</div>
               </div>
             </div>
           </div>

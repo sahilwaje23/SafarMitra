@@ -33,7 +33,7 @@ const UserProtectedWrapper = ({ children }) => {
         setEntity(res.data);
       
         
-        sendMessage("join", { userType: "USER", userId : res.data.userId});
+        sendMessage("join", { userType: "USER", userId : res.data.id || res.data._id || res.data.userId });
 
       } catch (err) {
         console.error(err);

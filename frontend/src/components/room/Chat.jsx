@@ -15,7 +15,7 @@ function Chat() {
   const { entity } = useContext(EntityContext);
   const { roomid, messages, setMessages } = useRoom();
 
-  const currentUserId = entity?._id || JSON.parse(localStorage.getItem("USER"))?._id || JSON.parse(localStorage.getItem("DRIVER"))?._id;
+  const currentUserId = entity?.id || entity?._id || JSON.parse(localStorage.getItem("USER"))?.id || JSON.parse(localStorage.getItem("USER"))?._id || JSON.parse(localStorage.getItem("DRIVER"))?.id || JSON.parse(localStorage.getItem("DRIVER"))?._id;
   const currentUserName = entity?.fullName || JSON.parse(localStorage.getItem("USER"))?.fullName || JSON.parse(localStorage.getItem("DRIVER"))?.fullName || "User";
 
   // Load messages from sessionStorage when the component mounts

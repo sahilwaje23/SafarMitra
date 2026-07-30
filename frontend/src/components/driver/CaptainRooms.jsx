@@ -60,40 +60,45 @@ const Room = ({ roomData = [] }) => {
       const roomData = res.data;
 
       // Update RoomContext state
-      setPickup(roomData.pickup.text);
-      setDestination(roomData.destination.text);
-      setRoomid(roomData._id);
+      setPickup((roomData.pickupAddress || roomData.pickup?.text));
+      setDestination((roomData.dropAddress || roomData.destination?.text));
+      setRoomid(roomData.id || roomData._id);
       setDistance(roomData.distance);
       setDuration(roomData.duration);
       setFare(roomData.fare);
       setStatus(roomData.status);
-      setPcount(roomData.mitra.length);
+      setPcount((roomData.mitras || roomData.mitra || []).length);
+
+      const creator = roomData.creator || roomData.creatorId || {};
 
       // Update creator details
       setCreatorData({
-        creatorId: roomData.creatorId._id,
-        fullName: roomData.creatorId.fullName,
-        email: roomData.creatorId.email,
-        mobileNo: roomData.creatorId.mobileNo,
-        gender: roomData.creatorId.gender,
-        rating: roomData.creatorId.rating,
-        createdAt: roomData.creatorId.createdAt,
-        updatedAt: roomData.creatorId.updatedAt,
-        socketId: roomData.creatorId.socket_id,
-        profileImage: roomData.creatorId.docs.profileImageUrl,
+        creatorId: creator.id || creator._id,
+        fullName: creator.fullName,
+        email: creator.email,
+        mobileNo: creator.mobileNo,
+        gender: creator.gender,
+        rating: creator.rating,
+        createdAt: creator.createdAt,
+        updatedAt: creator.updatedAt,
+        socketId: creator.socket_id || creator.socketId,
+        profileImage: creator.profileImageUrl || creator.docs?.profileImageUrl,
       });
 
       // Update mitra list
       setMitra(
-        roomData.mitra.map((mitraObj) => ({
-          mitraId: mitraObj.userId._id,
-          socketId: mitraObj.userId.socket_id,
-        }))
+        (roomData.mitras || roomData.mitra || []).map((mitraObj) => {
+          const userObj = mitraObj.user || mitraObj.userId || {};
+          return {
+            mitraId: userObj.id || userObj._id,
+            socketId: userObj.socket_id || userObj.socketId,
+          };
+        })
       );
 
       // Navigate to room-int only after state updates
       // navigate("/room-int");
-      navigate(`/room-int?roomid=${roomData._id}`);
+      navigate(`/room-int?roomid=${roomData.id || roomData._id}`);
     } catch (e) {
       alert("Failed to join room: " + e.message);
     }
@@ -119,7 +124,7 @@ const Room = ({ roomData = [] }) => {
                       <Typography className="text-white">
                         # {index + 1} Room ID:{" "}
                         <span className="text-yellow-500 font-mono">
-                          {room._id.substring(0, 8)}
+                          {room._id?.toString()?.substring(0, 8)}
                         </span>
                       </Typography>
                     </Box>
@@ -131,7 +136,7 @@ const Room = ({ roomData = [] }) => {
                           <Typography className="text-white/50 text-sm">
                             Pickup:{" "}
                             <span className="text-white ml-2">
-                              {room.pickup.text}
+                              {(room.pickupAddress || room.pickup?.text)}
                             </span>
                           </Typography>
                         </Box>
@@ -143,7 +148,7 @@ const Room = ({ roomData = [] }) => {
                           <Typography className="text-white/50 text-sm">
                             Destination:{" "}
                             <span className="text-white ml-2">
-                              {room.destination.text}
+                              {(room.dropAddress || room.destination?.text)}
                             </span>
                           </Typography>
                         </Box>
@@ -191,8 +196,8 @@ const Room = ({ roomData = [] }) => {
                           <Typography className="text-white/50 text-sm">
                             Participants:{" "}
                             <span className="text-white ml-2">
-                              {room.mitra.length}{" "}
-                              {room.mitra.length === 1 ? "user" : "users"}
+                              {(room.mitras || room.mitra || []).length}{" "}
+                              {(room.mitras || room.mitra || []).length === 1 ? "user" : "users"}
                             </span>
                           </Typography>
                         </Box>

@@ -1,7 +1,6 @@
 const { validationResult } = require("express-validator");
-const { getFare, getOtp, confirmRide } = require("../services/ride");
-const Ride = require("../models/ride");
-const User = require("../models/user");
+const { getFare, getOtp, confirmRide, createRide, closeRide, searchRides, joinRide, getOpenRidesWithinDistance, endRide: endRideService, cancelRide: cancelRideService } = require("../services/ride");
+const prisma = require("../config/prisma");
 const { getCaptainsInTheRadius } = require("../services/ride");
 const { sendMessageToSocketId } = require("../socket");
 const { getIO } = require("../socket");
@@ -14,7 +13,7 @@ const handleCreateRoom = async (req, res) => {
     return res.status(400).json({ fieldErrors: errors.array() });
   }
 
-  const { pickupText, pickupLat, pickupLng, dropText, dropLat, dropLng } =
+  const { pickupText, pickupLat, pickupLng, dropText, dropLat, dropLng, maxPassengerCount } =
     req.body;
 
   const { fare, distance, duration } = await getFare(
@@ -25,37 +24,13 @@ const handleCreateRoom = async (req, res) => {
   );
 
   try {
-    const newRoom = await Ride.create({
-      creatorId: req.user._id,
-      pickup: {
-        lat: pickupLat,
-        lng: pickupLng,
-        text: pickupText,
-      },
-      pickupLocation: {
-        type: "Point",
-        coordinates: [pickupLng, pickupLat], // [longitude, latitude]
-      },
-      destination: {
-        lat: dropLat,
-        lng: dropLng,
-        text: dropText,
-      },
-      dropLocation: {
-        type: "Point",
-        coordinates: [dropLng, dropLat],
-      },
-      fare,
-      distance: Math.ceil(distance / 1000),
-      otp: getOtp(),
-      duration: Math.ceil(duration / 60),
-      status: "open",
-    });
-
-    const user = await User.findByIdAndUpdate(req.user._id, {
-      $push: { ridesBooked: newRoom._id },
-      currActiveRide: newRoom._id,
-    }).select("-password -salt -ridesBooked");
+    const otp = getOtp();
+    const newRoom = await createRide(
+      req.user.id,
+      pickupText, pickupLat, pickupLng,
+      dropText, dropLat, dropLng,
+      fare, distance, duration, otp, maxPassengerCount
+    );
 
     res.status(200).json({ newRoom });
   } catch (e) {
@@ -72,22 +47,14 @@ const handleCloseRoom = async (req, res) => {
 
   try {
     const { roomId } = req.body;
-    const roomData = await Ride.findById(roomId).populate("creatorId");
-    if (!roomData) {
-      throw new Error("Room not found");
-    }
-
+    
     try {
+      const roomData = await closeRide(roomId);
+
       getIO().to(`ride:${roomId}`).emit("room-closed", roomData);
 
-      roomData.status = "closed";
-      await roomData.save();
-
-      // remove otp
-      roomData.otp = null;
-
       // Start asynchronous dispatch flow
-      DispatchService.dispatchRide(roomData._id);
+      DispatchService.dispatchRide(roomData.id); // Prisma uses id
 
       res.status(200).json({ roomData });
     } catch (e) {
@@ -106,25 +73,16 @@ const searchRoom = async (req, res) => {
   }
 
   try {
-    const { pickup, destination } = req.body;
+    // The frontend must now pass coordinates instead of address text strings
+    const { pickupLat, pickupLng, dropLat, dropLng } = req.body;
 
-    // Ensure both pickup & destination are not empty before querying
-    if (!pickup && !destination) {
+    if (!pickupLat || !pickupLng || !dropLat || !dropLng) {
       return res
         .status(400)
-        .json({ message: "Pickup or destination is required" });
+        .json({ message: "Pickup and destination coordinates are required for spatial search" });
     }
 
-    // Construct dynamic query
-    let query = {};
-    if (pickup) {
-      query["pickup.text"] = { $regex: pickup, $options: "i" };
-    }
-    if (destination) {
-      query["destination.text"] = { $regex: destination, $options: "i" };
-    }
-
-    const rooms = await Ride.find({ $or: [query] });
+    const rooms = await searchRides(pickupLat, pickupLng, dropLat, dropLng);
 
     return res.status(200).json(rooms);
   } catch (e) {
@@ -158,39 +116,17 @@ const handleConfirmRide = async (req, res) => {
   try {
     const { rideId } = req.body;
 
-    let ride = await confirmRide(rideId, req.driver);
-
-    if (!ride) {
-      throw new Error("Ride not found");
-    }
-
-    ride.status = "accepted";
-    await ride.save();
+    // Atomic acceptance transaction inside the service
+    const ride = await confirmRide(rideId, req.driver.id); // Prisma uses .id
 
     getIO().to(`ride:${rideId}`).emit("confirm-ride", {
       ride,
-      driver: req.driver,
+      driver: req.driver, // Send the driver details that made the request
     });
 
     // Notify other drivers in dispatch room that the ride is taken
     getIO().to(`dispatch:${rideId}`).emit("ride-expired", { rideId });
     getIO().in(`dispatch:${rideId}`).socketsLeave(`dispatch:${rideId}`);
-
-    // if (ride.creatorId?.socket_id) {
-    //   sendMessageToSocketId("confirm-ride", ride.creatorId.socket_id, {
-    //     ride,
-    //     user: req.driver,
-    //   });
-    // }
-
-    // ride.mitra.forEach((m) => {
-    //   if (m.userId?.socket_id) {
-    //     sendMessageToSocketId("confirm-ride", m.userId.socket_id, {
-    //       ride,
-    //       user: req.user,
-    //     });
-    //   }
-    // });
 
     return res.status(200).json(ride);
   } catch (e) {
@@ -209,21 +145,29 @@ const handleStartRide = async (req, res) => {
   try {
     const { rideId, otp } = req.body;
 
-    const ride = await Ride.findById(rideId).select("+otp")
-      .populate("creatorId", "-password -salt -ridesBooked")
-      .populate("driver", "-password -salt -ridesAcceptedUrl")
-      .populate("mitra.userId", "-password -salt -ridesBooked");
+    // Optimistic Concurrency check inside controller (since it's a single operation)
+    const result = await prisma.ride.updateMany({
+      where: { 
+        id: parseInt(rideId, 10), 
+        otp: parseInt(otp, 10), 
+        status: "ACCEPTED",
+        driverId: req.driver.id // Ensure only the assigned driver can start it
+      },
+      data: { status: "ONGOING"}
+    });
 
-    if (!ride) {
-      throw new Error("Ride not found");
+    if (result.count === 0) {
+      throw new Error("Invalid OTP, ride not accepted, or unauthorized driver");
     }
 
-    if (ride.otp !== Number(otp)) {
-      throw new Error("Invalid OTP");
-    }
-
-    ride.status = "ongoing";
-    await ride.save();
+    const ride = await prisma.ride.findUnique({
+      where: { id: parseInt(rideId, 10) },
+      include: {
+        creator: { omit: { password: true, salt: true } },
+        driver: { omit: { password: true, salt: true } },
+        mitras: { include: { user: { omit: { password: true, salt: true } } } }
+      }
+    });
 
     getIO().to(`ride:${rideId}`).emit("ride-started", ride);
 
@@ -243,119 +187,91 @@ const handleJoinRoom = async (req, res) => {
   try {
     const { roomId } = req.query;
 
-    const room = await Ride.findById(roomId).populate(
-      "mitra.userId",
-      "socket_id",
-    );
-    if (!room) {
-      return res.status(404).json({ rideError: "Room not found" });
-    }
-
-    if (
-      room.mitra.some((m) => m.userId.toString() === req.user._id.toString())
-    ) {
-      return res
-        .status(400)
-        .json({ rideError: "User already joined the room" });
-    }
-
-    await User.findByIdAndUpdate(req.user._id, {
-      $push: { ridesBooked: roomId },
-      currActiveRide: roomId,
-    });
-
-    room.mitra.push({ userId: req.user._id });
-    await room.save();
-
-    await room.populate("creatorId", "-password -salt -ridesBooked");
-    console.log(room);
+    // Atomic join operation managed by service
+    const room = await joinRide(roomId, req.user.id);
 
     getIO().to(`ride:${roomId}`).emit("new-userJoin", {
       room,
       user: req.user,
     });
 
-    // Notify all mitra members
-    // room.mitra.forEach((m) => {
-    //   if (m.userId.socket_id) {
-    //     sendMessageToSocketId("new-userJoin", m.userId.socket_id, {
-    //       room,
-    //       user: req.user,
-    //     });
-    //   }
-    // });
-
     return res.status(200).json(room);
   } catch (e) {
+    console.log(e)
     return res.status(500).json({ rideError: e.message });
   }
 };
-
-const { getDistance } = require("../utils/distance");
 
 const getAllOpenRooms = async (req, res) => {
   try {
     const { pickupLat, pickupLng, dropLat, dropLng } = req.query;
 
     if (!pickupLat || !pickupLng || !dropLat || !dropLng) {
-      // Fallback to returning all open rooms if no location is provided
-      const rooms = await Ride.find({ status: "open" })
-        .populate("creatorId", "-password -salt -ridesBooked")
-        .populate("mitra.userId", "-password -salt -ridesBooked");
-      return res.status(200).json(rooms);
+      // Fallback: Return all open rooms
+      const rooms = await prisma.ride.findMany({
+        where: { 
+          status: "OPEN",
+          currentPassengerCount: { lt: prisma.ride.fields.maxPassengerCount }
+        },
+        include: {
+          creator: { omit: { password: true, salt: true } },
+          mitras: { include: { user: { omit: { password: true, salt: true } } } }
+        }
+      });
+      const formattedRooms = rooms.map(room => ({
+        ...room,
+        distance: room.distanceMeters ? (parseFloat(room.distanceMeters) / 1000).toFixed(1) : 0,
+        duration: room.durationSeconds ? Math.round(parseFloat(room.durationSeconds) / 60) : 0,
+      }));
+      return res.status(200).json(formattedRooms);
     }
 
-    const pLat = parseFloat(pickupLat);
-    const pLng = parseFloat(pickupLng);
-    const dLat = parseFloat(dropLat);
-    const dLng = parseFloat(dropLng);
+    // Use highly efficient PostGIS spatial query from service
+    const rawRooms = await getOpenRidesWithinDistance(
+      parseFloat(pickupLat),
+      parseFloat(pickupLng),
+      parseFloat(dropLat),
+      parseFloat(dropLng)
+    );
 
-    const maxDistancePickup = 1000; // 1km
-    const maxDistanceDrop = 1000; // 1km
+    if (!rawRooms || rawRooms.length === 0) {
+      return res.status(200).json([]);
+    }
 
-    // 1. Find all open rooms where the pickup location is within 1km
-    const rooms = await Ride.aggregate([
-      {
-        $geoNear: {
-          near: { type: "Point", coordinates: [pLng, pLat] },
-          distanceField: "pickupDistance",
-          maxDistance: maxDistancePickup,
-          query: { status: "open" },
-          spherical: true,
-          key: "pickupLocation"
-        }
+    const roomIds = rawRooms.map(r => r.id);
+
+    // Fetch the fully populated Prisma models
+    const rooms = await prisma.ride.findMany({
+      where: { id: { in: roomIds } },
+      include: {
+        creator: { omit: { password: true, salt: true } },
+        mitras: { include: { user: { omit: { password: true, salt: true } } } }
       }
-    ]);
+    });
 
-    // 2. Populate creator and mitra details (aggregation doesn't populate, so we use populate on model)
-    const populatedRooms = await Ride.populate(rooms, [
-      { path: "creatorId", select: "-password -salt -ridesBooked" },
-      { path: "mitra.userId", select: "-password -salt -ridesBooked" }
-    ]);
+    // Re-sort the populated models based on the rawRooms order
+    const sortedRooms = rooms.sort((a, b) => {
+      return roomIds.indexOf(a.id) - roomIds.indexOf(b.id);
+    });
 
-    // 3. Filter by destination distance (within 1km) and calculate score
-    const candidateRooms = populatedRooms.map(room => {
-      // Calculate distance between user's destination and room's destination
-      const destDistance = getDistance(dLat, dLng, room.dropLocation.coordinates[1], room.dropLocation.coordinates[0]);
-      return {
-        ...room,
-        destinationDistance: destDistance,
-        score: room.pickupDistance + destDistance
-      };
-    }).filter(room => room.destinationDistance <= maxDistanceDrop);
+    const formattedRooms = sortedRooms.map(room => ({
+      ...room,
+      distance: room.distanceMeters ? (parseFloat(room.distanceMeters) / 1000).toFixed(1) : 0,
+      duration: room.durationSeconds ? Math.round(parseFloat(room.durationSeconds) / 60) : 0,
+    }));
 
-    // 4. Sort by score (lowest distance score first)
-    candidateRooms.sort((a, b) => a.score - b.score);
-
-    return res.status(200).json(candidateRooms);
+    return res.status(200).json(formattedRooms);
   } catch (e) {
+    console.log(e)
     return res.status(500).json({ rideError: e.message });
   }
 };
 
 const getAllWaitingClosedRooms = async (req, res) => {
   try {
-    const rooms = await Ride.find({ status: "closed" });
+    const rooms = await prisma.ride.findMany({
+      where: { status: "CLOSED" }
+    });
     return res.status(200).json(rooms);
   } catch (e) {
     return res.status(500).json({ rideError: e.message });
@@ -363,14 +279,59 @@ const getAllWaitingClosedRooms = async (req, res) => {
 };
 
 const getRideDetails = async (req, res) => {
+  const errors = validationResult(req);
+
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ fieldErrors: errors.array() });
+  }
+
   try {
     const { rideId } = req.query;
 
-    const ride = await Ride.findById(rideId)
-      .select("+otp")
-      .populate("creatorId", "-password -salt -ridesBooked")
-      .populate("driver", "-password -salt -ridesAcceptedUrl")
-      .populate("mitra.userId", "-password -salt -ridesBooked");
+    if (!rideId) {
+      return res.status(400).json({ rideError: "rideId is required" });
+    }
+
+    const parsedId = parseInt(rideId, 10);
+    if (isNaN(parsedId)) {
+      return res.status(400).json({ rideError: "Invalid rideId format" });
+    }
+
+    const [ride, locations] = await Promise.all([
+      prisma.ride.findUnique({
+        where: { id: parsedId },
+        include: {
+          creator: { omit: { password: true, salt: true } },
+          driver: { omit: { password: true, salt: true } },
+          mitras: { include: { user: { omit: { password: true, salt: true } } } }
+        }
+      }),
+      prisma.$queryRaw`
+        SELECT ST_Y("pickup_location"::geometry) AS "pickupLat", 
+               ST_X("pickup_location"::geometry) AS "pickupLng",
+               ST_Y("drop_location"::geometry) AS "dropLat", 
+               ST_X("drop_location"::geometry) AS "dropLng"
+        FROM "rides" 
+        WHERE "id" = ${parsedId}
+      `
+    ]);
+
+    if (!ride) {
+      return res.status(200).json(null);
+    }
+
+    if (locations && locations.length > 0) {
+      ride.pickup = {
+        lat: locations[0].pickupLat,
+        lng: locations[0].pickupLng,
+        text: ride.pickupAddress
+      };
+      ride.destination = {
+        lat: locations[0].dropLat,
+        lng: locations[0].dropLng,
+        text: ride.dropAddress
+      };
+    }
 
     return res.status(200).json(ride);
   } catch (e) {
@@ -388,37 +349,9 @@ const endRide = async (req, res) => {
   try {
     const { rideId } = req.body;
 
-    const ride = await Ride.findById(rideId)
-      .populate("creatorId", "-password -salt -ridesBooked")
-      .populate("driver", "-password -salt -ridesAcceptedUrl")
-      .populate("mitra.userId", "-password -salt -ridesBooked");
+    const ride = await endRideService(rideId);
 
-    if (!ride) {
-      throw new Error("Ride not found");
-    }
-
-    ride.status = "completed";
-
-    if (ride.creatorId?.socket_id) {
-      sendMessageToSocketId("ride-ended", `user:${ride.creatorId}`, {
-        ride,
-      });
-    }
-
-    ride.creatorId.currActiveRide = null;
-    await ride.creatorId.save();
-
-    ride.driver.currAcceptedRide = null;
-    await ride.driver.save();
-
-    ride.mitra.forEach((m) => {
-      m.userId.currActiveRide = null;
-      m.userId.save();
-    });
-
-    await ride.save();
-
-    // Broadcast to the entire room so the client definitely gets the popup
+    // Socket broadcasts happen outside the transaction
     getIO().to(`ride:${rideId}`).emit("ride-ended", { ride });
 
     return res.status(200).json(ride);
@@ -430,72 +363,27 @@ const endRide = async (req, res) => {
 const cancelRide = async (req, res) => {
   try {
     const { rideId } = req.body;
-    const userId = req.user ? req.user._id : req.driver._id;
+    
+    const isCreator = req.user ? true : false;
+    const isDriver = req.driver ? true : false;
+    const userId = req.user ? req.user.id : req.driver.id;
 
     if (!rideId) {
       return res.status(400).json({ rideError: "Ride ID is required" });
     }
 
-    const ride = await Ride.findById(rideId);
-    if (!ride) {
-      return res.status(404).json({ rideError: "Ride not found" });
-    }
-
-    // Check if user is the creator
-    const isCreator = ride.creatorId.toString() === userId.toString();
-    
-    // Check if user is the assigned driver
-    const isDriver = ride.driverId && ride.driverId.toString() === userId.toString();
-
-    if (!isCreator && !isDriver) {
-      return res.status(403).json({ rideError: "Unauthorized to cancel this ride" });
-    }
+    const result = await cancelRideService(rideId, userId, isCreator, isDriver);
 
     const io = getIO();
     const DispatchService = require("../services/dispatchService");
-    const userModel = require("../models/user");
 
-    if (isCreator) {
-      // Creator cancels: Cancel ride completely
-      ride.status = "cancelled";
-      await ride.save();
-
-      // Clear creator's active ride
-      await userModel.findByIdAndUpdate(ride.creatorId, { currActiveRide: null });
-      
-      // Clear all mitras' active rides
-      if (ride.mitra && ride.mitra.length > 0) {
-        const mitraIds = ride.mitra.map(m => m.userId);
-        await userModel.updateMany({ _id: { $in: mitraIds } }, { currActiveRide: null });
-      }
-
-      // Clear driver's active ride if assigned
-      if (ride.driverId) {
-        const driverModel = require("../models/driver");
-        await driverModel.findByIdAndUpdate(ride.driverId, { currAcceptedRide: null });
-      }
-
-      // Emit event
+    // Side effects (sockets, dispatching) must happen AFTER transaction commits
+    if (result.status === "CANCELLED") {
       io.to(`ride:${rideId}`).emit("ride-cancelled", { message: "The ride has been cancelled by the creator." });
-      
       return res.status(200).json({ message: "Ride successfully cancelled." });
-
-    } else if (isDriver) {
-      // Driver cancels: Drop driver, reset to closed, and re-dispatch
-      ride.status = "closed";
-      ride.driverId = null;
-      await ride.save();
-
-      // Clear driver's active ride ONLY
-      const driverModel = require("../models/driver");
-      await driverModel.findByIdAndUpdate(userId, { currAcceptedRide: null });
-
-      // Emit event to notify users that driver cancelled and we are searching again
+    } else if (result.status === "CLOSED") {
       io.to(`ride:${rideId}`).emit("driver-cancelled-redispatch", { message: "The driver cancelled the ride. Searching for a new driver..." });
-
-      // Trigger DispatchService to find a new driver
       DispatchService.dispatchRide(rideId);
-
       return res.status(200).json({ message: "You have cancelled the ride." });
     }
 

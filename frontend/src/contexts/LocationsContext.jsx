@@ -14,6 +14,18 @@ const LocationContextProvider = ({ children }) => {
   const [driverLocation, setDriverLocation] = useState(null);
   const [directionsResponse, setDirectionsResponse] = useState(null);
 
+  const resetLocationContext = () => {
+    setPickupLat("");
+    setPickupLng("");
+    setDropLat("");
+    setDropLng("");
+    setPickupText("");
+    setDropText("");
+    setRoomid("");
+    setDriverLocation(null);
+    setDirectionsResponse(null);
+  };
+
   return (
     <LocationContext.Provider
       value={{
@@ -35,6 +47,7 @@ const LocationContextProvider = ({ children }) => {
         setDriverLocation,
         directionsResponse,
         setDirectionsResponse,
+        resetLocationContext,
       }}
     >
       {children}

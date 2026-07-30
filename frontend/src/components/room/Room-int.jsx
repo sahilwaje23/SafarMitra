@@ -91,9 +91,9 @@ const ButtonGroup = ({ activeTab, setActiveTab }) => {
 };
 
 const MobileView = () => {
-  const { updateEverything, setMitraCopy, messages, setMessages, creatorData, roomid, setStatus } = useRoom();
+  const { updateEverything, setMitraCopy, messages, setMessages, creatorData, roomid, status, setStatus, setIsSearching } = useRoom();
   const { entity } = useContext(EntityContext);
-  const userId = entity?._id || JSON.parse(localStorage.getItem("USER"))?._id;
+  const userId = entity?.id || entity?._id || JSON.parse(localStorage.getItem("USER"))?.id || JSON.parse(localStorage.getItem("USER"))?._id;
   const isCreator = userId === creatorData?.creatorId;
 
   const handleAssignDriver = async () => {
@@ -108,6 +108,7 @@ const MobileView = () => {
       );
       if (response.status === 200) {
         setStatus("closed");
+        setIsSearching(true);
         alert("Driver assigning initiated!");
       }
     } catch (err) {
@@ -162,6 +163,7 @@ const MobileView = () => {
             handleAssignDriver={handleAssignDriver}
             handleCancelRide={handleCancelRide}
             status={status}
+            isSearching={isSearching}
           />
         </Box>
       </Box>
@@ -171,7 +173,7 @@ const MobileView = () => {
 
 function DesktopView({ roomIntData }) {
   const [activeTab, setActiveTab] = useState("details");
-  const { pickup, destination, status, roomid, creatorData, setStatus } =
+  const { pickup, destination, status, roomid, creatorData, setStatus, setIsSearching } =
     useRoom();
   const { driverLocation, currentLocation, pickupLat, pickupLng, dropLat, dropLng } = useLocations();
 
@@ -188,12 +190,13 @@ function DesktopView({ roomIntData }) {
     dynamicEtaText = `Drop in ${eta} mins`;
   }
   const { entity } = useContext(EntityContext);
-  const userId = entity?._id || JSON.parse(localStorage.getItem("USER"))?._id;
+  const userId = entity?.id || entity?._id || JSON.parse(localStorage.getItem("USER"))?.id || JSON.parse(localStorage.getItem("USER"))?._id;
   const isCreator = userId === creatorData?.creatorId;
 
   const handleAssignDriver = async () => {
     try {
       const token = localStorage.getItem("token");
+      console.log("rideId", roomid);
       const response = await axios.post(
         `${import.meta.env.VITE_BASE_URL}/ride/close-room`,
         { roomId: roomid },
@@ -203,6 +206,7 @@ function DesktopView({ roomIntData }) {
       );
       if (response.status === 200) {
         setStatus("closed");
+        setIsSearching(true);
         alert("Driver assigning initiated!");
       }
     } catch (err) {
@@ -301,7 +305,7 @@ function DesktopView({ roomIntData }) {
                 </Typography>
               </Box>
             )}
-            {isCreator && status === "open" && (
+            {isCreator && (status === "open" || status === "closed") && (
               <Button
                 variant="contained"
                 onClick={handleAssignDriver}
@@ -313,7 +317,7 @@ function DesktopView({ roomIntData }) {
                   },
                 }}
               >
-                Assign Driver
+                {status === "closed" ? "Retry Assign Driver" : "Assign Driver"}
               </Button>
             )}
             {isCreator && (status === "open" || status === "closed" || status === "accepted") && (
@@ -382,7 +386,7 @@ function DesktopView({ roomIntData }) {
 const RoomInt = () => {
   const { creatorData } = useRoom();
   const { entity } = useContext(EntityContext);
-  const userId = entity._id || JSON.parse(localStorage.getItem("USER"))._id;
+  const userId = entity?.id || entity?._id || JSON.parse(localStorage.getItem("USER"))?.id || JSON.parse(localStorage.getItem("USER"))?._id;
   const isCreator = userId === creatorData?.creatorId;
 
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
@@ -391,29 +395,40 @@ const RoomInt = () => {
   const { recieveMessage, stopRecieveMessage, sendMessage } =
     useContext(SocketContext);
   const roomIntData = useRoom();
-  const { setDriverLocation, setPickupLat, setPickupLng, setPickupText, setDropLat, setDropLng, setDropText } = useLocations();
+  const { setDriverLocation, setPickupLat, setPickupLng, setPickupText, setDropLat, setDropLng, setDropText, resetLocationContext } = useLocations();
 
-  const { pickup, destination, updateEverything, setMitra, setStatus, messages, setMessages } =
+  const { pickup, destination, updateEverything, setMitra, setStatus, messages, setMessages, setIsSearching, setDriverData, setOtp } =
     useRoom();
 
   const [chatNotification, setChatNotification] = useState({ open: false, message: "" });
 
   useEffect(() => {
-    recieveMessage("new-chat", (data) => {
+    const handleIncomingChat = (data) => {
       setChatNotification({ open: true, message: `New message from ${data.senderName}` });
       setMessages((prev) => {
         const newMsgs = [...prev, data];
         sessionStorage.setItem(`messages_${roomIntData.roomid}`, JSON.stringify(newMsgs));
         return newMsgs;
       });
-    });
-  }, [recieveMessage, roomIntData.roomid, setMessages]);
+    };
+
+    recieveMessage("new-chat", handleIncomingChat);
+
+    return () => {
+      if (stopRecieveMessage) {
+        stopRecieveMessage("new-chat", handleIncomingChat);
+      }
+    };
+  }, [recieveMessage, stopRecieveMessage, roomIntData.roomid, setMessages]);
 
   const [mitraCopy, setMitraCopy] = useState([]);
   const [rideStartedPopup, setRideStartedPopup] = useState(false);
   const [rideEndedPopup, setRideEndedPopup] = useState(null);
   const [rideAcceptedPopup, setRideAcceptedPopup] = useState(false);
   const [rideNotFoundPopup, setRideNotFoundPopup] = useState(false);
+  const [rideCancelledPopup, setRideCancelledPopup] = useState(null);
+  const [isValidRoom, setIsValidRoom] = useState(true);
+  const [errorSnackbar, setErrorSnackbar] = useState({ open: false, message: "" });
 
   useEffect(() => {
     recieveMessage("confirm-ride", (rideData) => {
@@ -449,20 +464,25 @@ const RoomInt = () => {
       const rideData = response.data;
       // alert("Ride Data: " + JSON.stringify(rideData));
       console.log("Ride Data: ", rideData);
+      
+      if (!rideData) {
+        throw new Error("Room not found or no longer exists");
+      }
+
       updateEverything(rideData);
-      setMitraCopy(rideData.mitra.map((m) => ({ ...m })));
+      setMitraCopy((rideData.mitras || rideData.mitra || []).map((m) => ({ ...m })));
       console.log("Mitra Copy: ", mitraCopy);
 
       // Also update LocationsContext so the Map knows where to draw the route/ETA
       if (rideData?.pickup?.lat) {
         setPickupLat(rideData.pickup.lat);
         setPickupLng(rideData.pickup.lng);
-        setPickupText(rideData.pickup.text);
+        setPickupText(rideData.pickupAddress || rideData.pickup?.text);
       }
       if (rideData?.destination?.lat) {
         setDropLat(rideData.destination.lat);
         setDropLng(rideData.destination.lng);
-        setDropText(rideData.destination.text);
+        setDropText(rideData.dropAddress || rideData.destination?.text);
       }
       if (rideData?.driver?.location?.ltd && rideData?.driver?.location?.lng) {
         setDriverLocation({
@@ -473,7 +493,9 @@ const RoomInt = () => {
 
     } catch (err) {
       console.log(err);
-      alert("Error: " + err.message);
+      const errMsg = err.response?.data?.rideError || err.message;
+      setErrorSnackbar({ open: true, message: "Error: " + errMsg });
+      setIsValidRoom(false);
     }
   };
 
@@ -485,6 +507,7 @@ const RoomInt = () => {
     try {
       setRideNotFoundPopup(false);
       setStatus("closed");
+      setIsSearching(true);
       
       const response = await axios.post(
         `${import.meta.env.VITE_BASE_URL}/ride/close-room`,
@@ -552,9 +575,9 @@ const RoomInt = () => {
           gender: rideData.user.gender || null,
           mobileNo: rideData.user.mobileNo || null,
           email: rideData.user.email || null,
-          socketId: rideData.user.socket_id || null,
+          socketId: rideData.user.socket_id || rideData.user.socketId || null,
           docs: {
-            profileImage: rideData.user.docs?.profileImageUrl || null,
+            profileImage: rideData.user.profileImageUrl || rideData.user.docs?.profileImageUrl || null,
           },
         },
       ]);
@@ -579,7 +602,7 @@ const RoomInt = () => {
 
     const handleRoomClosed = (roomData) => {
       setStatus("closed");
-      const roomCreatorId = roomData?.creatorId?._id || roomData?.creatorId;
+      const roomCreatorId = roomData?.creatorId?.id || roomData?.creatorId?._id || roomData?.creatorId;
       if (roomCreatorId !== userId) {
         alert("Driver assignment has been initiated!");
       }
@@ -598,20 +621,30 @@ const RoomInt = () => {
     const handleRideNotFound = (data) => {
       console.log("Ride not found:", data);
       setRideNotFoundPopup(true);
-      setStatus("cancelled");
+      setIsSearching(false);
+      setStatus("closed"); // Re-open local UI so button appears
     };
 
     const handleRideCancelled = (data) => {
       console.log("Ride cancelled:", data);
-      alert(data.message || "The ride has been cancelled.");
-      setStatus("cancelled");
-      navigate("/user-homepage");
+      setRideCancelledPopup(data.message || "The ride has been cancelled.");
     };
 
     const handleDriverCancelledRedispatch = (data) => {
       console.log("Driver cancelled, searching again:", data);
       alert(data.message || "Driver cancelled. Searching for a new driver...");
       setStatus("closed");
+      setIsSearching(true);
+      setOtp(null);
+      setDriverData({
+        vehicleNo: null,
+        driverId: null,
+        fullName: null,
+        mobileNo: null,
+        rating: null,
+        socketId: null,
+        profileImage: null,
+      });
       // Ride will be redispatched automatically by the backend
     };
 
@@ -654,7 +687,24 @@ const RoomInt = () => {
 
   return (
     <>
-      {isMobile ? <MobileView /> : <DesktopView roomIntData={roomIntData} />}
+      {!isValidRoom ? (
+        <Box sx={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: '#121212' }}>
+          <Typography color="white">Room does not exist or access denied.</Typography>
+        </Box>
+      ) : (
+        isMobile ? <MobileView /> : <DesktopView roomIntData={roomIntData} />
+      )}
+
+      <Snackbar
+        open={errorSnackbar.open}
+        autoHideDuration={6000}
+        onClose={() => setErrorSnackbar({ ...errorSnackbar, open: false })}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        <Alert onClose={() => setErrorSnackbar({ ...errorSnackbar, open: false })} severity="error" sx={{ width: '100%' }}>
+          {errorSnackbar.message}
+        </Alert>
+      </Snackbar>
       
       {/* Driver Assigned & OTP Popup Removed */}
 
@@ -698,7 +748,7 @@ const RoomInt = () => {
           <Typography variant="h2" fontWeight="bold" sx={{ color: '#4caf50', my: 2 }}>
             ₹{rideEndedPopup?.ride?.fare || "0"}
           </Typography>
-          <Button variant="contained" fullWidth onClick={() => { setRideEndedPopup(null); window.location.href = "/user-homepage"; }} sx={{ bgcolor: theme.palette.primaryColor.main, color: '#000', fontWeight: 'bold', mt: 2, py: 1.5, borderRadius: 2 }}>
+          <Button variant="contained" fullWidth onClick={() => { setRideEndedPopup(null); resetLocationContext(); window.location.href = "/user-homepage"; }} sx={{ bgcolor: theme.palette.primaryColor.main, color: '#000', fontWeight: 'bold', mt: 2, py: 1.5, borderRadius: 2 }}>
             Pay & Complete
           </Button>
         </Box>
@@ -756,6 +806,30 @@ const RoomInt = () => {
               </Button>
             )}
           </Box>
+        </Box>
+      </Dialog>
+
+      {/* Ride Cancelled Popup */}
+      <Dialog 
+        open={Boolean(rideCancelledPopup)} 
+        onClose={() => {}}
+        PaperProps={{ style: { borderRadius: 16, background: '#1e1e1e' } }}
+      >
+        <Box sx={{ p: 4, textAlign: 'center', color: 'white', minWidth: '300px' }}>
+          <Box sx={{ mb: 2, display: 'flex', justifyContent: 'center' }}>
+            <Box sx={{ width: 60, height: 60, borderRadius: '50%', background: '#f44336', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Typography variant="h4">🚫</Typography>
+            </Box>
+          </Box>
+          <Typography variant="h5" fontWeight="bold" sx={{ color: '#f44336', mb: 2 }}>
+            Ride Cancelled
+          </Typography>
+          <Typography variant="body1" sx={{ mb: 4, color: 'rgba(255,255,255,0.8)' }}>
+            {rideCancelledPopup}
+          </Typography>
+          <Button variant="contained" fullWidth onClick={() => { setRideCancelledPopup(null); resetLocationContext(); setStatus("cancelled"); navigate("/user-homepage"); }} sx={{ bgcolor: '#f44336', color: '#fff', fontWeight: 'bold', py: 1.5, borderRadius: 2 }}>
+            Back to Home
+          </Button>
         </Box>
       </Dialog>
 

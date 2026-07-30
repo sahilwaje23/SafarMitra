@@ -25,7 +25,7 @@ const IncomingRideCard = ({ req, onAccept, onReject, onExpire }) => {
     setTimeLeft(initialTimeLeft);
 
     if (initialTimeLeft === 0) {
-      onExpire(req.roomData._id);
+      onExpire(req.roomData.id || req.roomData._id);
       return;
     }
 
@@ -33,7 +33,7 @@ const IncomingRideCard = ({ req, onAccept, onReject, onExpire }) => {
       setTimeLeft((prev) => {
         if (prev <= 1) {
           clearInterval(timer);
-          onExpire(req.roomData._id);
+          onExpire(req.roomData.id || req.roomData._id);
           return 0;
         }
         return prev - 1;
@@ -76,14 +76,14 @@ const IncomingRideCard = ({ req, onAccept, onReject, onExpire }) => {
         <Box sx={{ display: "flex", alignItems: "flex-start", gap: 1, mb: 1 }}>
           <LocationOn sx={{ color: "#4caf50", mt: 0.5 }} />
           <Typography variant="body2" sx={{ color: "text.primary", fontWeight: 500 }}>
-            <span style={{ color: "#aaa" }}>Pickup:</span> {req.roomData.pickup.text}
+            <span style={{ color: "#aaa" }}>Pickup:</span> {(req.roomData.pickupAddress || req.roomData.pickup?.text)}
           </Typography>
         </Box>
 
         <Box sx={{ display: "flex", alignItems: "flex-start", gap: 1, mb: 2 }}>
           <LocationOn sx={{ color: "#f44336", mt: 0.5 }} />
           <Typography variant="body2" sx={{ color: "text.primary", fontWeight: 500 }}>
-            <span style={{ color: "#aaa" }}>Drop:</span> {req.roomData.destination.text}
+            <span style={{ color: "#aaa" }}>Drop:</span> {(req.roomData.dropAddress || req.roomData.destination?.text)}
           </Typography>
         </Box>
 
@@ -102,7 +102,7 @@ const IncomingRideCard = ({ req, onAccept, onReject, onExpire }) => {
           <Button
             variant="outlined"
             fullWidth
-            onClick={() => onReject(req.roomData._id)}
+            onClick={() => onReject(req.roomData.id || req.roomData._id)}
             sx={{
               borderColor: "rgba(255,255,255,0.2)",
               color: "#fff",
@@ -115,7 +115,7 @@ const IncomingRideCard = ({ req, onAccept, onReject, onExpire }) => {
           <Button
             variant="contained"
             fullWidth
-            onClick={() => onAccept(req.roomData._id)}
+            onClick={() => onAccept(req.roomData.id || req.roomData._id)}
             sx={{
               bgcolor: theme.palette.primaryColor.main,
               color: "#000",
@@ -162,11 +162,15 @@ const ExistingRoom = ({ incomingRequests, setIncomingRequests }) => {
 
   const handleRejectRoom = (roomId) => {
     // Manually remove from our local list
-    setIncomingRequests((prev) => prev.filter(req => req.roomData._id !== roomId));
+    setIncomingRequests((prev) => prev.filter(req => (req.roomData.id || req.roomData._id) !== roomId));
+  };
+
+  const handleRideExpired = (data) => {
+    setIncomingRequests((prev) => prev.filter(req => (req.roomData?.id || req.roomData?._id) !== data.rideId));
   };
 
   const handleExpire = (roomId) => {
-    setIncomingRequests((prev) => prev.filter(req => req.roomData._id !== roomId));
+    setIncomingRequests((prev) => prev.filter(req => (req.roomData.id || req.roomData._id) !== roomId));
   };
 
   return (

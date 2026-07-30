@@ -13,11 +13,11 @@ const rideRouter = require("./routes/rideRouter");
 const MONGO_URL = process.env.MONGO_URL;
 
 const app = express();
-connectToMongoDb(MONGO_URL)
-  .then(() => console.log("MongoDB Connected !"))
-  .catch((e) => {
-    console.log(`MONGODB ERROR ${e}`);
-  });
+// connectToMongoDb(MONGO_URL)
+//   .then(() => console.log("MongoDB Connected !"))
+//   .catch((e) => {
+//     console.log(`MONGODB ERROR ${e}`);
+//   });
 
 // ^ Middle Wares
 app.use(

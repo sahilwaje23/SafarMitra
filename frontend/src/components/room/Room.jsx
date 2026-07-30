@@ -30,6 +30,8 @@ const Room = ({ roomData = [] }) => {
     setMitra,
   } = useRoom();
 
+  const [joiningRoomId, setJoiningRoomId] = useState(null);
+
   // const handleJoinRoom = async (roomId) => {
   //   try {
   //     const res = await axios.get(`${import.meta.env.VITE_BASE_URL}/ride/join-room?roomId=${roomId}`, {
@@ -46,6 +48,7 @@ const Room = ({ roomData = [] }) => {
 
   const handleJoinRoom = async (roomId) => {
     try {
+      setJoiningRoomId(roomId);
       const res = await axios.get(
         `${import.meta.env.VITE_BASE_URL}/ride/join-room?roomId=${roomId}`,
         {
@@ -100,7 +103,13 @@ const Room = ({ roomData = [] }) => {
       // navigate("/room-int");
       navigate(`/room-int?roomid=${roomData.id || roomData._id}`);
     } catch (e) {
-      alert("Failed to join room: " + e.message);
+      if (e.response && e.response.data && e.response.data.rideError) {
+        alert(e.response.data.rideError);
+      } else {
+        alert("Failed to join room: " + (e.response?.data?.error || e.message));
+      }
+    } finally {
+      setJoiningRoomId(null);
     }
   };
 
@@ -207,7 +216,8 @@ const Room = ({ roomData = [] }) => {
 
                   <Button
                     variant="contained"
-                    onClick={() => handleJoinRoom(room.id)}
+                    onClick={() => handleJoinRoom(room.id || room._id)}
+                    disabled={joiningRoomId !== null}
                     className="font-semibold px-6 min-w-[100px]"
                     sx={{
                       bgcolor: theme.palette.primaryColor.main,
@@ -217,7 +227,15 @@ const Room = ({ roomData = [] }) => {
                       },
                     }}
                   >
-                    JOIN
+                    <Typography
+                      sx={{
+                        fontSize: "small",
+                        fontWeight: "bold",
+                        color: "black",
+                      }}
+                    >
+                      {joiningRoomId === (room.id || room._id) ? "JOINING..." : "JOIN"}
+                    </Typography>
                   </Button>
                 </Box>
               </Box>

@@ -86,8 +86,8 @@ export const RoomContextProvider = ({ children }) => {
       profileImage: formatImageUrl(creatorObj.docs?.profileImageUrl || creatorObj.profileImageUrl || creatorObj.profileImage),
     });
 
-    setDistance(data.distance);
-    setDuration(data.duration);
+    setDistance(data.distance ?? (data.distanceMeters ? Math.round(data.distanceMeters / 100) / 10 : null));
+    setDuration(data.duration ?? (data.durationSeconds ? Math.round(data.durationSeconds / 60) : null));
     setFare(data.fare);
     setStatus(data.status?.toLowerCase() || "open");
     setOtp(data.otp || null);

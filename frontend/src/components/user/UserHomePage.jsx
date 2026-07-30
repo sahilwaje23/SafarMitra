@@ -14,7 +14,7 @@ import ActiveRideComponent from "./ActiveRideComponent";
 const UserHomePage = () => {
   const [loading, setLoading] = useState(true);
   const yellowTheme = theme.palette.primaryColor.main;
-  const { entity } = useContext(EntityContext);
+  const { entity, setEntity } = useContext(EntityContext);
   const {
     pickupLat,
     setPickupLat,
@@ -86,6 +86,7 @@ const UserHomePage = () => {
           }
         );
         const latestEntity = profileRes.data;
+        setEntity(latestEntity);
         
         if (latestEntity?.currentActiveRideId) {
           const response = await axios.get(

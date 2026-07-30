@@ -67,14 +67,43 @@ const handleGetUserProfile = async (req, res) => {
   const user = req.user;
   const userWithRides = await prisma.user.findUnique({
     where: { id: user.id },
-    include: { createdRides: true },
     omit: {
       password: true,
       salt: true,
     },
   });
+  // console.log(userWithRides);
 
   return res.status(200).json(userWithRides);
+};
+
+const handleGetUserPastRides = async (req, res) => {
+  try {
+    const user = req.user;
+    const rides = await prisma.user.findUnique({
+      where: { id: user.id },
+      include: {
+        createdRides: {
+          orderBy: { createdAt: 'desc' }
+        },
+        rideMitras: {
+          include: { ride: true },
+          orderBy: { joinedAt: 'desc' }
+        }
+      }
+    });
+
+    // Format all rides into a single array
+    const allRides = [
+      ...(rides?.createdRides?.map(r => ({ ...r, isMitra: false })) || []),
+      ...(rides?.rideMitras?.map(rm => ({ ...rm.ride, isMitra: true })) || [])
+    ].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+    return res.status(200).json(allRides);
+  } catch (err) {
+    console.error("Error fetching user past rides", err);
+    return res.status(500).json({ error: "Failed to fetch past rides" });
+  }
 };
 
 const handleLogOutUser = async (req, res) => {
@@ -100,5 +129,6 @@ module.exports = {
   handleSignUp,
   handleSignIn,
   handleGetUserProfile,
+  handleGetUserPastRides,
   handleLogOutUser,
 };

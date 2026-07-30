@@ -153,7 +153,7 @@ const JourneyCard = ({ journey }) => {
               <Typography className="text-white/50 text-sm">
                 Participants:{' '}
                 <span className="text-white ml-2">
-                  {journey.participantCount} {journey.participantCount === 1 ? 'user' : 'users'}
+                  {journey.participantCount} / {journey.limit} {journey.limit === 1 ? 'user' : 'users'}
                 </span>
               </Typography>
             </Box>

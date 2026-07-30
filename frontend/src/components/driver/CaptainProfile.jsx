@@ -16,6 +16,7 @@ import Dashboard from "./Dashboard";
 const CaptainProfile = () => {
   const yellowTheme = theme.palette.primaryColor.main;
   const [profile, setProfile] = useState(null);
+  const [pastRides, setPastRides] = useState([]);
   const token = localStorage.getItem("token");
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
@@ -30,17 +31,20 @@ const CaptainProfile = () => {
 
       try {
         setIsLoading(true); // Show loader
-        const res = await axios.get(
-          `${import.meta.env.VITE_BASE_URL}/driver/my-profile`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
+        
+        const [profileRes, pastRidesRes] = await Promise.all([
+          axios.get(`${import.meta.env.VITE_BASE_URL}/driver/my-profile`, {
+            headers: { Authorization: `Bearer ${token}` },
             withCredentials: true,
-          }
-        );
-        setProfile(res.data); // Update profile state
-        console.log(res.data);
+          }),
+          axios.get(`${import.meta.env.VITE_BASE_URL}/driver/past-rides`, {
+            headers: { Authorization: `Bearer ${token}` },
+            withCredentials: true,
+          })
+        ]);
+        
+        setProfile(profileRes.data);
+        setPastRides(pastRidesRes.data);
       } catch (error) {
         console.error("Error fetching profile:", error);
       } finally {
@@ -158,22 +162,21 @@ const CaptainProfile = () => {
             Accepted Rides
           </Typography>
 
-          {!profile.ridesAcceptedUrl ||
-          profile.ridesAcceptedUrl.length === 0 ? (
+          {pastRides.length === 0 ? (
             <Card className="bg-white/95 shadow-md">
               <CardContent>
                 <Typography
                   variant="body1"
                   className="text-center text-gray-500 py-8"
                 >
-                  You haven't booked any rides yet.
+                  You haven't accepted any rides yet.
                 </Typography>
               </CardContent>
             </Card>
           ) : (
             <div className="space-y-4">
-              {profile.ridesAcceptedUrl.map((ride) => (
-                <Card key={ride._id} className="bg-white/95 shadow-md">
+              {pastRides.map((ride) => (
+                <Card key={ride.id || ride._id} className="bg-white/95 shadow-md">
                   <CardContent>
                     <div className="space-y-3">
                       <div className="flex items-center justify-between">

@@ -91,7 +91,7 @@ const ButtonGroup = ({ activeTab, setActiveTab }) => {
 };
 
 const MobileView = () => {
-  const { updateEverything, setMitraCopy, messages, setMessages, creatorData, roomid, status, setStatus, setIsSearching } = useRoom();
+  const { updateEverything, setMitraCopy, messages, setMessages, creatorData, roomid, status, setStatus, isSearching, setIsSearching } = useRoom();
   const { entity } = useContext(EntityContext);
   const userId = entity?.id || entity?._id || JSON.parse(localStorage.getItem("USER"))?.id || JSON.parse(localStorage.getItem("USER"))?._id;
   const isCreator = userId === creatorData?.creatorId;
@@ -173,7 +173,7 @@ const MobileView = () => {
 
 function DesktopView({ roomIntData }) {
   const [activeTab, setActiveTab] = useState("details");
-  const { pickup, destination, status, roomid, creatorData, setStatus, setIsSearching } =
+  const { pickup, destination, status, roomid, creatorData, setStatus, isSearching, setIsSearching } =
     useRoom();
   const { driverLocation, currentLocation, pickupLat, pickupLng, dropLat, dropLng } = useLocations();
 
@@ -293,7 +293,8 @@ function DesktopView({ roomIntData }) {
               }}
             >
               {status === "open" && "Status : Open"}
-              {status === "closed" && "Searching for driver..."}
+              {status === "closed" && isSearching && "Searching for driver..."}
+              {status === "closed" && !isSearching && "Status : Closed"}
               {status === "accepted" && dynamicEtaText}
               {status === "ongoing" && dynamicEtaText}
               {status === "completed" && "Journey completed"}
@@ -564,23 +565,10 @@ const RoomInt = () => {
     };
 
     const handleNewUserJoin = (rideData) => {
-      // ^ Chaitanya whatever new USER JOINS u will get data here
       alert("New User Joined: " + rideData.user.fullName);
-
-      setMitra((prev) => [
-        ...prev,
-        {
-          fullName: rideData.user.fullName || "CAKALALA",
-          rating: rideData.user.rating || null,
-          gender: rideData.user.gender || null,
-          mobileNo: rideData.user.mobileNo || null,
-          email: rideData.user.email || null,
-          socketId: rideData.user.socket_id || rideData.user.socketId || null,
-          docs: {
-            profileImage: rideData.user.profileImageUrl || rideData.user.docs?.profileImageUrl || null,
-          },
-        },
-      ]);
+      if (rideData.room) {
+        updateEverything(rideData.room);
+      }
     };
 
     const handleRideEnded = (rideData) => {
@@ -602,6 +590,7 @@ const RoomInt = () => {
 
     const handleRoomClosed = (roomData) => {
       setStatus("closed");
+      setIsSearching(true);
       const roomCreatorId = roomData?.creatorId?.id || roomData?.creatorId?._id || roomData?.creatorId;
       if (roomCreatorId !== userId) {
         alert("Driver assignment has been initiated!");
@@ -622,7 +611,7 @@ const RoomInt = () => {
       console.log("Ride not found:", data);
       setRideNotFoundPopup(true);
       setIsSearching(false);
-      setStatus("closed"); // Re-open local UI so button appears
+      setStatus("closed");
     };
 
     const handleRideCancelled = (data) => {

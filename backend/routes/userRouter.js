@@ -3,6 +3,7 @@ const {
   handleSignUp,
   handleSignIn,
   handleGetUserProfile,
+  handleGetUserPastRides,
   handleLogOutUser,
 } = require("../controllers/userController");
 const upload = require("../services/utilities");
@@ -26,6 +27,7 @@ router.post(
 router.post("/login", validateUserSignIn, handleSignIn);
 
 router.get("/my-profile", authUser, handleGetUserProfile);
+router.get("/past-rides", authUser, handleGetUserPastRides);
 
 router.get("/check", authUser, (req, res) => res.status(200).json(req.user));
 

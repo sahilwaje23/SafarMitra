@@ -3,10 +3,9 @@ import { Paper, Typography, Box } from "@mui/material";
 import theme from "../../styles/theme";
 
 const Dashboard = ({ info }) => {
-  const ridesAcceptedCnt = info?.length;
-  const totalEarning = info?.reduce((acc, ride) => acc + ride.fare, 0);
-  const avgRating =
-    info?.reduce((acc, ride) => acc + ride.rating, 0) / ridesAcceptedCnt;
+  const ridesAcceptedCnt = info?.ridesAcceptedCnt || 0;
+  const totalEarning = info?.totalEarning || 0;
+  const avgRating = 4.8; // Defaulting to 4.8 as rating isn't aggregated yet
 
   return (
     <Paper
@@ -27,18 +26,18 @@ const Dashboard = ({ info }) => {
         <Box>
           <Typography variant="subtitle2">Rooms served</Typography>
           <Typography variant="h5">
-            {ridesAcceptedCnt > 0 ? ridesAcceptedCnt : 5}
+            {ridesAcceptedCnt}
           </Typography>
         </Box>
         <Box>
           <Typography variant="subtitle2">Today's Earnings</Typography>
           <Typography variant="h5">
-            ₹ {totalEarning > 0 ? totalEarning : `₹ 500`}
+            ₹ {totalEarning}
           </Typography>
         </Box>
         <Box>
           <Typography variant="subtitle2">Avg Rating recieved</Typography>
-          <Typography variant="h5">{avgRating > 0 ? avgRating : 4.8}</Typography>
+          <Typography variant="h5">{avgRating}</Typography>
         </Box>
       </Box>
     </Paper>

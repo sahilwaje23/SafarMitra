@@ -13,6 +13,7 @@ const RoomActivities = () => {
   const [roomData, setRoomData] = useState([]);
   const [previewData, setPreviewData] = useState(null);
   const [isLoadingFare, setIsLoadingFare] = useState(false);
+  const [isCreatingRide, setIsCreatingRide] = useState(false);
 
   const [participantsLimit, setParticipantsLimit] = useState(1);
   const navigate = useNavigate();
@@ -177,10 +178,12 @@ const RoomActivities = () => {
       navigate(`/room-int?roomid=${res.data.newRoom.id}`);
     } catch (err) {
       console.error("Error creating room:", err);
-      if (err.response && err.response.status === 401) {
+      if (err.response && err.response.data && err.response.data.rideError) {
+        alert(err.response.data.rideError);
+      } else if (err.response && err.response.status === 401) {
         alert("Something wrong occured , YOGESH!!!!");
-        // navigate("/signin");
-        // user-signin???
+      } else {
+        alert("Failed to create ride. Please try again.");
       }
     }
   };
@@ -221,13 +224,18 @@ const RoomActivities = () => {
         maxPassengerCount: participantsLimit,
       };
 
-      // Wait for room creation to finish
-      await createRoom(roomData);
+      try {
+        setIsCreatingRide(true);
+        // Wait for room creation to finish
+        await createRoom(roomData);
 
-      // Now update the state
-      setPickup(pickupText);
-      setDestination(dropText);
-      setLimit(participantsLimit);
+        // Now update the state
+        setPickup(pickupText);
+        setDestination(dropText);
+        setLimit(participantsLimit);
+      } finally {
+        setIsCreatingRide(false);
+      }
     }
   };
 
@@ -372,10 +380,10 @@ const RoomActivities = () => {
             type="submit"
             fullWidth
             onClick={handlePreviewOrCreate}
-            disabled={isLoadingFare}
+            disabled={isLoadingFare || isCreatingRide}
           >
             <Typography sx={{ fontSize: "large", fontWeight: "bold" }}>
-              {isLoadingFare ? "Calculating..." : (previewData ? "Confirm & Create" : "Check Fare & Create")}
+              {isLoadingFare ? "Calculating..." : isCreatingRide ? "Creating..." : (previewData ? "Confirm & Create" : "Check Fare & Create")}
             </Typography>
           </Button>
         </div>

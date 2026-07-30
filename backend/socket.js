@@ -27,9 +27,15 @@ function initialiseSocket(server) {
 
       if (userType === "USER") {
         try {
-          // socket.join(`user:${parsedUserId}`);
           socket.join(`user:${userId}`);
-          // We rely purely on Socket.IO's native rooms, so we don't save socket_id to the DB anymore.
+          
+          // Fetch user to see if they need to automatically rejoin a ride room
+          const user = await prisma.user.findUnique({ where: { id: parsedUserId } });
+          if (user?.currentActiveRideId) {
+            socket.join(`ride:${user.currentActiveRideId}`);
+            socket.data.currentRideId = user.currentActiveRideId.toString();
+            console.log("User automatically rejoined ride", user.currentActiveRideId);
+          }
         } catch (e) {
           console.log(e);
         }

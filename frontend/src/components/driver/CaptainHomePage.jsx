@@ -56,11 +56,28 @@ const CaptainHomePage = () => {
     refreshProfileAndRide();
   }, []);
 
-  // ^ Chaitanya ithe status online asel tr pratyek 10 sec la update hoil location
-  const [status, setStatus] = useState("online");
+  const [status, setStatus] = useState(entity.status || "OFFLINE");
+  const [dashboardData, setDashboardData] = useState(null);
+
+  useEffect(() => {
+    const fetchDashboard = async () => {
+      try {
+        const res = await axios.get(`${import.meta.env.VITE_BASE_URL}/driver/dashboard`, {
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+          withCredentials: true,
+        });
+        setDashboardData(res.data);
+      } catch (err) {
+        console.error("Failed to fetch dashboard data", err);
+      }
+    };
+    fetchDashboard();
+  }, []);
   const [incomingRequests, setIncomingRequests] = useState([]);
 
   useEffect(() => {
+    if (status !== "ONLINE" && status !== "online") return;
+
     const handleNewRide = (rideData) => {
       // Ignore if the driver is already assigned to a ride
       if (entity?.currentAcceptedRideId || entity?.currentActiveRideId) {
@@ -79,16 +96,16 @@ const CaptainHomePage = () => {
       setIncomingRequests((prev) => prev.filter(req => (req.roomData?.id || req.roomData?._id) !== data.rideId));
     };
 
-    if (status === "online") {
-      recieveMessage("new-ride", handleNewRide);
-      recieveMessage("ride-expired", handleRideExpired);
-    }
+    console.log("Status is ONLINE. Registering socket listeners.");
+    recieveMessage("new-ride", handleNewRide);
+    recieveMessage("ride-expired", handleRideExpired);
 
     return () => {
+      console.log("Cleaning up socket listeners for status:", status);
       stopRecieveMessage("new-ride", handleNewRide);
       stopRecieveMessage("ride-expired", handleRideExpired);
     };
-  }, [status, entity]);
+  }, [status, entity, recieveMessage, stopRecieveMessage]);
 
   const isMobile = useMediaQuery("(max-width:1024px)");
 
@@ -168,8 +185,8 @@ const CaptainHomePage = () => {
           overflow: "auto",
         }}
       >
-        <QuickActions />
-        <Dashboard />
+        <QuickActions status={status} setStatus={setStatus} />
+        <Dashboard info={dashboardData} />
         {<ExistingRoom incomingRequests={incomingRequests} setIncomingRequests={setIncomingRequests} sx={{ flex: 1 }} />}
       </Box>
     </Box>

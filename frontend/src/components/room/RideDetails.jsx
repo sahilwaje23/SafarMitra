@@ -24,6 +24,7 @@ function RideDetails({ isDriverView }) {
     mitra,
     driverData,
     pcount,
+    limit,
   } = useRoom();
   // const dummyDriver = {
   //   name: "Rahul Sharma",
@@ -120,8 +121,8 @@ function RideDetails({ isDriverView }) {
     fare: fare ?? 250,
     distance: distance ?? 15.4,
     duration: duration ?? 32,
-    // above not initialised correctly
-    participantCount: pcount ?? 3,
+    participantCount: pcount ?? 1,
+    limit: limit ?? 1,
   };
 
   useEffect(() => {

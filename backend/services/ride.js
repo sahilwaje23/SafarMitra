@@ -13,6 +13,21 @@ const Ride = require("../models/ride");
  */
 const createRide = async (userId, pickupText, pickupLat, pickupLng, dropText, dropLat, dropLng, calculatedFare, distance, duration, otp, maxPassengerCount) => {
   return await prisma.$transaction(async (tx) => {
+    // 0. Verify the user does not already have an active ride (and lock the row to prevent race conditions)
+    const userResult = await tx.$queryRaw`
+      SELECT * FROM "users" 
+      WHERE "id" = ${userId} 
+      FOR UPDATE
+    `;
+    const user = userResult[0];
+
+    if (!user) {
+      throw new Error("User not found");
+    }
+    if (user.current_active_ride_id) {
+      throw new Error("You already have an active ride. Please complete or cancel it before creating a new one.");
+    }
+
     // 1. Create the base ride record (omitting unsupported Geography fields)
     const newRide = await tx.ride.create({
       data: {
@@ -38,7 +53,6 @@ const createRide = async (userId, pickupText, pickupLat, pickupLng, dropText, dr
     `;
 
     // 3. Update the user to reflect their current active ride
-    // (Prisma automatically handles the "createdRides" relation via creatorId)
     await tx.user.update({
       where: { id: userId },
       data: { currentActiveRideId: newRide.id }
@@ -58,17 +72,41 @@ const createRide = async (userId, pickupText, pickupLat, pickupLng, dropText, dr
  * Closes an open ride so it can be dispatched to drivers.
  * Uses Prisma direct update to avoid a find-then-save race condition.
  */
-const closeRide = async (rideId) => {
+const closeRide = async (rideId, userId) => {
   const parsedId = parseInt(rideId, 10);
   
-  // 1. Optimistic Concurrency: Update only if it's currently OPEN or CLOSED
+  const existingRide = await prisma.ride.findUnique({
+    where: { id: parsedId }
+  });
+
+  if (!existingRide) {
+    throw new Error("Room not found");
+  }
+
+  if (existingRide.creatorId !== userId) {
+    throw new Error("You are not authorized to close this room");
+  }
+
+  if (existingRide.status === "SEARCHING") {
+    throw new Error("Room is already actively searching for a driver");
+  }
+
+  if (existingRide.status !== "OPEN" && existingRide.status !== "CLOSED") {
+    throw new Error(`Cannot assign driver. Room is currently in ${existingRide.status} state`);
+  }
+  
+  // 1. Optimistic Concurrency: Update only if it's currently in the expected state
   const result = await prisma.ride.updateMany({
-    where: { id: parsedId, status: { in: ["OPEN", "CLOSED"] } },
-    data: { status: "CLOSED" },
+    where: { 
+      id: parsedId, 
+      creatorId: userId,
+      status: existingRide.status
+    },
+    data: { status: "SEARCHING" },
   });
 
   if (result.count === 0) {
-    throw new Error("Room not found or already closed");
+    throw new Error("Failed to assign driver due to concurrent updates, please try again.");
   }
 
   // 2. Fetch the updated ride with relations
@@ -219,6 +257,21 @@ const getOpenRidesWithinDistance = async (pLat, pLng, dLat, dLng) => {
 
 const joinRide = async (rideId, userId) => {
   return await prisma.$transaction(async (tx) => {
+    // 0. Verify the user does not already have an active ride (and lock the row to prevent race conditions)
+    const userResult = await tx.$queryRaw`
+      SELECT * FROM "users" 
+      WHERE "id" = ${parseInt(userId, 10)} 
+      FOR UPDATE
+    `;
+    const user = userResult[0];
+
+    if (!user) {
+      throw new Error("User not found");
+    }
+    if (user.current_active_ride_id) {
+      throw new Error("You already have an active ride. Please complete or cancel it before joining a new one.");
+    }
+
     const ride = await tx.ride.findUnique({ where: { id: parseInt(rideId, 10) } });
     if (!ride) {
       throw new Error("Room not found");

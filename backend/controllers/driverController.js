@@ -60,7 +60,15 @@ const handleDriverLogOut = async (req, res) => {
 
   try {
     const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
-    await prisma.blacklistToken.create({ data: { token, expiresAt } });
+    
+    await prisma.$transaction([
+      prisma.blacklistToken.create({ data: { token, expiresAt } }),
+      prisma.driver.update({
+        where: { id: req.driver.id },
+        data: { status: "OFFLINE" }
+      })
+    ]);
+
     res.clearCookie("token");
     res.status(200).json({ msg: "success" });
   } catch (err) {
@@ -71,10 +79,26 @@ const handleDriverLogOut = async (req, res) => {
 const handleGetDriverProfile = async (req, res) => {
   const driverWithRides = await prisma.driver.findUnique({
     where: { id: req.driver.id },
-    include: { acceptedRides: true },
     omit: { password: true, salt: true }
   });
   return res.status(200).json(driverWithRides);
+};
+
+const handleGetDriverPastRides = async (req, res) => {
+  try {
+    const rides = await prisma.driver.findUnique({
+      where: { id: req.driver.id },
+      include: {
+        acceptedRides: {
+          orderBy: { createdAt: 'desc' }
+        }
+      }
+    });
+    return res.status(200).json(rides?.acceptedRides || []);
+  } catch (err) {
+    console.error("Error fetching driver past rides", err);
+    return res.status(500).json({ error: "Failed to fetch past rides" });
+  }
 };
 
 const handleGetAllClosedRooms = async (req, res) => {
@@ -86,10 +110,51 @@ const handleGetAllClosedRooms = async (req, res) => {
   }
 };
 
+const handleGetDashboard = async (req, res) => {
+  try {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const rides = await prisma.ride.findMany({
+      where: {
+        driverId: req.driver.id,
+        status: "COMPLETED",
+        updatedAt: { gte: today }
+      }
+    });
+
+    const ridesAcceptedCnt = rides.length;
+    const totalEarning = rides.reduce((acc, ride) => acc + Number(ride.fare), 0);
+
+    return res.status(200).json({ ridesAcceptedCnt, totalEarning });
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+};
+
+const handleToggleStatus = async (req, res) => {
+  try {
+    const { status } = req.body;
+    if (!["ONLINE", "OFFLINE"].includes(status)) {
+      return res.status(400).json({ error: "Invalid status" });
+    }
+    const updatedDriver = await prisma.driver.update({
+      where: { id: req.driver.id },
+      data: { status }
+    });
+    return res.status(200).json({ status: updatedDriver.status });
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+};
+
 module.exports = {
   handleDriverSignup,
   handleDriverSignin,
   handleDriverLogOut,
   handleGetDriverProfile,
+  handleGetDriverPastRides,
   handleGetAllClosedRooms,
+  handleGetDashboard,
+  handleToggleStatus,
 };

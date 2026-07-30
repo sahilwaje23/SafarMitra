@@ -1,9 +1,31 @@
 import React, { useState } from 'react';
 import { Box, Switch, Typography, Paper } from '@mui/material';
 import theme from '../../styles/theme';
+import axios from 'axios';
 
-const QuickActions = () => {
-  const [isActive, setIsActive] = useState(false);
+const QuickActions = ({ status, setStatus }) => {
+  const [loading, setLoading] = useState(false);
+
+  const handleToggle = async () => {
+    setLoading(true);
+    const newStatus = status === "ONLINE" ? "OFFLINE" : "ONLINE";
+    console.log("naya status", newStatus)
+    try {
+      const res = await axios.post(
+        `${import.meta.env.VITE_BASE_URL}/driver/toggle-status`,
+        { status: newStatus },
+        {
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+          withCredentials: true,
+        }
+      );
+      setStatus(res.data.status);
+    } catch (err) {
+      console.error("Failed to toggle status", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <Paper sx={{ p: 2,  bgcolor: theme.palette.mode === 'dark' 
@@ -13,8 +35,9 @@ const QuickActions = () => {
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
         <Typography>Status:</Typography>
         <Switch
-          checked={isActive}
-          onChange={() => setIsActive(!isActive)}
+          checked={status === "ONLINE"}
+          onChange={handleToggle}
+          disabled={loading}
           sx={{
             '& .MuiSwitch-switchBase.Mui-checked': {
               color: theme.palette.primaryColor.main
@@ -24,7 +47,7 @@ const QuickActions = () => {
             }
           }}
         />
-        <Typography>{isActive ? 'Active' : 'Inactive'}</Typography>
+        <Typography>{status}</Typography>
       </Box>
     </Paper>
   );

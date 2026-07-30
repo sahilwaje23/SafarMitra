@@ -4,7 +4,10 @@ const {
   handleDriverSignin,
   handleDriverLogOut,
   handleGetDriverProfile,
+  handleGetDriverPastRides,
   handleGetAllClosedRooms,
+  handleGetDashboard,
+  handleToggleStatus,
 } = require("../controllers/driverController");
 const router = Router();
 const { authDriver } = require("../middlewares/auth");
@@ -44,6 +47,10 @@ router.post("/login", validateDriverSignIn, handleDriverSignin);
 router.get("/logout", authDriver, handleDriverLogOut);
 
 router.get("/my-profile", authDriver, handleGetDriverProfile);
+router.get("/past-rides", authDriver, handleGetDriverPastRides);
+
+router.get("/dashboard", authDriver, handleGetDashboard);
+router.post("/toggle-status", authDriver, handleToggleStatus);
 
 router.get("/get-all-closed-rooms", authDriver, handleGetAllClosedRooms);
 

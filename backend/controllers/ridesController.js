@@ -49,7 +49,7 @@ const handleCloseRoom = async (req, res) => {
     const { roomId } = req.body;
     
     try {
-      const roomData = await closeRide(roomId);
+      const roomData = await closeRide(roomId, req.user.id);
 
       getIO().to(`ride:${roomId}`).emit("room-closed", roomData);
 

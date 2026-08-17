@@ -6,18 +6,10 @@ const { getDistance } = require("../utils/distance");
 const DISPATCH_BATCH_SIZE = 3;
 const DISPATCH_TIMEOUT_MS = 15000;
 
-const activeSearches = new Set();
-
 class DispatchService {
   static async dispatchRide(rideId) {
     try {
       const parsedId = parseInt(rideId, 10);
-      
-      if (activeSearches.has(parsedId)) {
-        console.log(`Search already active for ride ${parsedId}. Ignoring duplicate request.`);
-        return;
-      }
-      activeSearches.add(parsedId);
 
       const [ride, locations] = await Promise.all([
         prisma.ride.findUnique({
@@ -38,7 +30,6 @@ class DispatchService {
       ]);
 
       if (!ride) {
-        activeSearches.delete(parsedId);
         return;
       }
 
@@ -46,7 +37,6 @@ class DispatchService {
         ride.pickup = { lat: locations[0].pickupLat, lng: locations[0].pickupLng, text: ride.pickupAddress };
         ride.destination = { lat: locations[0].dropLat, lng: locations[0].dropLng, text: ride.dropAddress };
       } else {
-        activeSearches.delete(parsedId);
         return; 
       }
 
@@ -76,7 +66,6 @@ class DispatchService {
              // Check if ride is still searching before dispatching next batch
              const currentRide = await prisma.ride.findUnique({ where: { id: parsedId } });
              if (!currentRide || currentRide.status !== 'SEARCHING') {
-                 activeSearches.delete(parsedId);
                  return; // Stop dispatching if accepted, closed, or cancelled
              }
 
@@ -93,7 +82,6 @@ class DispatchService {
                  }).catch(err => console.error("Error reverting ride status to CLOSED:", err));
 
                  io.to(`ride:${parsedId}`).emit("ride-not-found", { message: "No drivers were available for your ride." });
-                 activeSearches.delete(parsedId);
                  return; 
              }
 
@@ -114,7 +102,6 @@ class DispatchService {
              setTimeout(dispatchNextBatch, DISPATCH_TIMEOUT_MS);
          } catch (error) {
              console.error("Error in dispatch batch loop:", error);
-             activeSearches.delete(parsedId);
          }
       };
 
@@ -123,7 +110,6 @@ class DispatchService {
 
     } catch (error) {
       console.error("Error initiating ride dispatch:", error);
-      activeSearches.delete(parseInt(rideId, 10));
     }
   }
 }

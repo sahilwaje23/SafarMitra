@@ -310,6 +310,7 @@ function DesktopView({ roomIntData }) {
               <Button
                 variant="contained"
                 onClick={handleAssignDriver}
+                disabled={isSearching}
                 sx={{
                   bgcolor: theme.palette.primaryColor.main,
                   color: theme.palette.txtcol,

@@ -241,6 +241,7 @@ const Popup = ({ isCreator, handleAssignDriver, handleCancelRide, status, isSear
                 <Button
                   variant="contained"
                   onClick={handleAssignDriver}
+                  disabled={effectiveIsSearching}
                   sx={{
                     bgcolor: theme.palette.primaryColor.main,
                     color: theme.palette.txtcol,

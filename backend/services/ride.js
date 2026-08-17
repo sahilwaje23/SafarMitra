@@ -192,9 +192,12 @@ const confirmRide = async (rideId, driverId) => {
       throw new Error("You are already assigned to a ride");
     }
 
-    // 1. Optimistic Concurrency: Ensure it's still closed (broadcasting)
+
+    console.log(parseInt(rideId, 10));
+
+    // 1. Optimistic Concurrency: Ensure it's still searching (broadcasting)
     const result = await tx.ride.updateMany({
-      where: { id: parseInt(rideId, 10), status: "CLOSED" },
+      where: { id: parseInt(rideId, 10), status: "SEARCHING" },
       data: { status: "ACCEPTED", driverId: driverId }
     });
 

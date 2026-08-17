@@ -89,7 +89,14 @@ export const RoomContextProvider = ({ children }) => {
     setDistance(data.distance ?? (data.distanceMeters ? Math.round(data.distanceMeters / 100) / 10 : null));
     setDuration(data.duration ?? (data.durationSeconds ? Math.round(data.durationSeconds / 60) : null));
     setFare(data.fare);
-    setStatus(data.status?.toLowerCase() || "open");
+    const newStatus = data.status?.toLowerCase() || "open";
+    if (newStatus === "searching") {
+      setStatus("closed");
+      setIsSearching(true);
+    } else {
+      setStatus(newStatus);
+      setIsSearching(false);
+    }
     setOtp(data.otp || null);
     
     setMitra(
